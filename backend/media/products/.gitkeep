@@ -1,0 +1,2 @@
+# 商品圖片存放位置
+# 結構: products/{product_id}/{filename}
