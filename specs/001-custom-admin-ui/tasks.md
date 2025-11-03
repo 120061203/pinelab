@@ -29,12 +29,12 @@ Contracts: ./contracts/openapi.yaml
 
 ## Phase 3: User Story 1 - 登入與存取控制 (P1)
 
-- [ ] T012 [US1] Build login form + validation at frontend/src/app/admin-portal/login/LoginForm.tsx
-- [ ] T013 [US1] Implement login API call at frontend/src/lib/admin-api.ts
-- [ ] T014 [US1] Persist tokens (access/refresh) securely at frontend/src/lib/admin-auth.ts
-- [ ] T015 [US1] Implement route guard redirect to /admin-portal/login at frontend/src/components/admin/ProtectedRoute.tsx
-- [ ] T016 [US1] Implement logout and token expiry handling at frontend/src/lib/admin-auth.ts
-- [ ] T017 [US1] Create dashboard shell page at frontend/src/app/admin-portal/dashboard/page.tsx
+ - [x] T012 [US1] Build login form + validation at frontend/src/app/admin-portal/login/LoginForm.tsx
+ - [x] T013 [US1] Implement login API call at frontend/src/lib/admin-api.ts
+ - [x] T014 [US1] Persist tokens (access/refresh) securely at frontend/src/lib/admin-auth.ts
+ - [x] T015 [US1] Implement route guard redirect to /admin-portal/login at frontend/src/components/admin/ProtectedRoute.tsx
+ - [x] T016 [US1] Implement logout and token expiry handling at frontend/src/lib/admin-auth.ts
+ - [x] T017 [US1] Create dashboard shell page at frontend/src/app/admin-portal/dashboard/page.tsx
 
 Acceptance (independent):
 - 登入成功跳轉 Dashboard；未登入訪問受保護路由會被導向登入。

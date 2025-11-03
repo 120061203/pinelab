@@ -3,8 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
+import { useAdminAuth } from "@/lib/admin-auth";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { logout } = useAdminAuth();
   return (
     <ProtectedRoute>
       <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[240px_1fr]">
@@ -16,6 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/admin-portal/categories">Categories</Link>
             <Link href="/admin-portal/tags">Tags</Link>
             <Link href="/admin-portal/contacts">Contacts</Link>
+            <button onClick={logout} className="text-left text-red-600 mt-4">登出</button>
           </nav>
         </aside>
         <main className="p-6">{children}</main>
