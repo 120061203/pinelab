@@ -50,6 +50,7 @@ docker-compose exec backend python manage.py migrate
 ```bash
 docker-compose exec backend python manage.py createsuperuser
 ```
+   詳細說明請參考 `CREATE_ADMIN.md`
 
 ### 本地開發
 
