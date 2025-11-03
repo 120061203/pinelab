@@ -5,6 +5,7 @@ import { adminGetTags, adminDeleteTag } from '@/lib/admin-api';
 import { Table, Th, Td } from '@/components/admin/table/Table';
 import TagForm from '@/components/admin/dicts/TagForm';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
+import ConfirmModal from '@/components/admin/modals/ConfirmModal';
 
 export default function AdminTagsPage() {
   const { addToast } = useToast();
@@ -23,6 +24,8 @@ export default function AdminTagsPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const [pendingDelete, setPendingDelete] = useState<number | null>(null);
 
   const onDelete = async (id: number) => {
     try {
@@ -65,13 +68,21 @@ export default function AdminTagsPage() {
                 <Td>{t.name}</Td>
                 <Td className="space-x-3">
                   <button className="text-blue-600" onClick={() => setEditing(t)}>編輯</button>
-                  <button className="text-red-600" onClick={() => onDelete(t.id)}>刪除</button>
+                  <button className="text-red-600" onClick={() => setPendingDelete(t.id)}>刪除</button>
                 </Td>
               </tr>
             ))}
           </tbody>
         </Table>
       )}
+
+      <ConfirmModal
+        open={pendingDelete !== null}
+        title="刪除標籤"
+        message="此操作無法復原，確定要刪除？"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => { if (pendingDelete) onDelete(pendingDelete); setPendingDelete(null); }}
+      />
     </div>
   );
 }

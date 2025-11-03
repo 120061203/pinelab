@@ -110,10 +110,10 @@ Acceptance (independent):
 
 ## 第 10 階段：收尾與共用優化（Polish & Cross-Cutting）
 
-- [ ] T039 載入/空/錯誤狀態盤點於 frontend/src/app/admin-portal/**
-- [ ] T040 危險操作確認對話框於 frontend/src/components/admin/modals/ConfirmModal.tsx
-- [ ] T041 i18n 文案集中管理（zh-TW 基線）於 frontend/src/lib/i18n.ts
-- [ ] T042 無障礙檢查（焦點/ARIA/標籤）於 frontend/src/components/admin/**
+ - [x] T039 載入/空/錯誤狀態盤點於 frontend/src/app/admin-portal/**
+ - [x] T040 危險操作確認對話框於 frontend/src/components/admin/modals/ConfirmModal.tsx
+ - [x] T041 i18n 文案集中管理（zh-TW 基線）於 frontend/src/lib/i18n.ts
+ - [ ] T042 無障礙檢查（焦點/ARIA/標籤）於 frontend/src/components/admin/**
 
 ---
 

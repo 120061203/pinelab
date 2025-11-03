@@ -5,6 +5,7 @@ import { adminGetCategories, adminDeleteCategory } from '@/lib/admin-api';
 import { Table, Th, Td } from '@/components/admin/table/Table';
 import CategoryForm from '@/components/admin/dicts/CategoryForm';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
+import ConfirmModal from '@/components/admin/modals/ConfirmModal';
 
 export default function AdminCategoriesPage() {
   const { addToast } = useToast();
@@ -23,6 +24,8 @@ export default function AdminCategoriesPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const [pendingDelete, setPendingDelete] = useState<number | null>(null);
 
   const onDelete = async (id: number) => {
     try {
@@ -69,13 +72,21 @@ export default function AdminCategoriesPage() {
                 <Td>{c.is_active ? '啟用' : '停用'}</Td>
                 <Td className="space-x-3">
                   <button className="text-blue-600" onClick={() => setEditing(c)}>編輯</button>
-                  <button className="text-red-600" onClick={() => onDelete(c.id)}>刪除</button>
+                  <button className="text-red-600" onClick={() => setPendingDelete(c.id)}>刪除</button>
                 </Td>
               </tr>
             ))}
           </tbody>
         </Table>
       )}
+
+      <ConfirmModal
+        open={pendingDelete !== null}
+        title="刪除分類"
+        message="此操作無法復原，確定要刪除？"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => { if (pendingDelete) onDelete(pendingDelete); setPendingDelete(null); }}
+      />
     </div>
   );
 }
