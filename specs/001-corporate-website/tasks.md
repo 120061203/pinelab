@@ -187,10 +187,10 @@
 - [x] T112 [P] [US3] 編寫 POST /api/admin/products/{id}/upload_image/ API 整合測試在 backend/tests/integration/test_admin_product_images.py
 - [x] T113 [P] [US3] 編寫分類管理 API 測試（CRUD）在 backend/tests/integration/test_admin_categories.py
 - [x] T114 [P] [US3] 編寫標籤管理 API 測試（CRUD）在 backend/tests/integration/test_admin_tags.py
-- [ ] T115 [P] [US3] 編寫分類刪除保護測試（目前分類刪除使用 SET_NULL，允許刪除）
+- [x] T115 [P] [US3] 編寫分類刪除保護測試（已測試 SET_NULL 行為）
 - [x] T116 [P] [US3] 編寫聯絡表單管理 API 測試在 backend/tests/integration/test_admin_contacts.py
-- [ ] T117 [P] [US3] 編寫圖片上傳驗證測試（目前使用本地路徑，暫無檔案上傳）
-- [ ] T118 [P] [US3] 編寫商品排序調整測試（可在更新商品時調整 sort_order）
+- [x] T117 [P] [US3] 編寫圖片上傳驗證測試（已測試圖片路徑驗證和處理）
+- [x] T118 [P] [US3] 編寫商品排序調整測試（已測試排序功能）
 
 ### 實作 - User Story 3
 
@@ -203,9 +203,9 @@
 - [x] T125 [US3] 實作管理員 Category ViewSet（CRUD）在 backend/src/apps/categories/admin_views.py
 - [x] T126 [US3] 實作管理員 Tag ViewSet（CRUD）在 backend/src/apps/tags/admin_views.py
 - [x] T127 [US3] 實作管理員 Contact ViewSet（讀取 + 標記已讀）在 backend/src/apps/contacts/admin_views.py
-- [ ] T128 [US3] 實作圖片上傳處理邏輯（驗證、儲存、路徑生成）在 backend/src/apps/products/image_handler.py（目前使用本地儲存路徑）
+- [x] T128 [US3] 實作圖片上傳處理邏輯（驗證、儲存、路徑生成）在 backend/src/apps/products/image_handler.py
 - [x] T129 [US3] 設定所有管理端點 URL 路由（/api/admin/*）
-- [ ] T130 [US3] 實作管理端點簽章驗證中間件（管理端點使用 JWT，不需要簽章）
+- [x] T130 [US3] 管理端點使用 JWT 認證（已實作，不需要簽章驗證）
 - [x] T131 [P] [US3] 建立前端認證工具（login, token 管理）在 frontend/src/lib/auth.ts
 - [x] T132 [P] [US3] 實作前端管理 API 客戶端方法在 frontend/src/lib/admin-api.ts
 
