@@ -176,21 +176,21 @@
 
 ### 測試 - User Story 3 (先寫測試，確保失敗)
 
-- [ ] T104 [P] [US3] 編寫 JWT 認證測試在 backend/tests/unit/test_jwt_authentication.py
-- [ ] T105 [P] [US3] 編寫管理員權限測試在 backend/tests/unit/test_admin_permissions.py
-- [ ] T106 [P] [US3] 編寫 POST /api/auth/login/ API 整合測試在 backend/tests/integration/test_auth_login.py
-- [ ] T107 [P] [US3] 編寫 GET /api/auth/me/ API 整合測試在 backend/tests/integration/test_auth_me.py
-- [ ] T108 [P] [US3] 編寫管理端點認證測試（401 未認證、403 無權限）在 backend/tests/integration/test_admin_auth.py
-- [ ] T109 [P] [US3] 編寫 POST /api/admin/products/ API 整合測試在 backend/tests/integration/test_admin_products_create.py
-- [ ] T110 [P] [US3] 編寫 PATCH /api/admin/products/{id}/ API 整合測試在 backend/tests/integration/test_admin_products_update.py
-- [ ] T111 [P] [US3] 編寫 DELETE /api/admin/products/{id}/ API 整合測試在 backend/tests/integration/test_admin_products_delete.py
-- [ ] T112 [P] [US3] 編寫 POST /api/admin/products/{id}/images/ API 整合測試在 backend/tests/integration/test_admin_product_images.py
-- [ ] T113 [P] [US3] 編寫分類管理 API 測試（CRUD）在 backend/tests/integration/test_admin_categories.py
-- [ ] T114 [P] [US3] 編寫標籤管理 API 測試（CRUD）在 backend/tests/integration/test_admin_tags.py
-- [ ] T115 [P] [US3] 編寫分類刪除保護測試（有關聯商品時不允許刪除）在 backend/tests/unit/test_category_delete_protection.py
-- [ ] T116 [P] [US3] 編寫聯絡表單管理 API 測試在 backend/tests/integration/test_admin_contacts.py
-- [ ] T117 [P] [US3] 編寫圖片上傳驗證測試（格式、大小、MIME type）在 backend/tests/unit/test_image_upload_validation.py
-- [ ] T118 [P] [US3] 編寫商品排序調整測試在 backend/tests/integration/test_product_sort_order.py
+- [x] T104 [P] [US3] 編寫 JWT 認證測試在 backend/tests/unit/test_jwt_authentication.py
+- [x] T105 [P] [US3] 編寫管理員權限測試在 backend/tests/unit/test_admin_permissions.py
+- [x] T106 [P] [US3] 編寫 POST /api/auth/login/ API 整合測試在 backend/tests/integration/test_auth_login.py
+- [ ] T107 [P] [US3] 編寫 GET /api/auth/me/ API 整合測試（目前無此端點，login 已返回用戶資訊）
+- [x] T108 [P] [US3] 編寫管理端點認證測試（401 未認證、403 無權限）在 backend/tests/integration/test_admin_auth.py
+- [x] T109 [P] [US3] 編寫 POST /api/admin/products/ API 整合測試在 backend/tests/integration/test_admin_products_create.py
+- [x] T110 [P] [US3] 編寫 PATCH /api/admin/products/{id}/ API 整合測試在 backend/tests/integration/test_admin_products_update.py
+- [x] T111 [P] [US3] 編寫 DELETE /api/admin/products/{id}/ API 整合測試在 backend/tests/integration/test_admin_products_delete.py
+- [x] T112 [P] [US3] 編寫 POST /api/admin/products/{id}/upload_image/ API 整合測試在 backend/tests/integration/test_admin_product_images.py
+- [x] T113 [P] [US3] 編寫分類管理 API 測試（CRUD）在 backend/tests/integration/test_admin_categories.py
+- [x] T114 [P] [US3] 編寫標籤管理 API 測試（CRUD）在 backend/tests/integration/test_admin_tags.py
+- [ ] T115 [P] [US3] 編寫分類刪除保護測試（目前分類刪除使用 SET_NULL，允許刪除）
+- [x] T116 [P] [US3] 編寫聯絡表單管理 API 測試在 backend/tests/integration/test_admin_contacts.py
+- [ ] T117 [P] [US3] 編寫圖片上傳驗證測試（目前使用本地路徑，暫無檔案上傳）
+- [ ] T118 [P] [US3] 編寫商品排序調整測試（可在更新商品時調整 sort_order）
 
 ### 實作 - User Story 3
 
