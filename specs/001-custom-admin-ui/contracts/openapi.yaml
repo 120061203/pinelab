@@ -1,0 +1,129 @@
+openapi: 3.0.3
+info:
+  title: Admin Portal API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /auth/login/:
+    post:
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200': { description: OK }
+  /admin/products/:
+    get:
+      summary: List products (admin)
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '201': { description: Created }
+  /admin/products/{id}/:
+    get:
+      summary: Retrieve product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+    patch:
+      summary: Update product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+  /admin/products/{id}/upload_image/:
+    post:
+      summary: Upload product image (file or URL)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+                image_url: { type: string }
+                is_primary: { type: boolean }
+                sort_order: { type: integer }
+      responses:
+        '200': { description: OK }
+  /admin/categories/:
+    get: { summary: List categories, responses: { '200': { description: OK } } }
+    post: { summary: Create category, responses: { '201': { description: Created } } }
+  /admin/tags/:
+    get: { summary: List tags, responses: { '200': { description: OK } } }
+    post: { summary: Create tag, responses: { '201': { description: Created } } }
+  /admin/contact/:
+    get: { summary: List contacts, responses: { '200': { description: OK } } }
+    post: { summary: Forbidden, responses: { '403': { description: Forbidden } } }
+  /admin/contact/{id}/mark_read/:
+    post: { summary: Mark contact read, responses: { '200': { description: OK } } }
+  /admin/dashboard/metrics/:
+    get:
+      summary: Dashboard metrics (30d by default)
+      parameters:
+        - in: query
+          name: range
+          schema: { type: string, example: 30d }
+      responses:
+        '200': { description: OK }
+components:
+  schemas:
+    ProductInput:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        price: { type: number, format: float }
+        sort_order: { type: integer }
+        category_id: { type: integer, nullable: true }
+        tag_ids:
+          type: array
+          items: { type: integer }
+        is_active: { type: boolean }
