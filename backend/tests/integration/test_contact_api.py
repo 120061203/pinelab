@@ -3,6 +3,7 @@ POST /api/contact/ API 整合測試（含簽章驗證）
 """
 import pytest
 from django.utils import timezone
+from apps.contacts.models import Contact
 from core.signatures import generate_signature
 from django.conf import settings
 

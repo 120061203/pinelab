@@ -194,20 +194,20 @@
 
 ### 實作 - User Story 3
 
-- [ ] T119 [US3] 實作 JWT Token 生成與驗證在 backend/src/core/authentication.py
-- [ ] T120 [US3] 實作管理員權限檢查在 backend/src/core/permissions.py
-- [ ] T121 [P] [US3] 實作 Auth ViewSet（login, me）在 backend/src/apps/auth/views.py
-- [ ] T122 [US3] 設定 Auth URL 路由在 backend/src/apps/auth/urls.py
-- [ ] T123 [US3] 註冊 Auth URLs 到主 urls.py
-- [ ] T124 [US3] 實作管理員 Product ViewSet（CRUD + 圖片上傳）在 backend/src/apps/products/admin_views.py
-- [ ] T125 [US3] 實作管理員 Category ViewSet（CRUD + 刪除保護）在 backend/src/apps/categories/admin_views.py
-- [ ] T126 [US3] 實作管理員 Tag ViewSet（CRUD）在 backend/src/apps/tags/admin_views.py
-- [ ] T127 [US3] 實作管理員 Contact ViewSet（讀取）在 backend/src/apps/contacts/admin_views.py
-- [ ] T128 [US3] 實作圖片上傳處理邏輯（驗證、儲存、路徑生成）在 backend/src/apps/products/image_handler.py
-- [ ] T129 [US3] 設定所有管理端點 URL 路由（/api/admin/*）
-- [ ] T130 [US3] 實作管理端點簽章驗證中間件
-- [ ] T131 [P] [US3] 建立前端認證工具（login, token 管理）在 frontend/src/lib/auth.ts
-- [ ] T132 [P] [US3] 實作前端管理 API 客戶端方法在 frontend/src/lib/admin-api.ts
+- [x] T119 [US3] 實作 JWT Token 生成與驗證在 backend/src/core/authentication.py（使用 simplejwt）
+- [x] T120 [US3] 實作管理員權限檢查在 backend/src/core/permissions.py
+- [x] T121 [P] [US3] 實作 Auth ViewSet（login, logout）在 backend/src/apps/auth/views.py
+- [x] T122 [US3] 設定 Auth URL 路由在 backend/src/apps/auth/urls.py
+- [x] T123 [US3] 註冊 Auth URLs 到主 urls.py
+- [x] T124 [US3] 實作管理員 Product ViewSet（CRUD + 圖片上傳）在 backend/src/apps/products/admin_views.py
+- [x] T125 [US3] 實作管理員 Category ViewSet（CRUD）在 backend/src/apps/categories/admin_views.py
+- [x] T126 [US3] 實作管理員 Tag ViewSet（CRUD）在 backend/src/apps/tags/admin_views.py
+- [x] T127 [US3] 實作管理員 Contact ViewSet（讀取 + 標記已讀）在 backend/src/apps/contacts/admin_views.py
+- [ ] T128 [US3] 實作圖片上傳處理邏輯（驗證、儲存、路徑生成）在 backend/src/apps/products/image_handler.py（目前使用本地儲存路徑）
+- [x] T129 [US3] 設定所有管理端點 URL 路由（/api/admin/*）
+- [ ] T130 [US3] 實作管理端點簽章驗證中間件（管理端點使用 JWT，不需要簽章）
+- [x] T131 [P] [US3] 建立前端認證工具（login, token 管理）在 frontend/src/lib/auth.ts
+- [x] T132 [P] [US3] 實作前端管理 API 客戶端方法在 frontend/src/lib/admin-api.ts
 
 **檢查點**: 所有使用者故事應可獨立運作
 

@@ -2,9 +2,10 @@
 認證 URLs
 """
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView
+from .views import login, logout
 
 urlpatterns = [
-    # JWT Token 獲取端點將在後續實作
+    path('auth/login/', login, name='login'),
+    path('auth/logout/', logout, name='logout'),
 ]
 
