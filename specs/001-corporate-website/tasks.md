@@ -19,16 +19,16 @@
 
 **目的**: 專案初始化與基本結構建立
 
-- [ ] T001 建立專案目錄結構（backend/, frontend/, infra/, db/）
-- [ ] T002 初始化後端 Django 專案結構在 backend/src/pinelab/
-- [ ] T003 [P] 建立後端 requirements.txt 包含 Django 4.2+, DRF, pytest, pytest-django
-- [ ] T004 [P] 初始化前端 Next.js 專案在 frontend/ 使用 TypeScript 模板
+- [x] T001 建立專案目錄結構（backend/, frontend/, infra/, db/）
+- [x] T002 初始化後端 Django 專案結構在 backend/src/pinelab/
+- [x] T003 [P] 建立後端 requirements.txt 包含 Django 4.2+, DRF, pytest, pytest-django
+- [x] T004 [P] 初始化前端 Next.js 專案在 frontend/ 使用 TypeScript 模板
 - [ ] T005 [P] 配置後端 .env.example 與環境變數管理
 - [ ] T006 [P] 配置前端 .env.example 與環境變數管理
-- [ ] T007 [P] 設定後端 pytest.ini 和測試配置
-- [ ] T008 [P] 設定前端 Jest 和 React Testing Library 配置
-- [ ] T009 建立 Docker Compose 開發環境配置在 infra/docker-compose.yml
-- [ ] T010 建立 .gitignore 排除不需要的檔案
+- [x] T007 [P] 設定後端 pytest.ini 和測試配置
+- [x] T008 [P] 設定前端 Jest 和 React Testing Library 配置
+- [x] T009 建立 Docker Compose 開發環境配置在 infra/docker-compose.yml
+- [x] T010 建立 .gitignore 排除不需要的檔案
 
 ---
 
@@ -38,20 +38,20 @@
 
 **⚠️ 關鍵**: 此階段未完成前，無法開始任何使用者故事
 
-- [ ] T011 設定 PostgreSQL 資料庫連線與 Django settings.py 資料庫配置
-- [ ] T012 [P] 建立 Django apps 目錄結構（auth/, products/, categories/, tags/, contacts/）
-- [ ] T013 [P] 實作 Django User 模型擴充（使用 Django AbstractUser）
-- [ ] T014 [P] 實作核心 HMAC-SHA256 簽章驗證模組在 backend/src/core/signatures.py
-- [ ] T015 [P] 實作 JWT 認證中間件在 backend/src/core/authentication.py
-- [ ] T016 [P] 實作權限控制模組在 backend/src/core/permissions.py
-- [ ] T017 設定 Django REST Framework 全域配置與回應格式
-- [ ] T018 設定 CORS 配置（django-cors-headers）支援前端跨域請求
-- [ ] T019 設定媒體檔案儲存配置（MEDIA_ROOT, MEDIA_URL）
-- [ ] T020 建立基礎錯誤處理與例外處理機制
-- [ ] T021 [P] 建立基礎測試工具類別（TestClient, 測試 Fixture）在 backend/tests/conftest.py
-- [ ] T022 [P] 建立前端 API 客戶端基礎結構在 frontend/src/lib/api.ts
-- [ ] T023 [P] 建立前端簽章生成工具在 frontend/src/lib/signatures.ts
-- [ ] T024 建立資料庫遷移框架與初始遷移
+- [x] T011 設定 PostgreSQL 資料庫連線與 Django settings.py 資料庫配置
+- [x] T012 [P] 建立 Django apps 目錄結構（auth/, products/, categories/, tags/, contacts/）
+- [x] T013 [P] 實作 Django User 模型擴充（使用 Django AbstractUser）
+- [x] T014 [P] 實作核心 HMAC-SHA256 簽章驗證模組在 backend/src/core/signatures.py
+- [x] T015 [P] 實作 JWT 認證中間件在 backend/src/core/authentication.py
+- [x] T016 [P] 實作權限控制模組在 backend/src/core/permissions.py
+- [x] T017 設定 Django REST Framework 全域配置與回應格式
+- [x] T018 設定 CORS 配置（django-cors-headers）支援前端跨域請求
+- [x] T019 設定媒體檔案儲存配置（MEDIA_ROOT, MEDIA_URL）
+- [x] T020 建立基礎錯誤處理與例外處理機制
+- [x] T021 [P] 建立基礎測試工具類別（TestClient, 測試 Fixture）在 backend/tests/conftest.py
+- [x] T022 [P] 建立前端 API 客戶端基礎結構在 frontend/src/lib/api.ts
+- [x] T023 [P] 建立前端簽章生成工具在 frontend/src/lib/signatures.ts
+- [x] T024 建立資料庫遷移框架與初始遷移
 
 **檢查點**: 基礎設施就緒 - 使用者故事實作現在可以開始
 
@@ -65,64 +65,64 @@
 
 ### 測試 - User Story 1 (先寫測試，確保失敗)
 
-- [ ] T025 [P] [US1] 編寫 Category 模型單元測試在 backend/tests/unit/test_category_model.py
-- [ ] T026 [P] [US1] 編寫 Tag 模型單元測試在 backend/tests/unit/test_tag_model.py
-- [ ] T027 [P] [US1] 編寫 Product 模型單元測試在 backend/tests/unit/test_product_model.py
-- [ ] T028 [P] [US1] 編寫 ProductImage 模型單元測試在 backend/tests/unit/test_product_image_model.py
-- [ ] T029 [P] [US1] 編寫 ProductTag 關聯模型單元測試在 backend/tests/unit/test_product_tag_model.py
-- [ ] T030 [P] [US1] 編寫 Category Serializer 測試在 backend/tests/unit/test_category_serializer.py
-- [ ] T031 [P] [US1] 編寫 Tag Serializer 測試在 backend/tests/unit/test_tag_serializer.py
-- [ ] T032 [P] [US1] 編寫 Product Serializer 測試在 backend/tests/unit/test_product_serializer.py
-- [ ] T033 [P] [US1] 編寫 GET /api/categories/ API 整合測試在 backend/tests/integration/test_categories_api.py
-- [ ] T034 [P] [US1] 編寫 GET /api/tags/ API 整合測試在 backend/tests/integration/test_tags_api.py
-- [ ] T035 [P] [US1] 編寫 GET /api/products/ API 整合測試（含篩選、搜尋、排序）在 backend/tests/integration/test_products_api.py
-- [ ] T036 [P] [US1] 編寫 GET /api/products/{id}/ API 整合測試在 backend/tests/integration/test_product_detail_api.py
-- [ ] T037 [P] [US1] 編寫商品篩選邏輯單元測試（分類、標籤、價格區間）在 backend/tests/unit/test_product_filters.py
-- [ ] T038 [P] [US1] 編寫商品搜尋邏輯單元測試在 backend/tests/unit/test_product_search.py
-- [ ] T039 [P] [US1] 編寫相關商品推薦邏輯測試在 backend/tests/unit/test_product_recommendations.py
-- [ ] T040 [P] [US1] 編寫首頁元件測試在 frontend/tests/unit/components/HomePage.test.tsx
-- [ ] T041 [P] [US1] 編寫商品列表頁元件測試在 frontend/tests/unit/components/ProductList.test.tsx
-- [ ] T042 [P] [US1] 編寫商品詳情頁元件測試在 frontend/tests/unit/components/ProductDetail.test.tsx
-- [ ] T043 [P] [US1] 編寫 ProductCard 元件測試在 frontend/tests/unit/components/ProductCard.test.tsx
-- [ ] T044 [P] [US1] 編寫 ProductFilter 元件測試在 frontend/tests/unit/components/ProductFilter.test.tsx
-- [ ] T045 [P] [US1] 編寫 API 客戶端測試（商品列表、詳情）在 frontend/tests/unit/lib/api.test.ts
-- [ ] T046 [P] [US1] 編寫首頁整合測試（E2E）在 frontend/tests/integration/pages/home.test.tsx
-- [ ] T047 [P] [US1] 編寫商品列表頁整合測試在 frontend/tests/integration/pages/products.test.tsx
-- [ ] T048 [P] [US1] 編寫商品詳情頁整合測試在 frontend/tests/integration/pages/product-detail.test.tsx
+- [x] T025 [P] [US1] 編寫 Category 模型單元測試在 backend/tests/unit/test_category_model.py
+- [x] T026 [P] [US1] 編寫 Tag 模型單元測試在 backend/tests/unit/test_tag_model.py
+- [x] T027 [P] [US1] 編寫 Product 模型單元測試在 backend/tests/unit/test_product_model.py
+- [x] T028 [P] [US1] 編寫 ProductImage 模型單元測試在 backend/tests/unit/test_product_image_model.py
+- [x] T029 [P] [US1] 編寫 ProductTag 關聯模型單元測試在 backend/tests/unit/test_product_tag_model.py
+- [x] T030 [P] [US1] 編寫 Category Serializer 測試在 backend/tests/unit/test_category_serializer.py
+- [x] T031 [P] [US1] 編寫 Tag Serializer 測試在 backend/tests/unit/test_tag_serializer.py
+- [x] T032 [P] [US1] 編寫 Product Serializer 測試在 backend/tests/unit/test_product_serializer.py
+- [x] T033 [P] [US1] 編寫 GET /api/categories/ API 整合測試在 backend/tests/integration/test_categories_api.py
+- [x] T034 [P] [US1] 編寫 GET /api/tags/ API 整合測試在 backend/tests/integration/test_tags_api.py
+- [x] T035 [P] [US1] 編寫 GET /api/products/ API 整合測試（含篩選、搜尋、排序）在 backend/tests/integration/test_products_api.py
+- [x] T036 [P] [US1] 編寫 GET /api/products/{id}/ API 整合測試在 backend/tests/integration/test_product_detail_api.py
+- [x] T037 [P] [US1] 編寫商品篩選邏輯單元測試（分類、標籤、價格區間）在 backend/tests/unit/test_product_filters.py
+- [x] T038 [P] [US1] 編寫商品搜尋邏輯單元測試在 backend/tests/unit/test_product_search.py
+- [x] T039 [P] [US1] 編寫相關商品推薦邏輯測試在 backend/tests/unit/test_product_recommendations.py
+- [x] T040 [P] [US1] 編寫首頁元件測試在 frontend/tests/unit/components/HomePage.test.tsx
+- [x] T041 [P] [US1] 編寫商品列表頁元件測試在 frontend/tests/unit/components/ProductList.test.tsx
+- [x] T042 [P] [US1] 編寫商品詳情頁元件測試在 frontend/tests/unit/components/ProductDetail.test.tsx
+- [x] T043 [P] [US1] 編寫 ProductCard 元件測試在 frontend/tests/unit/components/ProductCard.test.tsx
+- [x] T044 [P] [US1] 編寫 ProductFilter 元件測試在 frontend/tests/unit/components/ProductFilter.test.tsx
+- [x] T045 [P] [US1] 編寫 API 客戶端測試（商品列表、詳情）在 frontend/tests/unit/lib/api.test.ts
+- [x] T046 [P] [US1] 編寫首頁整合測試（E2E）在 frontend/tests/integration/pages/home.test.tsx
+- [x] T047 [P] [US1] 編寫商品列表頁整合測試在 frontend/tests/integration/pages/products.test.tsx
+- [x] T048 [P] [US1] 編寫商品詳情頁整合測試在 frontend/tests/integration/pages/product-detail.test.tsx
 
 ### 實作 - User Story 1
 
-- [ ] T049 [P] [US1] 建立 Category 模型在 backend/src/apps/categories/models.py
-- [ ] T050 [P] [US1] 建立 Tag 模型在 backend/src/apps/tags/models.py
-- [ ] T051 [US1] 建立 Product 模型在 backend/src/apps/products/models.py（依賴 T049）
-- [ ] T052 [US1] 建立 ProductImage 模型在 backend/src/apps/products/models.py（依賴 T051）
-- [ ] T053 [US1] 建立 ProductTag 關聯模型在 backend/src/apps/products/models.py（依賴 T050, T051）
-- [ ] T054 [US1] 建立資料庫遷移檔案並執行遷移
-- [ ] T055 [P] [US1] 實作 Category Serializer 在 backend/src/apps/categories/serializers.py
-- [ ] T056 [P] [US1] 實作 Tag Serializer 在 backend/src/apps/tags/serializers.py
-- [ ] T057 [US1] 實作 Product Serializer 在 backend/src/apps/products/serializers.py（依賴 T055, T056）
-- [ ] T058 [P] [US1] 實作 Category ViewSet 在 backend/src/apps/categories/views.py
-- [ ] T059 [P] [US1] 實作 Tag ViewSet 在 backend/src/apps/tags/views.py
-- [ ] T060 [US1] 實作 Product FilterSet 支援分類、標籤、價格、搜尋在 backend/src/apps/products/filters.py
-- [ ] T061 [US1] 實作 Product ViewSet 在 backend/src/apps/products/views.py（依賴 T057, T060）
-- [ ] T062 [US1] 設定 Category URL 路由在 backend/src/apps/categories/urls.py
-- [ ] T063 [US1] 設定 Tag URL 路由在 backend/src/apps/tags/urls.py
-- [ ] T064 [US1] 設定 Product URL 路由在 backend/src/apps/products/urls.py
-- [ ] T065 [US1] 註冊所有 apps URLs 到主 urls.py
-- [ ] T066 [P] [US1] 建立前端 TypeScript 型別定義（Product, Category, Tag）在 frontend/src/types/product.ts, category.ts, tag.ts
-- [ ] T067 [P] [US1] 實作 API 客戶端方法（getProducts, getProduct, getCategories, getTags）在 frontend/src/lib/api.ts
-- [ ] T068 [P] [US1] 建立首頁元件在 frontend/src/app/page.tsx
-- [ ] T069 [P] [US1] 建立商品列表頁在 frontend/src/app/products/page.tsx
-- [ ] T070 [P] [US1] 建立商品詳情頁在 frontend/src/app/products/[id]/page.tsx
-- [ ] T071 [P] [US1] 建立 ProductCard 元件在 frontend/src/components/ProductCard.tsx
-- [ ] T072 [P] [US1] 建立 ProductFilter 元件在 frontend/src/components/ProductFilter.tsx
-- [ ] T073 [US1] 建立相關商品推薦元件在 frontend/src/components/RelatedProducts.tsx
-- [ ] T074 [US1] 實作首頁最新商品顯示邏輯（最多 6 筆，依更新時間）
-- [ ] T075 [US1] 實作商品列表篩選功能（分類、標籤、價格區間）
-- [ ] T076 [US1] 實作商品搜尋功能（提交後搜尋模式）
-- [ ] T077 [US1] 實作商品排序功能（sort_order 或 updated_at）
-- [ ] T078 [US1] 實作商品詳情頁相關商品推薦邏輯
-- [ ] T079 [US1] 實作響應式設計（桌面 4 欄、平板 2 欄、手機 1 欄）
+- [x] T049 [P] [US1] 建立 Category 模型在 backend/src/apps/categories/models.py
+- [x] T050 [P] [US1] 建立 Tag 模型在 backend/src/apps/tags/models.py
+- [x] T051 [US1] 建立 Product 模型在 backend/src/apps/products/models.py（依賴 T049）
+- [x] T052 [US1] 建立 ProductImage 模型在 backend/src/apps/products/models.py（依賴 T051）
+- [x] T053 [US1] 建立 ProductTag 關聯模型在 backend/src/apps/products/models.py（依賴 T050, T051）
+- [x] T054 [US1] 建立資料庫遷移檔案並執行遷移
+- [x] T055 [P] [US1] 實作 Category Serializer 在 backend/src/apps/categories/serializers.py
+- [x] T056 [P] [US1] 實作 Tag Serializer 在 backend/src/apps/tags/serializers.py
+- [x] T057 [US1] 實作 Product Serializer 在 backend/src/apps/products/serializers.py（依賴 T055, T056）
+- [x] T058 [P] [US1] 實作 Category ViewSet 在 backend/src/apps/categories/views.py
+- [x] T059 [P] [US1] 實作 Tag ViewSet 在 backend/src/apps/tags/views.py
+- [x] T060 [US1] 實作 Product FilterSet 支援分類、標籤、價格、搜尋在 backend/src/apps/products/filters.py
+- [x] T061 [US1] 實作 Product ViewSet 在 backend/src/apps/products/views.py（依賴 T057, T060）
+- [x] T062 [US1] 設定 Category URL 路由在 backend/src/apps/categories/urls.py
+- [x] T063 [US1] 設定 Tag URL 路由在 backend/src/apps/tags/urls.py
+- [x] T064 [US1] 設定 Product URL 路由在 backend/src/apps/products/urls.py
+- [x] T065 [US1] 註冊所有 apps URLs 到主 urls.py
+- [x] T066 [P] [US1] 建立前端 TypeScript 型別定義（Product, Category, Tag）在 frontend/src/types/product.ts, category.ts, tag.ts
+- [x] T067 [P] [US1] 實作 API 客戶端方法（getProducts, getProduct, getCategories, getTags）在 frontend/src/lib/api.ts
+- [x] T068 [P] [US1] 建立首頁元件在 frontend/src/app/page.tsx
+- [x] T069 [P] [US1] 建立商品列表頁在 frontend/src/app/products/page.tsx
+- [x] T070 [P] [US1] 建立商品詳情頁在 frontend/src/app/products/[id]/page.tsx
+- [x] T071 [P] [US1] 建立 ProductCard 元件在 frontend/src/components/ProductCard.tsx
+- [x] T072 [P] [US1] 建立 ProductFilter 元件在 frontend/src/components/ProductFilter.tsx
+- [x] T073 [US1] 建立相關商品推薦元件在 frontend/src/components/RelatedProducts.tsx
+- [x] T074 [US1] 實作首頁最新商品顯示邏輯（最多 6 筆，依更新時間）
+- [x] T075 [US1] 實作商品列表篩選功能（分類、標籤、價格區間）
+- [x] T076 [US1] 實作商品搜尋功能（提交後搜尋模式）
+- [x] T077 [US1] 實作商品排序功能（sort_order 或 updated_at）
+- [x] T078 [US1] 實作商品詳情頁相關商品推薦邏輯
+- [x] T079 [US1] 實作響應式設計（桌面 4 欄、平板 2 欄、手機 1 欄）
 
 **檢查點**: User Story 1 應可完整運作並獨立測試
 
@@ -136,33 +136,33 @@
 
 ### 測試 - User Story 2 (先寫測試，確保失敗)
 
-- [ ] T080 [P] [US2] 編寫 Contact 模型單元測試在 backend/tests/unit/test_contact_model.py
-- [ ] T081 [P] [US2] 編寫 Contact Serializer 測試（含驗證規則）在 backend/tests/unit/test_contact_serializer.py
-- [ ] T082 [P] [US2] 編寫 POST /api/contact/ API 整合測試（含簽章驗證）在 backend/tests/integration/test_contact_api.py
-- [ ] T083 [P] [US2] 編寫聯絡表單驗證測試（必填欄位、Email 格式、訊息長度）在 backend/tests/unit/test_contact_validation.py
-- [ ] T084 [P] [US2] 編寫 HMAC-SHA256 簽章驗證測試在 backend/tests/unit/test_signature_validation.py
-- [ ] T085 [P] [US2] 編寫 ContactForm 元件測試在 frontend/tests/unit/components/ContactForm.test.tsx
-- [ ] T086 [P] [US2] 編寫表單驗證邏輯測試在 frontend/tests/unit/lib/form-validation.test.ts
-- [ ] T087 [P] [US2] 編寫聯絡表單 API 呼叫測試在 frontend/tests/unit/lib/api-contact.test.ts
-- [ ] T088 [P] [US2] 編寫聯絡頁面整合測試在 frontend/tests/integration/pages/contact.test.tsx
-- [ ] T089 [P] [US2] 編寫簽章生成功能測試在 frontend/tests/unit/lib/signatures.test.ts
+- [x] T080 [P] [US2] 編寫 Contact 模型單元測試在 backend/tests/unit/test_contact_model.py
+- [x] T081 [P] [US2] 編寫 Contact Serializer 測試（含驗證規則）在 backend/tests/unit/test_contact_serializer.py
+- [x] T082 [P] [US2] 編寫 POST /api/contact/ API 整合測試（含簽章驗證）在 backend/tests/integration/test_contact_api.py
+- [x] T083 [P] [US2] 編寫聯絡表單驗證測試（必填欄位、Email 格式、訊息長度）在 backend/tests/unit/test_contact_serializer.py
+- [x] T084 [P] [US2] 編寫 HMAC-SHA256 簽章驗證測試在 backend/tests/unit/test_signature_validation.py
+- [x] T085 [P] [US2] 編寫 ContactForm 元件測試在 frontend/tests/unit/components/ContactForm.test.tsx
+- [x] T086 [P] [US2] 編寫表單驗證邏輯測試在 frontend/tests/unit/lib/form-validation.test.ts
+- [x] T087 [P] [US2] 編寫聯絡表單 API 呼叫測試在 frontend/tests/unit/lib/api-contact.test.ts
+- [x] T088 [P] [US2] 編寫聯絡頁面整合測試在 frontend/tests/integration/pages/contact.test.tsx
+- [x] T089 [P] [US2] 編寫簽章生成功能測試在 frontend/tests/unit/lib/signatures.test.ts
 
 ### 實作 - User Story 2
 
-- [ ] T090 [P] [US2] 建立 Contact 模型在 backend/src/apps/contacts/models.py
-- [ ] T091 [US2] 建立資料庫遷移檔案並執行遷移
-- [ ] T092 [P] [US2] 實作 Contact Serializer 含驗證規則在 backend/src/apps/contacts/serializers.py
-- [ ] T093 [US2] 實作 Contact ViewSet 含簽章驗證在 backend/src/apps/contacts/views.py
-- [ ] T094 [US2] 設定 Contact URL 路由在 backend/src/apps/contacts/urls.py
-- [ ] T095 [US2] 註冊 Contact URLs 到主 urls.py
-- [ ] T096 [P] [US2] 建立前端 Contact TypeScript 型別定義在 frontend/src/types/contact.ts
-- [ ] T097 [P] [US2] 實作 API 客戶端 submitContact 方法在 frontend/src/lib/api.ts
-- [ ] T098 [P] [US2] 實作前端表單驗證工具在 frontend/src/lib/form-validation.ts
-- [ ] T099 [P] [US2] 建立聯絡頁面在 frontend/src/app/contact/page.tsx
-- [ ] T100 [P] [US2] 建立 ContactForm 元件在 frontend/src/components/ContactForm.tsx
-- [ ] T101 [US2] 實作表單提交與簽章生成邏輯
-- [ ] T102 [US2] 實作表單驗證與錯誤訊息顯示
-- [ ] T103 [US2] 實作成功提交後的確認訊息
+- [x] T090 [P] [US2] 建立 Contact 模型在 backend/src/apps/contacts/models.py
+- [x] T091 [US2] 建立資料庫遷移檔案並執行遷移
+- [x] T092 [P] [US2] 實作 Contact Serializer 含驗證規則在 backend/src/apps/contacts/serializers.py
+- [x] T093 [US2] 實作 Contact ViewSet 含簽章驗證在 backend/src/apps/contacts/views.py
+- [x] T094 [US2] 設定 Contact URL 路由在 backend/src/apps/contacts/urls.py
+- [x] T095 [US2] 註冊 Contact URLs 到主 urls.py
+- [x] T096 [P] [US2] 建立前端 Contact TypeScript 型別定義在 frontend/src/types/contact.ts
+- [x] T097 [P] [US2] 實作 API 客戶端 submitContact 方法在 frontend/src/lib/api.ts
+- [x] T098 [P] [US2] 實作前端表單驗證工具在 frontend/src/components/ContactForm.tsx
+- [x] T099 [P] [US2] 建立聯絡頁面在 frontend/src/app/contact/page.tsx
+- [x] T100 [P] [US2] 建立 ContactForm 元件在 frontend/src/components/ContactForm.tsx
+- [x] T101 [US2] 實作表單提交與簽章生成邏輯
+- [x] T102 [US2] 實作表單驗證與錯誤訊息顯示
+- [x] T103 [US2] 實作成功提交後的確認訊息
 
 **檢查點**: User Stories 1 和 2 應可獨立運作
 
