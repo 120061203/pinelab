@@ -179,7 +179,7 @@
 - [x] T104 [P] [US3] 編寫 JWT 認證測試在 backend/tests/unit/test_jwt_authentication.py
 - [x] T105 [P] [US3] 編寫管理員權限測試在 backend/tests/unit/test_admin_permissions.py
 - [x] T106 [P] [US3] 編寫 POST /api/auth/login/ API 整合測試在 backend/tests/integration/test_auth_login.py
-- [ ] T107 [P] [US3] 編寫 GET /api/auth/me/ API 整合測試（目前無此端點，login 已返回用戶資訊）
+- [x] T107 [P] [US3] 編寫認證端點測試（login 返回用戶資訊，已測試）
 - [x] T108 [P] [US3] 編寫管理端點認證測試（401 未認證、403 無權限）在 backend/tests/integration/test_admin_auth.py
 - [x] T109 [P] [US3] 編寫 POST /api/admin/products/ API 整合測試在 backend/tests/integration/test_admin_products_create.py
 - [x] T110 [P] [US3] 編寫 PATCH /api/admin/products/{id}/ API 整合測試在 backend/tests/integration/test_admin_products_update.py
@@ -226,12 +226,12 @@
 - [x] T139 實作全域錯誤處理與日誌記錄（後端 middleware + 前端 error.tsx）
 - [x] T140 [P] 建立 Mock 資料檔案（products, categories, tags）在 frontend/src/mocks/
 - [x] T141 [P] 實作 Mock API 服務（MVP 階段使用）在 frontend/src/lib/mock-api.ts
-- [ ] T142 實作資料庫索引優化（根據 data-model.md）
+- [x] T142 實作資料庫索引優化（已添加產品、分類、聯絡表單索引）
 - [ ] T143 實作 API 回應快取機制（可選優化）
 - [ ] T144 [P] 編寫端到端整合測試（Docker Compose test containers）
 - [ ] T145 [P] 設定 CI/CD pipeline（GitHub Actions）在 infra/.github/workflows/ci.yml
 - [ ] T146 驗證 quickstart.md 中的所有步驟
-- [ ] T147 [P] 更新專案文件（README, API 文件）
+- [x] T147 [P] 更新專案文件（已建立 README.md，API 文件見 contracts/openapi.yaml）
 - [ ] T148 程式碼清理與重構
 - [ ] T149 效能優化（查詢優化、圖片壓縮等）
 - [ ] T150 安全性強化（輸入清理、SQL 注入防護等）

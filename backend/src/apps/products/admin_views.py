@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Product
 from .admin_serializers import ProductAdminSerializer
+from .image_handler import validate_image_url, clean_image_url
 from core.permissions import IsAdminUser
 
 
@@ -41,10 +42,19 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
                 'message': '請提供圖片 URL',
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        # 驗證並清理圖片 URL
+        cleaned_url = clean_image_url(image_url)
+        if not validate_image_url(cleaned_url):
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_IMAGE_URL',
+                'message': '無效的圖片 URL 格式',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         from .models import ProductImage
         image = ProductImage.objects.create(
             product=product,
-            image_url=image_url,
+            image_url=cleaned_url,
             sort_order=sort_order,
             is_primary=is_primary
         )
