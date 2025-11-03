@@ -23,8 +23,8 @@
 - [x] T002 初始化後端 Django 專案結構在 backend/src/pinelab/
 - [x] T003 [P] 建立後端 requirements.txt 包含 Django 4.2+, DRF, pytest, pytest-django
 - [x] T004 [P] 初始化前端 Next.js 專案在 frontend/ 使用 TypeScript 模板
-- [ ] T005 [P] 配置後端 .env.example 與環境變數管理
-- [ ] T006 [P] 配置前端 .env.example 與環境變數管理
+- [x] T005 [P] 配置後端 .env.example 與環境變數管理
+- [x] T006 [P] 配置前端 .env.example 與環境變數管理
 - [x] T007 [P] 設定後端 pytest.ini 和測試配置
 - [x] T008 [P] 設定前端 Jest 和 React Testing Library 配置
 - [x] T009 建立 Docker Compose 開發環境配置在 infra/docker-compose.yml
@@ -224,8 +224,8 @@
 - [x] T137 [P] 實作 404 錯誤頁面在 frontend/src/app/not-found.tsx
 - [x] T138 [P] 實作載入狀態元件在 frontend/src/app/loading.tsx
 - [x] T139 實作全域錯誤處理與日誌記錄（後端 middleware + 前端 error.tsx）
-- [ ] T140 [P] 建立 Mock 資料檔案（products, categories, tags）在 frontend/src/mocks/
-- [ ] T141 [P] 實作 Mock API 服務（MVP 階段使用）在 frontend/src/lib/mock-api.ts
+- [x] T140 [P] 建立 Mock 資料檔案（products, categories, tags）在 frontend/src/mocks/
+- [x] T141 [P] 實作 Mock API 服務（MVP 階段使用）在 frontend/src/lib/mock-api.ts
 - [ ] T142 實作資料庫索引優化（根據 data-model.md）
 - [ ] T143 實作 API 回應快取機制（可選優化）
 - [ ] T144 [P] 編寫端到端整合測試（Docker Compose test containers）

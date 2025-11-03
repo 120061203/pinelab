@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'pinelab.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'pinelab'),
+        'NAME': os.getenv('DB_NAME', 'pinelab_db'),
         'USER': os.getenv('DB_USER', 'pinelab_user'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'pinelab_password'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
