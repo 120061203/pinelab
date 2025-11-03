@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { adminGetProducts } from "@/lib/admin-api";
 import { Table, Th, Td, Pagination } from "@/components/admin/table/Table";
+import FilterBar, { Filters } from "@/components/admin/filters/FilterBar";
+import { useUrlState } from "@/lib/url-state";
 
 type ProductRow = {
   id: number;
@@ -17,15 +19,24 @@ export default function AdminProductsPage() {
   const [items, setItems] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const { getAll, setAll } = useUrlState();
+  const initQuery = getAll();
+  const [search, setSearch] = useState(initQuery.keywords || "");
+  const [filters, setFilters] = useState<Filters>({
+    keywords: initQuery.keywords,
+    category: initQuery.category,
+    tag: initQuery.tag,
+    min_price: initQuery.min_price,
+    max_price: initQuery.max_price,
+  });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const load = async (pageNum = 1, q = "") => {
+  const load = async (pageNum = 1, q = "", f: Filters = {}) => {
     setLoading(true);
     setError(null);
     try {
-      const res: any = await adminGetProducts({ page: pageNum, search: q });
+      const res: any = await adminGetProducts({ page: pageNum, search: q, ...f });
       if (res?.status === "success") {
         const data = res.data || res.results || [];
         setItems(data as ProductRow[]);
@@ -41,12 +52,13 @@ export default function AdminProductsPage() {
     }
   };
 
-  useEffect(() => { load(page, search); }, [page]);
+  useEffect(() => { load(page, search, filters); }, [page]);
 
-  const onSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onApplyFilters = (f: Filters) => {
+    setFilters(f);
+    setAll({ ...f, page: 1 });
     setPage(1);
-    load(1, search);
+    load(1, f.keywords || "", f);
   };
 
   return (
@@ -56,10 +68,7 @@ export default function AdminProductsPage() {
         <Link href="/admin-portal/products/new" className="px-3 py-2 bg-black text-white rounded text-sm">新增商品</Link>
       </div>
 
-      <form onSubmit={onSearch} className="flex gap-2">
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="搜尋名稱" className="border rounded px-3 py-2" />
-        <button className="px-3 py-2 border rounded" type="submit">搜尋</button>
-      </form>
+      <FilterBar initial={filters} onApply={onApplyFilters} />
 
       {loading ? (
         <div>載入中…</div>

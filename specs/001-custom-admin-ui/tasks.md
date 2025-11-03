@@ -81,8 +81,8 @@ Contracts: ./contracts/openapi.yaml
 
 ## 第 7 階段：使用者故事 5 - 清單搜尋/篩選/排序 (P3)
 
-- [ ] T031 [US5] 共用篩選列（關鍵字/分類/標籤/價格）於 frontend/src/components/admin/filters/FilterBar.tsx
-- [ ] T032 [US5] 將篩選條件保存到 URL Query 於 frontend/src/lib/url-state.ts
+ - [x] T031 [US5] 共用篩選列（關鍵字/分類/標籤/價格）於 frontend/src/components/admin/filters/FilterBar.tsx
+ - [x] T032 [US5] 將篩選條件保存到 URL Query 於 frontend/src/lib/url-state.ts
 
 驗收標準（可獨立驗收）：
 - 搜尋/篩選/排序可用，刷新仍保留狀態。
