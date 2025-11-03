@@ -48,7 +48,13 @@
 - ✅ 需要 Auth 功能（僅管理員後台，不需使用者後台）
 - ❌ 暫時不需要 AI 推薦功能
 - ✅ 前端使用 Mock 資料進行開發
-- ✅ 所有 API 請求需實作 MD5 簽章驗證（不含登入/註冊端點）  
+- ✅ 所有 API 請求需實作 MD5 簽章驗證（不含登入/註冊端點）
+- ✅ 管理員後台先做 API，界面暫不實作
+
+**開發優先順序：**
+1. 後端 API（Django）- 優先實作
+2. 前端頁面（使用 Mock 資料）
+3. 整合測試  
 ---
 ## 🧠 模組細化規格
 
@@ -75,14 +81,24 @@
 - 商品 CRUD、上傳圖片、分類標籤  
 - 列表查詢與搜尋
 - **分類管理**：分類可在後台管理（CRUD）
+- **標籤管理**：標籤可在後台管理（CRUD）
 - **價格篩選**：支援自由輸入價格區間（min_price, max_price）
+- **商品排序**：支援手動調整商品排序順序（order 或 sort_order 欄位）
+- **圖片上傳**：使用本地儲存，不限制上傳數量
+
+**搜尋行為：**
+- 使用「提交後搜尋」模式（使用者輸入關鍵字後點擊搜尋按鈕）
+- 搜尋範圍：商品名稱、描述、標籤
 
 **可測試規範：**
-- [x] GET `/api/products/` → 回傳商品清單（支援分類、價格區間、關鍵字搜尋）  
-- [x] GET `/api/products/{id}/` → 回傳單一商品詳情
-- [x] POST `/api/products/`（Admin）→ 成功建立商品  
-- [x] PATCH `/api/products/{id}/` → 修改商品資訊  
+- [x] GET `/api/products/` → 回傳商品清單（支援分類、標籤、價格區間、關鍵字搜尋、排序）  
+- [x] GET `/api/products/{id}/` → 回傳單一商品詳情（含所有圖片）
+- [x] POST `/api/products/`（Admin）→ 成功建立商品（支援多張圖片上傳）
+- [x] PATCH `/api/products/{id}/` → 修改商品資訊（含排序調整）
 - [x] GET `/api/categories/` → 回傳所有分類列表（後台可管理）
+- [x] GET `/api/tags/` → 回傳所有標籤列表（後台可管理）
+- [x] POST `/api/tags/`（Admin）→ 建立標籤
+- [x] PATCH `/api/tags/{id}/`（Admin）→ 修改標籤
 - [x] 權限錯誤回傳 403  
 - [x] 所有端點需包含 MD5 簽章驗證（GET `/api/products/` 公開端點除外）  
 
@@ -119,13 +135,15 @@
 
 ### 5️⃣ Database 模組（PostgreSQL）
 **功能：**
-- 儲存所有模組資料（users, products, contacts, categories）
+- 儲存所有模組資料（users, products, contacts, categories, tags）
 
 **資料表結構：**
 - `users` - 使用者（僅管理員）
-- `products` - 商品
+- `products` - 商品（含 `sort_order` 欄位支援手動排序）
 - `categories` - 商品分類（後台可管理）
+- `tags` - 商品標籤（後台可管理）
 - `contacts` - 聯絡表單資料
+- `product_images` - 商品圖片（一個商品可有多張圖片）
 - ❌ `orders` - 已移除（不需訂單功能）
 
 **可測試規範：**
@@ -140,10 +158,16 @@
 ## 🧩 前端頁面規格
 
 ### 1️⃣ 首頁（`/`）
-- Hero 區塊（品牌介紹）  
-- 最新商品展示（最多 6 筆）  
+- Hero 區塊（品牌介紹：松果創意 pinelab）
+- 最新商品展示（最多 6 筆，以商品更新時間排序）
 - 導向「商品頁」按鈕  
-- Footer：公司資訊、社群連結  
+- Footer：品牌名稱（松果創意 pinelab）、社群連結（IG、FB、Line@）
+  - ⚠️ 暫時沒有 Logo 和聯絡資訊，使用 placeholder
+
+**API 對應：**
+| Method | Endpoint | 功能 |
+|--------|-----------|------|
+| GET | `/api/products/?latest=true&limit=6` | 取得最新商品（按更新時間排序，最多 6 筆） |
 
 **RWD 行為：**
 - 手機版採垂直堆疊布局  
@@ -171,20 +195,24 @@
 ---
 
 ### 3️⃣ 商品頁（`/products`）
-- 商品清單（圖片 / 名稱 / 價格）  
+- **重點：** 目前商品數量不多（約 2 個），重點放在商品特點展示
+- 商品清單（圖片 / 名稱 / 價格 / 特點摘要）  
 - 篩選條件：
   - 分類（Category）- 從後台管理的分類中選擇
+  - 標籤（Tags）- 從後台管理的標籤中選擇（可多選）
   - 價格區間（Price Range）- 可自由輸入最小/最大價格
-  - 搜尋（關鍵字查詢）
-- 支援分頁顯示  
+  - 搜尋（關鍵字查詢）- 提交後搜尋模式（輸入後點擊搜尋按鈕）
+- 商品排序：依手動排序（sort_order）或更新時間排序
+- 支援分頁顯示（目前商品少，可先不分頁或顯示全部）
 - 點擊商品導向 `/products/[id]`
 
 **API 對應：**
 | Method | Endpoint | 功能 |
 |--------|-----------|------|
-| GET | `/api/products/` | 取得商品清單，可帶篩選參數（category, min_price, max_price, search） |
+| GET | `/api/products/` | 取得商品清單，可帶篩選參數（category, tags, min_price, max_price, search, sort） |
 | GET | `/api/products/{id}/` | 取得單一商品詳情 |
 | GET | `/api/categories/` | 取得所有分類列表 |
+| GET | `/api/tags/` | 取得所有標籤列表 |
 
 **RWD 行為：**
 - 桌機 4 欄、平板 2 欄、手機 1 欄  
@@ -193,14 +221,19 @@
 ---
 
 ### 4️⃣ 商品詳情頁（`/products/[id]`）
-- 完整商品資訊：圖片、名稱、價格、分類、標籤、詳細描述  
+- **重點：** 強化商品特點展示
+- 完整商品資訊：
+  - 多張商品圖片（輪播或網格展示，不限制數量）
+  - 名稱、價格、分類、標籤
+  - 詳細描述（重點呈現商品特點）
+  - 商品特點區塊（可突出顯示）
 - 相關商品推薦區塊（推薦同標籤與分類的商品）
 - 導回商品列表按鈕
 
 **API 對應：**
 | Method | Endpoint | 功能 |
 |--------|-----------|------|
-| GET | `/api/products/{id}/` | 取得單一商品詳情 |
+| GET | `/api/products/{id}/` | 取得單一商品詳情（含所有圖片、特點資訊） |
 | GET | `/api/products/?category={category}&tags={tags}` | 取得相關商品（同分類與標籤） |
 
 **注意事項：**
@@ -240,6 +273,57 @@
 
 ---
 
+## 🔧 管理員後台功能
+
+### 後台 API 端點（MVP 階段僅實作 API，不實作前端界面）
+
+**商品管理：**
+- GET `/api/admin/products/` - 取得所有商品（管理員）
+- POST `/api/admin/products/` - 建立商品（管理員，支援多張圖片上傳）
+- PATCH `/api/admin/products/{id}/` - 更新商品（管理員，含排序調整）
+- DELETE `/api/admin/products/{id}/` - 刪除商品（管理員）
+- POST `/api/admin/products/{id}/images/` - 新增商品圖片（管理員，不限制數量）
+- DELETE `/api/admin/products/{id}/images/{image_id}/` - 刪除商品圖片（管理員）
+
+**分類管理：**
+- GET `/api/admin/categories/` - 取得所有分類（管理員）
+- POST `/api/admin/categories/` - 建立分類（管理員）
+- PATCH `/api/admin/categories/{id}/` - 更新分類（管理員）
+- DELETE `/api/admin/categories/{id}/` - 刪除分類（管理員）
+
+**標籤管理：**
+- GET `/api/admin/tags/` - 取得所有標籤（管理員）
+- POST `/api/admin/tags/` - 建立標籤（管理員）
+- PATCH `/api/admin/tags/{id}/` - 更新標籤（管理員）
+- DELETE `/api/admin/tags/{id}/` - 刪除標籤（管理員）
+
+**聯絡表單管理：**
+- GET `/api/admin/contacts/` - 取得所有聯絡表單（管理員）
+- GET `/api/admin/contacts/{id}/` - 取得單一聯絡表單（管理員）
+
+**注意事項：**
+- ❌ MVP 階段暫不實作管理員後台前端界面
+- ✅ 僅實作後端 API 端點，供未來前端界面或第三方工具使用
+- ✅ 所有管理員端點需 JWT 認證與 MD5 簽章驗證
+
+---
+
+## 📝 品牌資訊
+
+**品牌名稱：** 松果創意 pinelab
+
+**社群連結（Footer）：**
+- Instagram（IG）
+- Facebook（FB）
+- Line@
+
+**注意事項：**
+- ⚠️ 暫時沒有 Logo，使用文字品牌名稱
+- ⚠️ 暫時沒有詳細聯絡資訊，僅提供社群連結
+- 社群連結 URL 可先使用 placeholder，後續填入實際連結
+
+---
+
 規格建立日期:2025/11/03 10:13  
-最後更新日期:2025/11/03 10:30
+最後更新日期:2025/11/03 10:45
 
