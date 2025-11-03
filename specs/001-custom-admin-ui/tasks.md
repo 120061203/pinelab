@@ -59,9 +59,9 @@ Contracts: ./contracts/openapi.yaml
 
 ## 第 5 階段：使用者故事 3 - 分類與標籤管理 (P2)
 
-- [ ] T025 [US3] 分類列表與 CRUD 於 frontend/src/app/admin-portal/categories/page.tsx
-- [ ] T026 [US3] 標籤列表與 CRUD 於 frontend/src/app/admin-portal/tags/page.tsx
-- [ ] T027 [P] [US3] 分類/標籤表單（含驗證）於 frontend/src/components/admin/dicts/
+ - [x] T025 [US3] 分類列表與 CRUD 於 frontend/src/app/admin-portal/categories/page.tsx
+ - [x] T026 [US3] 標籤列表與 CRUD 於 frontend/src/app/admin-portal/tags/page.tsx
+ - [x] T027 [P] [US3] 分類/標籤表單（含驗證）於 frontend/src/components/admin/dicts/
 
 驗收標準（可獨立驗收）：
 - 能新增/修改/刪除分類與標籤；刪除被引用分類時顯示阻擋提示。
