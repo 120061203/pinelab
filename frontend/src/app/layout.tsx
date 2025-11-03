@@ -4,6 +4,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Footer from '@/components/Footer';
+import { AdminAuthProvider } from '@/lib/admin-auth';
 
 export const metadata: Metadata = {
   title: '松果創意 Pinelab',
@@ -33,7 +34,9 @@ export default function RootLayout({
           </div>
         </nav>
         
-        <main>{children}</main>
+        <AdminAuthProvider>
+          <main>{children}</main>
+        </AdminAuthProvider>
         
         <Footer />
       </body>

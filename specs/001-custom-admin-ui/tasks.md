@@ -9,12 +9,12 @@ Contracts: ./contracts/openapi.yaml
 
 ## Phase 1: Setup
 
-- [ ] T001 Create admin portal base route at frontend/src/app/admin-portal/layout.tsx
-- [ ] T002 Create admin login page at frontend/src/app/admin-portal/login/page.tsx
-- [ ] T003 [P] Initialize admin auth context at frontend/src/lib/admin-auth.ts
-- [ ] T004 [P] Extend admin API client (JWT headers) at frontend/src/lib/admin-api.ts
-- [ ] T005 Configure protected route wrapper at frontend/src/components/admin/ProtectedRoute.tsx
-- [ ] T006 Add admin nav + breadcrumbs at frontend/src/components/admin/AdminLayout.tsx
+- [x] T001 Create admin portal base route at frontend/src/app/admin-portal/layout.tsx
+- [x] T002 Create admin login page at frontend/src/app/admin-portal/login/page.tsx
+- [x] T003 [P] Initialize admin auth context at frontend/src/lib/admin-auth.ts
+- [x] T004 [P] Extend admin API client (JWT headers) at frontend/src/lib/admin-api.ts
+- [x] T005 Configure protected route wrapper at frontend/src/components/admin/ProtectedRoute.tsx
+- [x] T006 Add admin nav + breadcrumbs at frontend/src/components/admin/AdminLayout.tsx
 
 ## Phase 2: Foundational
 
