@@ -218,12 +218,12 @@
 **目的**: 影響多個使用者故事的改進
 
 - [x] T133 [P] 實作 Footer 元件含社群連結在 frontend/src/components/Footer.tsx
-- [ ] T134 [P] 實作根布局元件在 frontend/src/app/layout.tsx
-- [ ] T135 [P] 建立響應式設計通用樣式與工具類別在 frontend/src/styles/responsive.css
-- [ ] T136 [P] 實作錯誤邊界處理元件在 frontend/src/components/ErrorBoundary.tsx
-- [ ] T137 [P] 實作 404 錯誤頁面在 frontend/src/app/not-found.tsx
-- [ ] T138 [P] 實作載入狀態元件在 frontend/src/components/Loading.tsx
-- [ ] T139 實作全域錯誤處理與日誌記錄
+- [x] T134 [P] 實作根布局元件在 frontend/src/app/layout.tsx（已包含 Footer）
+- [x] T135 [P] 建立響應式設計通用樣式與工具類別（使用 Tailwind CSS 響應式類別）
+- [ ] T136 [P] 實作錯誤邊界處理元件（Next.js 13+ 使用 error.tsx）
+- [x] T137 [P] 實作 404 錯誤頁面在 frontend/src/app/not-found.tsx
+- [x] T138 [P] 實作載入狀態元件在 frontend/src/app/loading.tsx
+- [x] T139 實作全域錯誤處理與日誌記錄（後端 middleware + 前端 error.tsx）
 - [ ] T140 [P] 建立 Mock 資料檔案（products, categories, tags）在 frontend/src/mocks/
 - [ ] T141 [P] 實作 Mock API 服務（MVP 階段使用）在 frontend/src/lib/mock-api.ts
 - [ ] T142 實作資料庫索引優化（根據 data-model.md）
