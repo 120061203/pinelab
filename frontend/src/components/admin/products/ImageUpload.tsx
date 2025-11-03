@@ -28,7 +28,7 @@ export default function ImageUpload({ productId }: { productId: number }) {
   return (
     <div className="border rounded p-4">
       <h2 className="font-medium mb-2">圖片上傳</h2>
-      <input type="file" accept="image/*" onChange={onChange} disabled={busy} />
+      <input type="file" accept="image/*" onChange={onChange} disabled={busy} aria-label="上傳商品圖片" />
     </div>
   );
 }

@@ -20,6 +20,8 @@ export default function RootLayout({
   return (
     <html lang="zh-TW">
       <body>
+        {/* Skip to content for keyboard users */}
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-black text-white px-3 py-1 rounded">跳到主要內容</a>
         <nav className="bg-white shadow-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
@@ -42,7 +44,7 @@ export default function RootLayout({
         </nav>
         
         <AdminAuthProvider>
-          <main>{children}</main>
+          <main id="main-content">{children}</main>
         </AdminAuthProvider>
         
         <Footer />
