@@ -8,6 +8,13 @@ from .models import Product
 from .admin_serializers import ProductAdminSerializer
 from .image_handler import validate_image_url, clean_image_url
 from core.permissions import IsAdminUser
+from rest_framework.decorators import api_view, permission_classes
+from django.db.models import Count, Q
+from django.utils import timezone
+from datetime import timedelta
+from apps.categories.models import Category
+from apps.tags.models import Tag
+from apps.contacts.models import Contact
 
 
 class ProductAdminViewSet(viewsets.ModelViewSet):
@@ -87,3 +94,62 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
                 'message': '圖片不存在',
             }, status=status.HTTP_404_NOT_FOUND)
 
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def dashboard_metrics(request):
+    """
+    Dashboard 指標（30 天）
+    - totals: 商品、分類、標籤、未讀聯絡數
+    - trends: 商品建立/聯絡提交（每日）
+    - health: 無圖片/未分類/標籤覆蓋率
+    """
+    # totals
+    totals = {
+        'products': Product.objects.count(),
+        'categories': Category.objects.count(),
+        'tags': Tag.objects.count(),
+        'contacts_unread': Contact.objects.filter(is_read=False).count(),
+    }
+
+    # 30 天區間
+    days = int(request.GET.get('range', '30').rstrip('d') or 30)
+    end = timezone.now().date()
+    start = end - timedelta(days=days-1)
+
+    # trends（簡化：以 created_at 日期聚合）
+    def series(model):
+        qs = model.objects.filter(created_at__date__gte=start, created_at__date__lte=end)
+        by_day = qs.extra({'d': "date(created_at)"}).values('d').annotate(c=Count('id'))
+        mapping = {str(x['d']): x['c'] for x in by_day}
+        arr = []
+        cur = start
+        while cur <= end:
+            arr.append(mapping.get(str(cur), 0))
+            cur += timedelta(days=1)
+        return arr[-10:]  # 限制長度避免 payload 過大
+
+    trends = {
+        'products_created_daily': series(Product),
+        'contacts_created_daily': series(Contact),
+    }
+
+    # health
+    products_no_image = Product.objects.filter(images__isnull=True).count()
+    products_no_category = Product.objects.filter(category__isnull=True).count()
+    total_products = totals['products'] or 1
+    with_tag = Product.objects.filter(tags__isnull=False).distinct().count()
+    health = {
+        'products_no_image': products_no_image,
+        'products_no_category': products_no_category,
+        'products_tag_coverage_ratio': with_tag / float(total_products),
+    }
+
+    return Response({
+        'status': 'success',
+        'data': {
+            'totals': totals,
+            'trends': trends,
+            'health': health,
+        }
+    })

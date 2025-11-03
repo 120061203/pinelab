@@ -94,7 +94,7 @@ Contracts: ./contracts/openapi.yaml
  - [x] T033 [US1] Dashboard 卡片（總覽）於 frontend/src/components/admin/dashboard/Cards.tsx
  - [x] T034 [P] [US1] 趨勢圖（30 天）於 frontend/src/components/admin/dashboard/Trends.tsx
  - [x] T035 [P] [US1] 健康度區塊於 frontend/src/components/admin/dashboard/Health.tsx
-- [ ] T036 後端 Dashboard 指標端點 GET /api/admin/dashboard/metrics/ 於 backend/src/apps/products/admin_views.py
+ - [x] T036 後端 Dashboard 指標端點 GET /api/admin/dashboard/metrics/ 於 backend/src/apps/products/admin_views.py
 
 Acceptance (independent):
 - 顯示總覽、趨勢、健康度指標；API 回傳資料正確。
