@@ -91,9 +91,9 @@ Contracts: ./contracts/openapi.yaml
 
 ## 第 8 階段：Dashboard（圖表與指標）
 
-- [ ] T033 [US1] Dashboard 卡片（總覽）於 frontend/src/components/admin/dashboard/Cards.tsx
-- [ ] T034 [P] [US1] 趨勢圖（30 天）於 frontend/src/components/admin/dashboard/Trends.tsx
-- [ ] T035 [P] [US1] 健康度區塊於 frontend/src/components/admin/dashboard/Health.tsx
+ - [x] T033 [US1] Dashboard 卡片（總覽）於 frontend/src/components/admin/dashboard/Cards.tsx
+ - [x] T034 [P] [US1] 趨勢圖（30 天）於 frontend/src/components/admin/dashboard/Trends.tsx
+ - [x] T035 [P] [US1] 健康度區塊於 frontend/src/components/admin/dashboard/Health.tsx
 - [ ] T036 後端 Dashboard 指標端點 GET /api/admin/dashboard/metrics/ 於 backend/src/apps/products/admin_views.py
 
 Acceptance (independent):
@@ -103,8 +103,8 @@ Acceptance (independent):
 
 ## 第 9 階段：RBAC 與導覽控制
 
-- [ ] T037 將 RBAC 套用到路由與選單於 frontend/src/lib/rbac.ts
-- [ ] T038 隱藏/禁用未授權的操作按鈕於 frontend/src/components/admin/**
+ - [x] T037 將 RBAC 套用到路由與選單於 frontend/src/lib/rbac.ts
+ - [x] T038 隱藏/禁用未授權的操作按鈕於 frontend/src/components/admin/**
 
 ---
 
