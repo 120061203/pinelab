@@ -42,6 +42,22 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         
         return queryset.distinct()
     
+    def list(self, request, *args, **kwargs):
+        """統一回應格式"""
+        response = super().list(request, *args, **kwargs)
+        # 分頁回應已經由 StandardResultsSetPagination 處理
+        return response
+    
+    def retrieve(self, request, *args, **kwargs):
+        """統一回應格式"""
+        response = super().retrieve(request, *args, **kwargs)
+        if response.status_code == 200:
+            return Response({
+                'status': 'success',
+                'data': response.data,
+            })
+        return response
+    
     @action(detail=True, methods=['get'])
     def related(self, request, pk=None):
         """
@@ -76,5 +92,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             context={'request': request}
         )
         
-        return Response(serializer.data)
+        return Response({
+            'status': 'success',
+            'data': serializer.data,
+        })
 

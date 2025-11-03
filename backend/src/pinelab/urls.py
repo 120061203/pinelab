@@ -6,8 +6,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from .health import health_check
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # 健康檢查
+    path('api/health/', health_check, name='health'),
     # 公開 API
     path('api/', include('apps.auth.urls')),
     path('api/', include('apps.products.urls')),

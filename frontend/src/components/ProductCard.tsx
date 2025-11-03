@@ -19,12 +19,21 @@ export default function ProductCard({ product }: ProductCardProps) {
               src={product.primary_image}
               alt={product.name}
               className="w-full h-48 object-cover"
+              loading="lazy"
+              onError={(e) => {
+                // 圖片載入失敗時顯示預設圖片
+                (e.target as HTMLImageElement).style.display = 'none';
+                const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
             />
-          ) : (
-            <div className="w-full h-48 flex items-center justify-center text-gray-400">
-              無圖片
-            </div>
-          )}
+          ) : null}
+          <div 
+            className="w-full h-48 flex items-center justify-center text-gray-400"
+            style={{ display: product.primary_image ? 'none' : 'flex' }}
+          >
+            無圖片
+          </div>
         </div>
         
         {/* 商品資訊 */}

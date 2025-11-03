@@ -217,7 +217,7 @@
 
 **目的**: 影響多個使用者故事的改進
 
-- [ ] T133 [P] 實作 Footer 元件含社群連結在 frontend/src/components/Footer.tsx
+- [x] T133 [P] 實作 Footer 元件含社群連結在 frontend/src/components/Footer.tsx
 - [ ] T134 [P] 實作根布局元件在 frontend/src/app/layout.tsx
 - [ ] T135 [P] 建立響應式設計通用樣式與工具類別在 frontend/src/styles/responsive.css
 - [ ] T136 [P] 實作錯誤邊界處理元件在 frontend/src/components/ErrorBoundary.tsx
