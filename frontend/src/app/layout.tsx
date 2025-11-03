@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Footer from '@/components/Footer';
 import { AdminAuthProvider } from '@/lib/admin-auth';
+import { ToastProvider } from '@/components/admin/feedback/ToastProvider';
 import React from 'react';
 
 export const metadata: Metadata = {
@@ -43,9 +44,11 @@ export default function RootLayout({
           </div>
         </nav>
         
-        <AdminAuthProvider>
-          <main id="main-content">{children}</main>
-        </AdminAuthProvider>
+        <ToastProvider>
+          <AdminAuthProvider>
+            <main id="main-content">{children}</main>
+          </AdminAuthProvider>
+        </ToastProvider>
         
         <Footer />
       </body>
