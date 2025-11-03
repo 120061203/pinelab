@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: pinelab
+      POSTGRES_DB: pinelab_db
       POSTGRES_USER: pinelab_user
       POSTGRES_PASSWORD: pinelab_password
     ports:
@@ -21,14 +21,16 @@ services:
     build:
       context: ../backend
       dockerfile: ../infra/Dockerfile.backend
-    command: python manage.py runserver 0.0.0.0:8000
+    command: bash -c "cd /app && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ../backend:/app
       - backend_media:/app/media
+    working_dir: /app
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://pinelab_user:pinelab_password@db:5432/pinelab
+      - DATABASE_URL=postgresql://pinelab_user:pinelab_password@db:5432/pinelab_db
+      - PYTHONPATH=/app/src
     depends_on:
       db:
         condition: service_healthy

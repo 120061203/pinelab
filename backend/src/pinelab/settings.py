@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     'django_filters',
     
     # Local apps
-    'apps.auth',
     'apps.products',
     'apps.categories',
     'apps.tags',
@@ -138,7 +137,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR.parent.parent / 'logs' / 'django.log',
+            'filename': '/app/logs/django.log',
             'formatter': 'verbose',
         },
     },
@@ -163,8 +162,8 @@ LOGGING = {
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model
-AUTH_USER_MODEL = 'auth.User'
+# Custom User Model (使用 Django 內建 User)
+# AUTH_USER_MODEL = 'auth.User'  # 暫時使用 Django 預設 User
 
 # REST Framework configuration
 REST_FRAMEWORK = {
