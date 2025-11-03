@@ -37,14 +37,11 @@ export default function AdminProductsPage() {
     setError(null);
     try {
       const res: any = await adminGetProducts({ page: pageNum, search: q, ...f });
-      if (res?.status === "success") {
-        const data = res.data || res.results || [];
-        setItems(data as ProductRow[]);
-        const count = res.count || data.length;
-        setTotalPages(Math.max(1, Math.ceil(count / 20)));
-      } else {
-        setError(res?.message || "載入失敗");
-      }
+      const data = res?.data || res?.results || res || [];
+      const list = Array.isArray(data) ? data : (data?.results || []);
+      setItems(list as ProductRow[]);
+      const count = res?.count || data?.count || list.length;
+      setTotalPages(Math.max(1, Math.ceil((count || 0) / 20)));
     } catch (e: any) {
       setError(e?.message || "載入失敗");
     } finally {

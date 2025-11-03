@@ -22,12 +22,11 @@ export default function AdminContactsPage() {
     setError(null);
     try {
       const res: any = await adminGetContacts({ page: p });
-      if (res?.status === 'success') {
-        const data = res.data || res.results || [];
-        setItems(data as Contact[]);
-        const count = res.count || data.length;
-        setTotalPages(Math.max(1, Math.ceil(count / 20)));
-      } else setError(res?.message || '載入失敗');
+      const data = res?.data || res?.results || res || [];
+      const list = Array.isArray(data) ? data : (data?.results || []);
+      setItems(list as Contact[]);
+      const count = res?.count || data?.count || list.length;
+      setTotalPages(Math.max(1, Math.ceil((count || 0) / 20)));
     } catch (e: any) {
       setError(e?.message || '載入失敗');
     } finally { setLoading(false); }
