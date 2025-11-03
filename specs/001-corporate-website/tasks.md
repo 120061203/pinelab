@@ -220,7 +220,7 @@
 - [x] T133 [P] 實作 Footer 元件含社群連結在 frontend/src/components/Footer.tsx
 - [x] T134 [P] 實作根布局元件在 frontend/src/app/layout.tsx（已包含 Footer）
 - [x] T135 [P] 建立響應式設計通用樣式與工具類別（使用 Tailwind CSS 響應式類別）
-- [ ] T136 [P] 實作錯誤邊界處理元件（Next.js 13+ 使用 error.tsx）
+- [x] T136 [P] 實作錯誤邊界處理元件（已實作 error.tsx）
 - [x] T137 [P] 實作 404 錯誤頁面在 frontend/src/app/not-found.tsx
 - [x] T138 [P] 實作載入狀態元件在 frontend/src/app/loading.tsx
 - [x] T139 實作全域錯誤處理與日誌記錄（後端 middleware + 前端 error.tsx）
