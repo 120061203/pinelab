@@ -12,13 +12,31 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            # 聯絡表單已讀狀態和建立時間索引
-            "CREATE INDEX IF NOT EXISTS idx_contact_read_created ON contacts_contact(is_read, created_at DESC);",
+            # 聯絡表單已讀狀態和建立時間索引（檢查正確資料表名稱）
+            """
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'contacts'
+                ) THEN
+                    CREATE INDEX IF NOT EXISTS idx_contact_read_created ON contacts(is_read, created_at DESC);
+                END IF;
+            END $$;
+            """,
             reverse_sql="DROP INDEX IF EXISTS idx_contact_read_created;"
         ),
         migrations.RunSQL(
             # 聯絡表單電子郵件索引（用於查詢）
-            "CREATE INDEX IF NOT EXISTS idx_contact_email ON contacts_contact(email);",
+            """
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'contacts'
+                ) THEN
+                    CREATE INDEX IF NOT EXISTS idx_contact_email ON contacts(email);
+                END IF;
+            END $$;
+            """,
             reverse_sql="DROP INDEX IF EXISTS idx_contact_email;"
         ),
     ]
