@@ -1,6 +1,8 @@
 # IDE and Editor
 .cursor/
 .specify/
+# Exception: Constitution file is a project document
+!.specify/memory/constitution.md
 .vscode/
 .idea/
 *.swp
