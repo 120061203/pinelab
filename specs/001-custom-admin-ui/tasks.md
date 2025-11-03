@@ -44,12 +44,13 @@ Acceptance (independent):
 ## Phase 4: User Story 2 - 商品管理 (P1)
 
 - [ ] T018 [US2] Products list page with search/sort/paginate at frontend/src/app/admin-portal/products/page.tsx
-- [ ] T019 [P] [US2] Product form component (create/edit) at frontend/src/components/admin/products/ProductForm.tsx
-- [ ] T020 [P] [US2] Implement create/update/delete APIs at frontend/src/lib/admin-api.ts
-- [ ] T021 [US2] Product detail/edit page at frontend/src/app/admin-portal/products/[id]/page.tsx
-- [ ] T022 [US2] Image manager UI (list, set primary, sort) at frontend/src/components/admin/products/ImageManager.tsx
-- [ ] T023 [P] [US2] File upload UI (drag&drop, progress) at frontend/src/components/admin/products/ImageUpload.tsx
-- [ ] T024 [US2] Bind uploaded path to product images at frontend/src/components/admin/products/ImageManager.tsx
+- [x] T018 [US2] Products list page with search/sort/paginate at frontend/src/app/admin-portal/products/page.tsx
+- [x] T019 [P] [US2] Product form component (create/edit) at frontend/src/components/admin/products/ProductForm.tsx
+- [x] T020 [P] [US2] Implement create/update/delete APIs at frontend/src/lib/admin-api.ts
+- [x] T021 [US2] Product detail/edit page at frontend/src/app/admin-portal/products/[id]/page.tsx
+- [x] T022 [US2] Image manager UI (list, set primary, sort) at frontend/src/components/admin/products/ImageManager.tsx
+- [x] T023 [P] [US2] File upload UI (drag&drop, progress) at frontend/src/components/admin/products/ImageUpload.tsx
+- [x] T024 [US2] Bind uploaded path to product images at frontend/src/components/admin/products/ImageManager.tsx
 
 Acceptance (independent):
 - 能建立/編輯/刪除商品；可上傳圖片、設定主圖與排序。
