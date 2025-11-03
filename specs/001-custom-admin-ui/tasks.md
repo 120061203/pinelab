@@ -70,9 +70,9 @@ Contracts: ./contracts/openapi.yaml
 
 ## 第 6 階段：使用者故事 4 - 聯絡表單管理 (P2)
 
-- [ ] T028 [US4] 聯絡表單列表（搜尋/分頁）於 frontend/src/app/admin-portal/contacts/page.tsx
-- [ ] T029 [US4] 聯絡表單詳情（抽屜/頁面）於 frontend/src/components/admin/contacts/ContactDetail.tsx
-- [ ] T030 [US4] 已讀/未讀動作 API 於 frontend/src/lib/admin-api.ts
+ - [x] T028 [US4] 聯絡表單列表（搜尋/分頁）於 frontend/src/app/admin-portal/contacts/page.tsx
+ - [x] T029 [US4] 聯絡表單詳情（抽屜/頁面）於 frontend/src/components/admin/contacts/ContactDetail.tsx
+ - [x] T030 [US4] 已讀/未讀動作 API 於 frontend/src/lib/admin-api.ts
 
 驗收標準（可獨立驗收）：
 - 能查看聯絡表單並切換已讀狀態。
