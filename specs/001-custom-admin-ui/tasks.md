@@ -19,10 +19,11 @@ Contracts: ./contracts/openapi.yaml
 ## Phase 2: Foundational
 
 - [ ] T007 Add RBAC guard utilities (roles: admin|editor|analyst) at frontend/src/lib/rbac.ts
-- [ ] T008 [P] Add toast/error boundary hooks at frontend/src/components/admin/feedback/
-- [ ] T009 [P] File upload helper with progress at frontend/src/lib/upload.ts
-- [ ] T010 Add admin routes to app-level nav visibility at frontend/src/app/layout.tsx
-- [ ] T011 Define shared table, filters, pagination at frontend/src/components/admin/table/
+- [x] T007 Add RBAC guard utilities (roles: admin|editor|analyst) at frontend/src/lib/rbac.ts
+- [x] T008 [P] Add toast/error boundary hooks at frontend/src/components/admin/feedback/
+- [x] T009 [P] File upload helper with progress at frontend/src/lib/upload.ts
+- [x] T010 Add admin routes to app-level nav visibility at frontend/src/app/layout.tsx
+- [x] T011 Define shared table, filters, pagination at frontend/src/components/admin/table/
 
 ---
 
