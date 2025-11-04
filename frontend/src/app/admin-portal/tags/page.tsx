@@ -124,7 +124,8 @@ export default function AdminTagsPage() {
       );
       if (res?.status === 'success') {
         const opText = pendingBatchUpdate.operation === 'add' ? '添加' : pendingBatchUpdate.operation === 'remove' ? '移除' : '替換';
-        addToast({ type: 'success', message: `已批量${opText} ${res.data?.updated_count || selectedProductIds.length} 個商品的標籤` });
+        const data = res.data as { updated_count?: number } | undefined;
+        addToast({ type: 'success', message: `已批量${opText} ${data?.updated_count || selectedProductIds.length} 個商品的標籤` });
         setShowBatchUpdate(false);
         setSelectedProductIds([]);
         setOperation('add');

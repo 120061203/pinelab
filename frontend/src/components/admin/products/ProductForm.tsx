@@ -11,7 +11,7 @@ export default function ProductForm({ initial, productId }: { initial?: any; pro
   const [name, setName] = useState(initial?.name || '');
   const [price, setPrice] = useState(initial?.price || '');
   const [description, setDescription] = useState(initial?.description || '');
-  const [isActive, setIsActive] = useState(!!initial?.is_active ?? true);
+  const [isActive, setIsActive] = useState(initial?.is_active ?? true);
   const [categoryId, setCategoryId] = useState<number | null>(initial?.category?.id || null);
   const [tagIds, setTagIds] = useState<number[]>(initial?.tags?.map((t: any) => t.id) || []);
   const [saving, setSaving] = useState(false);
@@ -31,13 +31,15 @@ export default function ProductForm({ initial, productId }: { initial?: any; pro
         ]);
         
         if (categoriesRes?.status === 'success') {
-          const cats = categoriesRes.data || categoriesRes.results || [];
+          const catsRes = categoriesRes as any;
+          const cats = catsRes.data || catsRes.results || [];
           // 只顯示啟用的分類
           setCategories(cats.filter((c: any) => c.is_active !== false));
         }
         
         if (tagsRes?.status === 'success') {
-          const ts = tagsRes.data || tagsRes.results || [];
+          const tagsResData = tagsRes as any;
+          const ts = tagsResData.data || tagsResData.results || [];
           setTags(ts);
         }
       } catch (err: any) {
@@ -68,13 +70,14 @@ export default function ProductForm({ initial, productId }: { initial?: any; pro
         : await adminCreateProduct(payload);
       
       // 檢查響應格式：可能是 {status: 'success', data: {...}} 或直接是 {data: {...}}
-      if (res?.status === 'success' || res?.data || res?.id) {
+      const response = res as any;
+      if (response?.status === 'success' || response?.data || response?.id) {
         addToast({ type: 'success', message: '已儲存' });
         router.replace('/admin-portal/products');
       } else {
         // 如果響應格式不符合預期，記錄詳細資訊
         console.error('Unexpected response format:', res);
-        addToast({ type: 'error', message: res?.message || res?.detail || '儲存失敗：響應格式不符合預期' });
+        addToast({ type: 'error', message: response?.message || response?.detail || '儲存失敗：響應格式不符合預期' });
       }
     } catch (err: any) {
       console.error('Product save error:', err);

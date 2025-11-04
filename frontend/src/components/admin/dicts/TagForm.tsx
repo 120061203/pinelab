@@ -22,7 +22,8 @@ export default function TagForm({ initial, onSaved, onCancel }: { initial?: any;
       const res = initial?.id ? await adminUpdateTag(initial.id, payload) : await adminCreateTag(payload);
       
       // 檢查響應格式：可能是 {status: 'success', data: {...}} 或直接是 {id, name, ...}
-      if (res?.status === 'success' || res?.data || res?.id) {
+      const response = res as any;
+      if (response?.status === 'success' || response?.data || response?.id) {
         addToast({ type: 'success', message: '標籤已儲存' });
         // 如果是新增，保存成功後重置表單
         if (!initial?.id) {
@@ -31,7 +32,7 @@ export default function TagForm({ initial, onSaved, onCancel }: { initial?: any;
         onSaved();
       } else {
         // 處理錯誤響應
-        const errorMsg = res?.message || res?.detail || (typeof res === 'string' ? res : '儲存失敗');
+        const errorMsg = response?.message || response?.detail || (typeof response === 'string' ? response : '儲存失敗');
         addToast({ type: 'error', message: errorMsg });
       }
     } catch (e: any) {

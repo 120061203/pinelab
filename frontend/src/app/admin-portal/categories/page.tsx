@@ -125,7 +125,8 @@ export default function AdminCategoriesPage() {
     try {
       const res = await adminBatchUpdateProductCategory(selectedProductIds, categoryId);
       if (res?.status === 'success') {
-        addToast({ type: 'success', message: `已批量更新 ${res.data?.updated_count || selectedProductIds.length} 個商品的分類` });
+        const data = res.data as { updated_count?: number } | undefined;
+        addToast({ type: 'success', message: `已批量更新 ${data?.updated_count || selectedProductIds.length} 個商品的分類` });
         setShowBatchUpdate(false);
         setSelectedProductIds([]);
         setTargetCategoryId(null);
@@ -299,11 +300,11 @@ export default function AdminCategoriesPage() {
                         msUserSelect: 'none',
                         cursor: 'grab',
                       } as React.CSSProperties}
-                      onMouseDown={(e) => {
+                      onMouseDown={(e: React.MouseEvent<HTMLTableCellElement>) => {
                         e.stopPropagation();
                         e.currentTarget.style.cursor = 'grabbing';
                       }}
-                      onMouseUp={(e) => {
+                      onMouseUp={(e: React.MouseEvent<HTMLTableCellElement>) => {
                         e.currentTarget.style.cursor = 'grab';
                       }}
                     >
