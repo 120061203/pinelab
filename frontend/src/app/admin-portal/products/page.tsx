@@ -17,6 +17,8 @@ type ProductRow = {
   sort_order: number;
   is_active: boolean;
   updated_at?: string;
+  category?: { id: number; name: string } | null;
+  tags?: Array<{ id: number; name: string }>;
 };
 
 export default function AdminProductsPage() {
@@ -175,6 +177,31 @@ export default function AdminProductsPage() {
     return op === 'enable' ? '啟用' : op === 'disable' ? '停用' : '刪除';
   };
 
+  // 格式化價格：移除不必要的小數點
+  const formatPrice = (price: string | number): string => {
+    const num = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(num)) return String(price);
+    // 如果是整數，不顯示小數點；否則保留小數部分
+    return num % 1 === 0 ? num.toString() : num.toString();
+  };
+
+  // 格式化日期時間
+  const formatDateTime = (dateStr?: string): string => {
+    if (!dateStr) return '-';
+    try {
+      const date = new Date(dateStr);
+      // 格式：YYYY-MM-DD HH:mm
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -281,6 +308,9 @@ export default function AdminProductsPage() {
                 <Th>ID</Th>
                 <Th>名稱</Th>
                 <Th>價格</Th>
+                <Th>分類</Th>
+                <Th>標籤</Th>
+                <Th>更新時間</Th>
                 <Th>狀態</Th>
                 <Th>操作</Th>
               </tr>
@@ -307,7 +337,10 @@ export default function AdminProductsPage() {
                       <Td className="text-gray-400 cursor-grab active:cursor-grabbing">⋮⋮</Td>
                       <Td>{p.id}</Td>
                       <Td>{p.name}</Td>
-                      <Td>{p.price}</Td>
+                      <Td>{formatPrice(p.price)}</Td>
+                      <Td>{p.category?.name || '-'}</Td>
+                      <Td>{p.tags && p.tags.length > 0 ? p.tags.map(t => t.name).join(', ') : '-'}</Td>
+                      <Td>{formatDateTime(p.updated_at)}</Td>
                       <Td>{p.is_active ? '啟用' : '停用'}</Td>
                       <Td className="space-x-3">
                         <Link href={`/admin-portal/products/${p.id}`} className="text-blue-600">編輯</Link>
@@ -348,7 +381,10 @@ export default function AdminProductsPage() {
                     </Td>
                     <Td>{p.id}</Td>
                     <Td>{p.name}</Td>
-                    <Td>{p.price}</Td>
+                    <Td>{formatPrice(p.price)}</Td>
+                    <Td>{p.category?.name || '-'}</Td>
+                    <Td>{p.tags && p.tags.length > 0 ? p.tags.map(t => t.name).join(', ') : '-'}</Td>
+                    <Td>{formatDateTime(p.updated_at)}</Td>
                     <Td>{p.is_active ? '啟用' : '停用'}</Td>
                     <Td className="space-x-3">
                       <Link href={`/admin-portal/products/${p.id}`} className="text-blue-600">編輯</Link>

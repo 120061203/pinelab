@@ -69,7 +69,7 @@ Contracts: ./contracts/openapi.yaml
   - 新增 API 端點：POST /api/admin/products/batch_update_status/
   - 接收商品 ID 列表和操作類型（enable/disable/delete）
   - 支援批量啟用、停用、刪除等操作
-- [ ] T060 [US2] 商品列表頁添加更多欄位於 frontend/src/app/admin-portal/products/page.tsx
+- [x] T060 [US2] 商品列表頁添加更多欄位於 frontend/src/app/admin-portal/products/page.tsx
   - 添加「更新時間」欄位，顯示商品最後更新時間
   - 添加「分類」欄位，顯示商品所屬分類名稱
   - 添加「標籤」欄位，顯示商品的所有標籤（以逗號分隔）
