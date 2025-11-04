@@ -263,7 +263,6 @@ export default function AdminCategoriesPage() {
                 <Th>排序</Th>
                 <Th>ID</Th>
                 <Th>名稱</Th>
-                <Th>排序值</Th>
                 <Th>狀態</Th>
                 <Th>操作</Th>
               </tr>
@@ -312,7 +311,6 @@ export default function AdminCategoriesPage() {
                     </Td>
                     <Td style={{ cursor: 'default' }}>{c.id}</Td>
                     <Td style={{ cursor: 'default' }}>{c.name}</Td>
-                    <Td style={{ cursor: 'default' }}>{c.sort_order}</Td>
                     <Td style={{ cursor: 'default' }}>{c.is_active ? '啟用' : '停用'}</Td>
                     <Td className="space-x-3" style={{ cursor: 'default' }}>
                       <button 

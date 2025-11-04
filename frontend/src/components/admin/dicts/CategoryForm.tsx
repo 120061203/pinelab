@@ -8,7 +8,6 @@ export default function CategoryForm({ initial, onSaved }: { initial?: any; onSa
   const { addToast } = useToast();
   const [name, setName] = useState(initial?.name || '');
   const [description, setDescription] = useState(initial?.description || '');
-  const [sortOrder, setSortOrder] = useState<number>(initial?.sort_order ?? 0);
   const [isActive, setIsActive] = useState<boolean>(initial?.is_active ?? true);
   const [saving, setSaving] = useState(false);
 
@@ -17,13 +16,11 @@ export default function CategoryForm({ initial, onSaved }: { initial?: any; onSa
     if (initial) {
       setName(initial.name || '');
       setDescription(initial.description || '');
-      setSortOrder(initial.sort_order ?? 0);
       setIsActive(initial.is_active ?? true);
     } else {
       // 如果 initial 為 undefined/null，重置表單為空
       setName('');
       setDescription('');
-      setSortOrder(0);
       setIsActive(true);
     }
   }, [initial]);
@@ -32,7 +29,7 @@ export default function CategoryForm({ initial, onSaved }: { initial?: any; onSa
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = { name, description, sort_order: sortOrder, is_active: isActive } as any;
+      const payload = { name, description, is_active: isActive } as any;
       const res = initial?.id
         ? await adminUpdateCategory(initial.id, payload)
         : await adminCreateCategory(payload);
@@ -42,7 +39,6 @@ export default function CategoryForm({ initial, onSaved }: { initial?: any; onSa
         if (!initial?.id) {
           setName('');
           setDescription('');
-          setSortOrder(0);
           setIsActive(true);
         }
         onSaved();
@@ -66,15 +62,9 @@ export default function CategoryForm({ initial, onSaved }: { initial?: any; onSa
         <label className="block text-sm mb-1">描述</label>
         <input className="w-full border rounded px-3 py-2" value={description} onChange={(e) => setDescription(e.target.value)} />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm mb-1">排序</label>
-          <input type="number" className="w-full border rounded px-3 py-2" value={sortOrder} onChange={(e) => setSortOrder(parseInt(e.target.value || '0'))} />
-        </div>
-        <div className="flex items-center gap-2 mt-6">
-          <input id="catActive" type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
-          <label htmlFor="catActive">啟用</label>
-        </div>
+      <div className="flex items-center gap-2">
+        <input id="catActive" type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
+        <label htmlFor="catActive">啟用</label>
       </div>
       <button disabled={saving} className="px-3 py-2 bg-black text-white rounded text-sm">{saving ? '儲存中…' : '儲存'}</button>
     </form>
