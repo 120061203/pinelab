@@ -130,12 +130,17 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
             
             # 生成儲存路徑：media/products/{product_id}/{filename}
             product_dir = f'products/{product.id}'
-            filename = uploaded_file.name
-            # 確保檔名唯一（如果有同名檔案，加上時間戳）
-            if default_storage.exists(f'{product_dir}/{filename}'):
-                name, ext = os.path.splitext(filename)
-                import time
-                filename = f'{name}_{int(time.time())}{ext}'
+            # 使用東8區時間戳記生成檔名（所有檔案都加上時間戳）
+            from django.utils import timezone
+            import time
+            # 取得東8區當前時間
+            tz_utc8 = timezone.get_fixed_timezone(480)  # UTC+8 = 480 分鐘
+            now_utc8 = timezone.now().astimezone(tz_utc8)
+            # 生成時間戳記格式：YYYYMMDD_HHMMSS
+            timestamp = now_utc8.strftime('%Y%m%d_%H%M%S')
+            # 在檔名中加入時間戳記
+            name, ext = os.path.splitext(os.path.basename(uploaded_file.name))
+            filename = f'{name}_{timestamp}{ext}'
             
             file_path = default_storage.save(
                 f'{product_dir}/{filename}',
