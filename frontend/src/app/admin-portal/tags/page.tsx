@@ -275,7 +275,11 @@ export default function AdminTagsPage() {
 
       <div className="border rounded p-4">
         <h2 className="font-medium mb-2">{editing ? '編輯標籤' : '新增標籤'}</h2>
-        <TagForm initial={editing || undefined} onSaved={() => { setEditing(null); load(); }} />
+        <TagForm 
+          initial={editing || undefined} 
+          onSaved={() => { setEditing(null); load(); }} 
+          onCancel={() => { setEditing(null); }}
+        />
       </div>
 
       {loading ? (

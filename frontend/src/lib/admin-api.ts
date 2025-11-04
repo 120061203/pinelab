@@ -128,6 +128,16 @@ export async function adminDeleteProduct(id: number) {
   });
 }
 
+export async function adminBatchUpdateProductStatus(productIds: number[], operation: 'enable' | 'disable' | 'delete') {
+  return adminRequest('/admin/products/batch_update_status/', {
+    method: 'POST',
+    body: JSON.stringify({
+      product_ids: productIds,
+      operation: operation,
+    }),
+  });
+}
+
 export async function adminUploadProductImage(productId: number, imageData: {
   image_url: string;
   sort_order?: number;

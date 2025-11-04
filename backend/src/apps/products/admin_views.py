@@ -472,6 +472,70 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
                 'code': 'UPDATE_FAILED',
                 'message': f'批量更新失敗: {str(e)}',
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['post'], url_path='batch_update_status')
+    def batch_update_status(self, request):
+        """
+        批量更新商品狀態
+        接收格式: { "product_ids": [1, 2, 3], "operation": "enable|disable|delete" }
+        操作類型：
+        - enable: 啟用商品（設定 is_active=True）
+        - disable: 停用商品（設定 is_active=False）
+        - delete: 批量刪除商品
+        """
+        product_ids = request.data.get('product_ids', [])
+        operation = request.data.get('operation', '')
+        
+        if not isinstance(product_ids, list) or len(product_ids) == 0:
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_PRODUCT_IDS',
+                'message': '請提供有效的商品 ID 列表',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if operation not in ['enable', 'disable', 'delete']:
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_OPERATION',
+                'message': '操作類型必須是 enable、disable 或 delete',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # 獲取商品
+            products = self.get_queryset().filter(id__in=product_ids)
+            if not products.exists():
+                return Response({
+                    'status': 'error',
+                    'code': 'NO_PRODUCTS_FOUND',
+                    'message': '找不到指定的商品',
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            updated_count = 0
+            
+            if operation == 'enable':
+                # 批量啟用
+                updated_count = products.update(is_active=True)
+            elif operation == 'disable':
+                # 批量停用
+                updated_count = products.update(is_active=False)
+            elif operation == 'delete':
+                # 批量刪除
+                updated_count = products.count()
+                products.delete()
+            
+            return Response({
+                'status': 'success',
+                'data': {
+                    'updated_count': updated_count,
+                    'operation': operation,
+                },
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'code': 'UPDATE_FAILED',
+                'message': f'批量更新失敗: {str(e)}',
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])

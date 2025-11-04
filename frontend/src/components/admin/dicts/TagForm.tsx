@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { adminCreateTag, adminUpdateTag } from '@/lib/admin-api';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
 
-export default function TagForm({ initial, onSaved }: { initial?: any; onSaved: () => void }) {
+export default function TagForm({ initial, onSaved, onCancel }: { initial?: any; onSaved: () => void; onCancel?: () => void }) {
   const { addToast } = useToast();
   const [name, setName] = useState(initial?.name || '');
   const [saving, setSaving] = useState(false);
@@ -56,13 +56,27 @@ export default function TagForm({ initial, onSaved }: { initial?: any; onSaved: 
     }
   };
 
+  const handleCancel = () => {
+    setName(initial?.name || '');
+    if (onCancel) {
+      onCancel();
+    }
+  };
+
   return (
     <form onSubmit={onSubmit} className="space-y-3">
       <div>
         <label className="block text-sm mb-1">名稱</label>
         <input className="w-full border rounded px-3 py-2" value={name} onChange={(e) => setName(e.target.value)} required />
       </div>
-      <button disabled={saving} className="px-3 py-2 bg-black text-white rounded text-sm">{saving ? '儲存中…' : '儲存'}</button>
+      <div className="flex gap-2">
+        <button type="submit" disabled={saving} className="px-3 py-2 bg-black text-white rounded text-sm">{saving ? '儲存中…' : '儲存'}</button>
+        {onCancel && (
+          <button type="button" onClick={handleCancel} disabled={saving} className="px-3 py-2 border rounded text-sm">
+            {initial?.id ? '取消' : '清空'}
+          </button>
+        )}
+      </div>
     </form>
   );
 }

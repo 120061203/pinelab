@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { adminGetProducts, adminBatchUpdateProductSort } from "@/lib/admin-api";
+import { adminGetProducts, adminBatchUpdateProductSort, adminDeleteProduct, adminBatchUpdateProductStatus } from "@/lib/admin-api";
 import { Table, Th, Td, Pagination } from "@/components/admin/table/Table";
 import FilterBar, { Filters } from "@/components/admin/filters/FilterBar";
 import { useUrlState } from "@/lib/url-state";
 import SortableTableBody from "@/components/admin/dnd/SortableTableBody";
 import { useToast } from "@/components/admin/feedback/ToastProvider";
+import ConfirmModal from "@/components/admin/modals/ConfirmModal";
 
 type ProductRow = {
   id: number;
@@ -36,6 +37,12 @@ export default function AdminProductsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const { addToast } = useToast();
+  const [pendingDelete, setPendingDelete] = useState<number | null>(null);
+  const [showBatchUpdate, setShowBatchUpdate] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
+  const [batchOperation, setBatchOperation] = useState<'enable' | 'disable' | 'delete'>('enable');
+  const [pendingBatchUpdate, setPendingBatchUpdate] = useState<{operation: 'enable' | 'disable' | 'delete'} | null>(null);
+  const [batchUpdating, setBatchUpdating] = useState(false);
 
   const load = async (pageNum = 1, q = "", f: Filters = {}) => {
     setLoading(true);
@@ -97,12 +104,163 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    try {
+      const res: any = await adminDeleteProduct(id);
+      if (res?.status === 'success') {
+        addToast({ type: 'success', message: '商品已刪除' });
+        load(page, search, filters);
+      } else {
+        addToast({ type: 'error', message: res?.message || '刪除失敗' });
+      }
+    } catch (e: any) {
+      addToast({ type: 'error', message: e?.message || '刪除失敗' });
+    }
+  };
+
+  const toggleProductSelection = (productId: number) => {
+    setSelectedProductIds(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const toggleSelectAllProducts = () => {
+    if (selectedProductIds.length === items.length) {
+      setSelectedProductIds([]);
+    } else {
+      setSelectedProductIds(items.map(p => p.id));
+    }
+  };
+
+  const handleBatchUpdate = () => {
+    if (selectedProductIds.length === 0) {
+      addToast({ type: 'error', message: '請至少選擇一個商品' });
+      return;
+    }
+    setPendingBatchUpdate({ operation: batchOperation });
+  };
+
+  const confirmBatchUpdate = async () => {
+    if (!pendingBatchUpdate) return;
+    
+    setBatchUpdating(true);
+    try {
+      const res = await adminBatchUpdateProductStatus(
+        selectedProductIds, 
+        pendingBatchUpdate.operation
+      );
+      if (res?.status === 'success') {
+        const opText = pendingBatchUpdate.operation === 'enable' ? '啟用' : 
+                       pendingBatchUpdate.operation === 'disable' ? '停用' : '刪除';
+        addToast({ type: 'success', message: `已批量${opText} ${res.data?.updated_count || selectedProductIds.length} 個商品` });
+        setShowBatchUpdate(false);
+        setSelectedProductIds([]);
+        setBatchOperation('enable');
+        setPendingBatchUpdate(null);
+        load(page, search, filters);
+      } else {
+        addToast({ type: 'error', message: res?.message || '批量更新失敗' });
+      }
+    } catch (e: any) {
+      addToast({ type: 'error', message: e?.message || '批量更新失敗' });
+    } finally {
+      setBatchUpdating(false);
+      setPendingBatchUpdate(null);
+    }
+  };
+
+  const getOperationText = (op: 'enable' | 'disable' | 'delete') => {
+    return op === 'enable' ? '啟用' : op === 'disable' ? '停用' : '刪除';
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Products</h1>
-        <Link href="/admin-portal/products/new" className="px-3 py-2 bg-black text-white rounded text-sm">新增商品</Link>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setShowBatchUpdate(!showBatchUpdate)}
+            className="px-3 py-2 bg-blue-600 text-white rounded text-sm"
+          >
+            {showBatchUpdate ? '取消批量修改' : '批量修改'}
+          </button>
+          <Link href="/admin-portal/products/new" className="px-3 py-2 bg-black text-white rounded text-sm">新增商品</Link>
+        </div>
       </div>
+
+      {showBatchUpdate && (
+        <div className="border rounded p-4 bg-gray-50">
+          <h2 className="font-medium mb-4">批量修改商品</h2>
+          
+          <div className="mb-4">
+            <label className="block text-sm mb-2">操作類型</label>
+            <select
+              className="w-full border rounded px-3 py-2"
+              value={batchOperation}
+              onChange={(e) => setBatchOperation(e.target.value as 'enable' | 'disable' | 'delete')}
+            >
+              <option value="enable">啟用商品</option>
+              <option value="disable">停用商品</option>
+              <option value="delete">刪除商品</option>
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm">選擇商品</label>
+              <button
+                onClick={toggleSelectAllProducts}
+                className="text-sm text-blue-600"
+              >
+                {selectedProductIds.length === items.length ? '取消全選' : '全選'}
+              </button>
+            </div>
+            <div className="border rounded p-2 max-h-64 overflow-y-auto">
+              {items.length === 0 ? (
+                <div className="text-sm text-gray-500">尚無商品</div>
+              ) : (
+                <div className="space-y-2">
+                  {items.map((product) => (
+                    <label key={product.id} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedProductIds.includes(product.id)}
+                        onChange={() => toggleProductSelection(product.id)}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">
+                        {product.name} (ID: {product.id})
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={handleBatchUpdate}
+              disabled={selectedProductIds.length === 0 || batchUpdating}
+              className="px-3 py-2 bg-blue-600 text-white rounded text-sm disabled:opacity-50"
+            >
+              {batchUpdating ? '更新中...' : `批量${getOperationText(batchOperation)} ${selectedProductIds.length} 個商品`}
+            </button>
+            <button
+              onClick={() => {
+                setShowBatchUpdate(false);
+                setSelectedProductIds([]);
+                setBatchOperation('enable');
+              }}
+              className="px-3 py-2 bg-gray-300 text-gray-700 rounded text-sm"
+            >
+              取消
+            </button>
+          </div>
+        </div>
+      )}
 
       <FilterBar initial={filters} onApply={onApplyFilters} />
 
@@ -118,6 +276,7 @@ export default function AdminProductsPage() {
           <Table>
             <thead>
               <tr>
+                {showBatchUpdate && <Th><input type="checkbox" checked={selectedProductIds.length === items.length && items.length > 0} onChange={toggleSelectAllProducts} className="w-4 h-4" /></Th>}
                 <Th>排序</Th>
                 <Th>ID</Th>
                 <Th>名稱</Th>
@@ -135,13 +294,32 @@ export default function AdminProductsPage() {
                 if (!dragHandleProps) {
                   return (
                     <>
+                      {showBatchUpdate && (
+                        <Td>
+                          <input
+                            type="checkbox"
+                            checked={selectedProductIds.includes(p.id)}
+                            onChange={() => toggleProductSelection(p.id)}
+                            className="w-4 h-4"
+                          />
+                        </Td>
+                      )}
                       <Td className="text-gray-400 cursor-grab active:cursor-grabbing">⋮⋮</Td>
                       <Td>{p.id}</Td>
                       <Td>{p.name}</Td>
                       <Td>{p.price}</Td>
                       <Td>{p.is_active ? '啟用' : '停用'}</Td>
-                      <Td>
+                      <Td className="space-x-3">
                         <Link href={`/admin-portal/products/${p.id}`} className="text-blue-600">編輯</Link>
+                        <button 
+                          className="text-red-600 hover:underline" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingDelete(p.id);
+                          }}
+                        >
+                          刪除
+                        </button>
                       </Td>
                     </>
                   );
@@ -150,6 +328,16 @@ export default function AdminProductsPage() {
                 const { listeners, attributes } = dragHandleProps;
                 return (
                   <>
+                    {showBatchUpdate && (
+                      <Td>
+                        <input
+                          type="checkbox"
+                          checked={selectedProductIds.includes(p.id)}
+                          onChange={() => toggleProductSelection(p.id)}
+                          className="w-4 h-4"
+                        />
+                      </Td>
+                    )}
                     <Td 
                       className="text-gray-400 cursor-grab active:cursor-grabbing select-none" 
                       {...listeners}
@@ -162,8 +350,17 @@ export default function AdminProductsPage() {
                     <Td>{p.name}</Td>
                     <Td>{p.price}</Td>
                     <Td>{p.is_active ? '啟用' : '停用'}</Td>
-                    <Td>
+                    <Td className="space-x-3">
                       <Link href={`/admin-portal/products/${p.id}`} className="text-blue-600">編輯</Link>
+                      <button 
+                        className="text-red-600 hover:underline" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPendingDelete(p.id);
+                        }}
+                      >
+                        刪除
+                      </button>
                     </Td>
                   </>
                 );
@@ -173,6 +370,22 @@ export default function AdminProductsPage() {
           <Pagination page={page} totalPages={totalPages} onPage={setPage} />
         </>
       )}
+
+      <ConfirmModal
+        open={pendingDelete !== null}
+        title="刪除商品"
+        message="此操作無法復原，確定要刪除？"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => { if (pendingDelete) handleDelete(pendingDelete); setPendingDelete(null); }}
+      />
+
+      <ConfirmModal
+        open={pendingBatchUpdate !== null}
+        title="批量修改商品"
+        message={`確定要${getOperationText(pendingBatchUpdate?.operation || 'enable')} ${selectedProductIds.length} 個商品嗎？`}
+        onCancel={() => setPendingBatchUpdate(null)}
+        onConfirm={confirmBatchUpdate}
+      />
     </div>
   );
 }
