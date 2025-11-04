@@ -16,8 +16,37 @@ export default function AdminTagsPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res: any = await adminGetTags();
-      if (res?.status === 'success') setItems(res.data || res.results || []);
+      // 請求所有標籤（設置較大的 page_size 以獲取所有標籤）
+      const res: any = await adminGetTags({ page_size: 1000 });
+      if (res?.status === 'success') {
+        // 處理不同的響應格式
+        let allItems: any[] = [];
+        
+        // 情況1: res.data 是數組（直接返回數組）
+        if (Array.isArray(res.data)) {
+          allItems = res.data;
+        }
+        // 情況2: res.data 是對象，包含 results 字段（分頁格式）
+        else if (res.data && typeof res.data === 'object' && Array.isArray(res.data.results)) {
+          allItems = res.data.results;
+        }
+        // 情況3: res.results 是數組
+        else if (Array.isArray(res.results)) {
+          allItems = res.results;
+        }
+        // 情況4: 其他格式，嘗試直接使用
+        else {
+          allItems = Array.isArray(res.data) ? res.data : [];
+        }
+        
+        setItems(allItems);
+      } else {
+        // 如果響應格式不對，嘗試直接使用響應數據
+        setItems(Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []));
+      }
+    } catch (e: any) {
+      console.error('Load tags error:', e);
+      addToast({ type: 'error', message: e?.message || '載入標籤失敗' });
     } finally {
       setLoading(false);
     }

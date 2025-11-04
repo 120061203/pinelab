@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { adminCreateTag, adminUpdateTag } from '@/lib/admin-api';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
 
@@ -8,6 +8,11 @@ export default function TagForm({ initial, onSaved, onCancel }: { initial?: any;
   const { addToast } = useToast();
   const [name, setName] = useState(initial?.name || '');
   const [saving, setSaving] = useState(false);
+
+  // 當 initial prop 改變時，更新 name 狀態
+  useEffect(() => {
+    setName(initial?.name || '');
+  }, [initial]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

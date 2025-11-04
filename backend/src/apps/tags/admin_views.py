@@ -28,14 +28,54 @@ class TagAdminViewSet(viewsets.ModelViewSet):
                 'data': serializer.data,
             }, status=status.HTTP_201_CREATED)
         except Exception as e:
-            # 處理唯一性約束錯誤（例如重複的標籤名稱）
+            # 處理唯一性約束錯誤
             error_message = str(e)
-            if 'unique' in error_message.lower() or 'already exists' in error_message.lower():
-                return Response({
-                    'status': 'error',
-                    'code': 'DUPLICATE_NAME',
-                    'message': '標籤名稱已存在，請使用不同的名稱',
-                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # 檢查是否是驗證錯誤（DRF serializer validation）
+            if hasattr(e, 'detail'):
+                # DRF 驗證錯誤
+                if isinstance(e.detail, dict):
+                    # 檢查是否是 name 或 slug 的唯一性錯誤
+                    if 'name' in e.detail:
+                        name_error = e.detail['name']
+                        if isinstance(name_error, list) and any('unique' in str(err).lower() for err in name_error):
+                            return Response({
+                                'status': 'error',
+                                'code': 'DUPLICATE_NAME',
+                                'message': '標籤名稱已存在，請使用不同的名稱',
+                            }, status=status.HTTP_400_BAD_REQUEST)
+                    if 'slug' in e.detail:
+                        slug_error = e.detail['slug']
+                        if isinstance(slug_error, list) and any('unique' in str(err).lower() for err in slug_error):
+                            return Response({
+                                'status': 'error',
+                                'code': 'DUPLICATE_SLUG',
+                                'message': '標籤名稱產生的 slug 已存在，請使用不同的名稱',
+                            }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # 檢查資料庫唯一性約束錯誤
+            if 'unique' in error_message.lower() or 'already exists' in error_message.lower() or 'duplicate' in error_message.lower():
+                # 判斷是 name 還是 slug 的錯誤
+                if 'name' in error_message.lower() or 'tags_name' in error_message.lower():
+                    return Response({
+                        'status': 'error',
+                        'code': 'DUPLICATE_NAME',
+                        'message': '標籤名稱已存在，請使用不同的名稱',
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                elif 'slug' in error_message.lower() or 'tags_slug' in error_message.lower():
+                    return Response({
+                        'status': 'error',
+                        'code': 'DUPLICATE_SLUG',
+                        'message': '標籤名稱產生的 slug 已存在，請使用不同的名稱',
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    # 無法確定是哪個字段，顯示通用錯誤
+                    return Response({
+                        'status': 'error',
+                        'code': 'DUPLICATE',
+                        'message': '標籤名稱已存在，請使用不同的名稱',
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
             # 重新拋出其他異常，讓 DRF 處理
             raise
     

@@ -196,8 +196,17 @@ export async function adminDeleteCategory(id: number) {
 /**
  * 標籤管理 API
  */
-export async function adminGetTags() {
-  return adminRequest('/admin/tags/');
+export async function adminGetTags(params?: Record<string, any>) {
+  const searchParams = new URLSearchParams();
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, value.toString());
+      }
+    });
+  }
+  const url = searchParams.toString() ? `/admin/tags/?${searchParams.toString()}` : '/admin/tags/';
+  return adminRequest(url);
 }
 
 export async function adminGetTag(id: number) {
