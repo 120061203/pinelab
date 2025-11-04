@@ -1,31 +1,48 @@
 /**
  * 首頁
- * 顯示品牌介紹和最新商品
+ * 顯示品牌介紹和按分類分組的最新商品
  */
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getProducts, ApiResponse } from '@/lib/api';
+import { useEffect, useState, useMemo } from 'react';
+import { getProducts, getCategories, ApiResponse } from '@/lib/api';
 import { ProductListItem, PaginatedResponse } from '@/types/product';
+import { Category } from '@/types/category';
 import ProductCard from '@/components/ProductCard';
+
+// 商品分組類型
+type ProductGroup = {
+  category: Category | null; // null 表示未分類
+  products: ProductListItem[];
+};
 
 export default function HomePage() {
   const [products, setProducts] = useState<ProductListItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 取得最新 6 個商品
-    const fetchLatestProducts = async () => {
+    // 載入分類和商品
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await getProducts({
-          sort: 'updated_at',
-          page_size: 6,
-        }) as ApiResponse<PaginatedResponse<ProductListItem>>;
         
-        if (response.status === 'success' && response.data) {
-          setProducts(response.data.results || []);
+        // 並行載入分類和商品
+        const [categoriesRes, productsRes] = await Promise.all([
+          getCategories() as Promise<ApiResponse<Category[]>>,
+          getProducts({
+            sort: 'sort_order', // 按 sort_order 排序，然後按 updated_at
+            page_size: 100, // 載入足夠的商品以便分組
+          }) as Promise<ApiResponse<PaginatedResponse<ProductListItem>>>,
+        ]);
+        
+        if (categoriesRes.status === 'success' && categoriesRes.data) {
+          setCategories(categoriesRes.data as Category[]);
+        }
+        
+        if (productsRes.status === 'success' && productsRes.data) {
+          setProducts(productsRes.data.results || []);
         } else {
           setError('無法載入商品');
         }
@@ -37,8 +54,66 @@ export default function HomePage() {
       }
     };
 
-    fetchLatestProducts();
+    fetchData();
   }, []);
+
+  // 按分類分組商品
+  const productGroups = useMemo(() => {
+    const groups: ProductGroup[] = [];
+    const categoryMap = new Map<number, Category>();
+    
+    // 建立分類映射
+    categories.forEach(cat => {
+      categoryMap.set(cat.id, cat);
+    });
+
+    // 按分類分組
+    const categoryGroups = new Map<number | 'uncategorized', ProductListItem[]>();
+    
+    products.forEach(product => {
+      const categoryId = product.category?.id || 'uncategorized';
+      if (!categoryGroups.has(categoryId)) {
+        categoryGroups.set(categoryId, []);
+      }
+      categoryGroups.get(categoryId)!.push(product);
+    });
+
+    // 轉換為 ProductGroup 陣列
+    categoryGroups.forEach((productList, categoryId) => {
+      // 商品按 sort_order 降序排列（數字越大越前），然後按 updated_at 降序
+      const sortedProducts = [...productList].sort((a, b) => {
+        if (b.sort_order !== a.sort_order) {
+          return b.sort_order - a.sort_order;
+        }
+        // 如果 sort_order 相同，按 updated_at 降序
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      });
+
+      const category = categoryId === 'uncategorized' 
+        ? null 
+        : categoryMap.get(categoryId as number) || null;
+      
+      groups.push({
+        category,
+        products: sortedProducts,
+      });
+    });
+
+    // 分類區塊按分類的 sort_order 降序排列（數字越大越前）
+    groups.sort((a, b) => {
+      const aSortOrder = a.category?.sort_order ?? -1; // 未分類排在最後
+      const bSortOrder = b.category?.sort_order ?? -1;
+      if (bSortOrder !== aSortOrder) {
+        return bSortOrder - aSortOrder;
+      }
+      // 如果 sort_order 相同，按分類名稱排序
+      const aName = a.category?.name || '未分類';
+      const bName = b.category?.name || '未分類';
+      return aName.localeCompare(bName, 'zh-TW');
+    });
+
+    return groups;
+  }, [products, categories]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -50,36 +125,49 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* 最新商品 */}
-      <section>
-        <h2 className="text-2xl font-bold mb-6">最新商品</h2>
-        
-        {loading && (
-          <div className="text-center py-8">
-            <p>載入中...</p>
-          </div>
-        )}
-        
-        {error && (
-          <div className="text-center py-8 text-red-600">
-            <p>{error}</p>
-          </div>
-        )}
-        
-        {!loading && !error && products.length === 0 && (
-          <div className="text-center py-8">
-            <p>目前沒有商品</p>
-          </div>
-        )}
-        
-        {!loading && !error && products.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
-      </section>
+      {/* 按分類分組的商品 */}
+      {loading && (
+        <div className="text-center py-8">
+          <p>載入中...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="text-center py-8 text-red-600">
+          <p>{error}</p>
+        </div>
+      )}
+      
+      {!loading && !error && productGroups.length === 0 && (
+        <div className="text-center py-8">
+          <p>目前沒有商品</p>
+        </div>
+      )}
+      
+      {!loading && !error && productGroups.length > 0 && (
+        <div className="space-y-12">
+          {productGroups.map((group) => (
+            <section key={group.category?.id || 'uncategorized'} className="space-y-4">
+              {/* 分類標題 */}
+              <h2 className="text-2xl font-bold border-b pb-2">
+                {group.category ? group.category.name : '未分類'}
+                {group.category?.description && (
+                  <span className="text-sm font-normal text-gray-600 ml-2">
+                    {group.category.description}
+                  </span>
+                )}
+              </h2>
+              
+              {/* 該分類下的商品 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {group.products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
