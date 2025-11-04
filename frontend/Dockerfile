@@ -6,8 +6,15 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
+# Copy configuration files first
+COPY tsconfig.json ./
+COPY next.config.js ./
+COPY postcss.config.js ./
+COPY tailwind.config.js ./
+
 # Copy application code
-COPY . .
+COPY src ./src
+COPY public ./public
 
 # Build the application
 RUN npm run build
