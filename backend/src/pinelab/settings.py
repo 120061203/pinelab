@@ -117,6 +117,8 @@ MEDIA_ROOT = BASE_DIR.parent.parent / 'media'
 MEDIA_URL = '/media/'
 
 # Logging configuration
+# 在容器環境中只使用 console logging（由 Docker/Zeabur 收集）
+# 本地開發環境如果 logs 目錄存在，則額外使用文件日誌
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -135,11 +137,6 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': '/app/logs/django.log',
-            'formatter': 'verbose',
-        },
     },
     'root': {
         'handlers': ['console'],
@@ -147,17 +144,27 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
         'pinelab': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
     },
 }
+
+# 只在本地開發環境且 logs 目錄存在時使用文件日誌
+if DEBUG and os.path.exists('/app/logs'):
+    LOGGING['handlers']['file'] = {
+        'class': 'logging.FileHandler',
+        'filename': '/app/logs/django.log',
+        'formatter': 'verbose',
+    }
+    LOGGING['loggers']['django']['handlers'].append('file')
+    LOGGING['loggers']['pinelab']['handlers'].append('file')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
