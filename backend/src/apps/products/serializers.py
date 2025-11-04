@@ -61,8 +61,13 @@ class ProductListSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'slug', 'created_at', 'updated_at']
     
     def get_primary_image(self, obj):
-        """取得主圖"""
+        """取得主圖（優先使用 is_primary=True 的圖片，否則使用第一張圖片）"""
+        # 優先取得主圖
         primary_image = obj.images.filter(is_primary=True).first()
+        # 如果沒有主圖，使用第一張圖片
+        if not primary_image:
+            primary_image = obj.images.first()
+        
         if primary_image:
             request = self.context.get('request')
             if request:
