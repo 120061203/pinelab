@@ -14,7 +14,7 @@ export default function Cards({ totals }: { totals: { products?: number; categor
       {items.map((it) => (
         <div key={it.label} className="border rounded p-4 bg-white">
           <div className="text-gray-500 text-sm">{it.label}</div>
-          <div className="text-2xl font-semibold">{it.value}</div>
+          <div className="text-2xl font-semibold text-gray-900">{it.value}</div>
         </div>
       ))}
     </div>

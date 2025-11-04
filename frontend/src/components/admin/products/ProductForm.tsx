@@ -18,18 +18,25 @@ export default function ProductForm({ initial, productId }: { initial?: any; pro
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = { name, price, description, is_active: isActive } as any;
+      const payload = { name, price: parseFloat(price), description, is_active: isActive } as any;
       const res = productId
         ? await adminUpdateProduct(productId, payload)
         : await adminCreateProduct(payload);
-      if (res?.status === 'success' || res?.data) {
+      
+      // 檢查響應格式：可能是 {status: 'success', data: {...}} 或直接是 {data: {...}}
+      if (res?.status === 'success' || res?.data || res?.id) {
         addToast({ type: 'success', message: '已儲存' });
         router.replace('/admin-portal/products');
       } else {
-        addToast({ type: 'error', message: res?.message || '儲存失敗' });
+        // 如果響應格式不符合預期，記錄詳細資訊
+        console.error('Unexpected response format:', res);
+        addToast({ type: 'error', message: res?.message || res?.detail || '儲存失敗：響應格式不符合預期' });
       }
     } catch (err: any) {
-      addToast({ type: 'error', message: err?.message || '儲存失敗' });
+      console.error('Product save error:', err);
+      // 顯示更詳細的錯誤訊息
+      const errorMessage = err?.message || '儲存失敗';
+      addToast({ type: 'error', message: errorMessage });
     } finally {
       setSaving(false);
     }
