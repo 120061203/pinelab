@@ -21,15 +21,20 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-// Context 來傳遞 listeners
-const SortableListenersContext = createContext<any>(null);
+// 保留 Context 以向後兼容（如果其他頁面需要使用）
+interface SortableContextValue {
+  listeners: any;
+  attributes: any;
+}
+
+const SortableListenersContext = createContext<SortableContextValue | null>(null);
 
 interface SortableTableRowProps {
   id: string | number;
-  children: React.ReactNode;
+  renderContent: (listeners: any, attributes: any) => React.ReactNode;
 }
 
-function SortableTableRow({ id, children }: SortableTableRowProps) {
+function SortableTableRow({ id, renderContent }: SortableTableRowProps) {
   const {
     attributes,
     listeners,
@@ -45,25 +50,50 @@ function SortableTableRow({ id, children }: SortableTableRowProps) {
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // 只保留必要的 attributes（如 role, tabIndex），不包含拖動相關的事件監聽器和樣式
+  const rowAttributes: any = {};
+  if (attributes.role) rowAttributes.role = attributes.role;
+  if (attributes.tabIndex !== undefined) rowAttributes.tabIndex = attributes.tabIndex;
+  
+  // 確保 row 有默認游標，但子元素可以覆蓋
+  const rowStyle: React.CSSProperties = {
+    ...style,
+    cursor: 'default',
+  };
+
   return (
-    <SortableListenersContext.Provider value={listeners}>
-      <tr ref={setNodeRef} style={style} {...attributes}>
-        {children}
-      </tr>
-    </SortableListenersContext.Provider>
+    <tr 
+      ref={setNodeRef} 
+      style={rowStyle} 
+      {...rowAttributes}
+      onMouseMove={(e) => {
+        // 確保只有拖動手柄可以改變游標
+        const target = e.target as HTMLElement;
+        if (!target.closest('[data-drag-handle]')) {
+          (e.currentTarget as HTMLElement).style.cursor = 'default';
+        }
+      }}
+    >
+      {renderContent(listeners, attributes)}
+    </tr>
   );
 }
 
-// Hook 來獲取當前行的 listeners
+// Hook 來獲取當前行的 listeners 和 attributes
 export function useSortableRowListeners() {
-  return useContext(SortableListenersContext);
+  const context = useContext(SortableListenersContext);
+  if (!context) {
+    console.warn('useSortableRowListeners must be used within SortableTableRow');
+    return { listeners: null, attributes: null };
+  }
+  return context;
 }
 
 interface SortableTableBodyProps<T> {
   items: T[];
   onReorder: (items: T[]) => void;
   getItemId: (item: T) => string | number;
-  renderItem: (item: T, index: number) => React.ReactNode;
+  renderItem: (item: T, index: number, dragHandleProps?: { listeners: any; attributes: any }) => React.ReactNode;
 }
 
 export default function SortableTableBody<T>({
@@ -73,7 +103,12 @@ export default function SortableTableBody<T>({
   renderItem,
 }: SortableTableBodyProps<T>) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      // 需要按住才能拖動，避免意外觸發
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -102,11 +137,16 @@ export default function SortableTableBody<T>({
           items={items.map(getItemId)}
           strategy={verticalListSortingStrategy}
         >
-          {items.map((item, index) => (
-            <SortableTableRow key={getItemId(item)} id={getItemId(item)}>
-              {renderItem(item, index)}
-            </SortableTableRow>
-          ))}
+          {items.map((item, index) => {
+            const itemId = getItemId(item);
+            return (
+              <SortableTableRow 
+                key={itemId} 
+                id={itemId}
+                renderContent={(listeners, attributes) => renderItem(item, index, { listeners, attributes })}
+              />
+            );
+          })}
         </SortableContext>
       </DndContext>
     </tbody>

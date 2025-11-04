@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { adminGetCategories, adminDeleteCategory, adminBatchUpdateCategorySort, adminGetProducts, adminBatchUpdateProductCategory } from '@/lib/admin-api';
 import { Table, Th, Td } from '@/components/admin/table/Table';
 import CategoryForm from '@/components/admin/dicts/CategoryForm';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
 import ConfirmModal from '@/components/admin/modals/ConfirmModal';
-import SortableTableBody, { useSortableRowListeners } from '@/components/admin/dnd/SortableTableBody';
+import SortableTableBody from '@/components/admin/dnd/SortableTableBody';
 
 export default function AdminCategoriesPage() {
   const { addToast } = useToast();
@@ -272,21 +272,49 @@ export default function AdminCategoriesPage() {
               items={items}
               onReorder={handleReorder}
               getItemId={(item) => item.id}
-              renderItem={(c, index) => {
-                const DragHandle = () => {
-                  const listeners = useSortableRowListeners();
-                  return (
-                    <Td className="text-gray-400 cursor-grab active:cursor-grabbing" {...listeners}>⋮⋮</Td>
-                  );
-                };
+              renderItem={(c, index, dragHandleProps) => {
+                if (!dragHandleProps) {
+                  return null;
+                }
+                const { listeners, attributes } = dragHandleProps;
+                // 過濾 attributes，只保留必要的，避免影響游標
+                const handleAttributes: any = {};
+                if (attributes.role) handleAttributes.role = attributes.role;
+                if (attributes.tabIndex !== undefined) handleAttributes.tabIndex = attributes.tabIndex;
+                if (attributes['aria-describedby']) handleAttributes['aria-describedby'] = attributes['aria-describedby'];
+                
+                // 使用 Td 組件並添加拖動手柄標記
+                
                 return (
                   <>
-                    <DragHandle />
-                    <Td>{c.id}</Td>
-                    <Td>{c.name}</Td>
-                    <Td>{c.sort_order}</Td>
-                    <Td>{c.is_active ? '啟用' : '停用'}</Td>
-                    <Td className="space-x-3">
+                    <Td 
+                      className="text-gray-400 select-none" 
+                      data-drag-handle="true"
+                      {...listeners}
+                      {...handleAttributes}
+                      style={{ 
+                        touchAction: 'none',
+                        userSelect: 'none',
+                        WebkitUserSelect: 'none',
+                        MozUserSelect: 'none',
+                        msUserSelect: 'none',
+                        cursor: 'grab',
+                      } as React.CSSProperties}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        e.currentTarget.style.cursor = 'grabbing';
+                      }}
+                      onMouseUp={(e) => {
+                        e.currentTarget.style.cursor = 'grab';
+                      }}
+                    >
+                      ⋮⋮
+                    </Td>
+                    <Td style={{ cursor: 'default' }}>{c.id}</Td>
+                    <Td style={{ cursor: 'default' }}>{c.name}</Td>
+                    <Td style={{ cursor: 'default' }}>{c.sort_order}</Td>
+                    <Td style={{ cursor: 'default' }}>{c.is_active ? '啟用' : '停用'}</Td>
+                    <Td className="space-x-3" style={{ cursor: 'default' }}>
                       <button 
                         className="text-blue-600 hover:underline" 
                         onClick={(e) => {

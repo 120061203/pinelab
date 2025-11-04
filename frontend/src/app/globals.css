@@ -16,3 +16,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 確保拖動手柄顯示正確的游標 */
+[data-drag-handle="true"] {
+  cursor: grab;
+}
+
+[data-drag-handle="true"]:active {
+  cursor: grabbing;
+}
+

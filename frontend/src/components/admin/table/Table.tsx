@@ -12,8 +12,16 @@ export function Th({ children }: { children: React.ReactNode }) {
   return <th className="text-left px-3 py-2 bg-gray-50 border-b">{children}</th>;
 }
 
-export function Td({ children }: { children: React.ReactNode }) {
-  return <td className="px-3 py-2 border-b">{children}</td>;
+export function Td({ children, className, style, ...props }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; [key: string]: any }) {
+  return (
+    <td 
+      className={`px-3 py-2 border-b ${className || ''}`}
+      style={style}
+      {...props}
+    >
+      {children}
+    </td>
+  );
 }
 
 export function Pagination({ page, totalPages, onPage }: { page: number; totalPages: number; onPage: (p: number) => void }) {

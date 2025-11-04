@@ -130,18 +130,44 @@ export default function AdminProductsPage() {
               items={items}
               onReorder={handleReorder}
               getItemId={(item) => item.id}
-              renderItem={(p, index) => (
-                <>
-                  <Td className="text-gray-400 cursor-grab active:cursor-grabbing">⋮⋮</Td>
-                  <Td>{p.id}</Td>
-                  <Td>{p.name}</Td>
-                  <Td>{p.price}</Td>
-                  <Td>{p.is_active ? '啟用' : '停用'}</Td>
-                  <Td>
-                    <Link href={`/admin-portal/products/${p.id}`} className="text-blue-600">編輯</Link>
-                  </Td>
-                </>
-              )}
+              renderItem={(p, index, dragHandleProps) => {
+                // 如果沒有提供 dragHandleProps，使用整個行拖動（向後兼容）
+                if (!dragHandleProps) {
+                  return (
+                    <>
+                      <Td className="text-gray-400 cursor-grab active:cursor-grabbing">⋮⋮</Td>
+                      <Td>{p.id}</Td>
+                      <Td>{p.name}</Td>
+                      <Td>{p.price}</Td>
+                      <Td>{p.is_active ? '啟用' : '停用'}</Td>
+                      <Td>
+                        <Link href={`/admin-portal/products/${p.id}`} className="text-blue-600">編輯</Link>
+                      </Td>
+                    </>
+                  );
+                }
+                // 使用拖動手柄
+                const { listeners, attributes } = dragHandleProps;
+                return (
+                  <>
+                    <Td 
+                      className="text-gray-400 cursor-grab active:cursor-grabbing select-none" 
+                      {...listeners}
+                      {...attributes}
+                      style={{ touchAction: 'none' }}
+                    >
+                      ⋮⋮
+                    </Td>
+                    <Td>{p.id}</Td>
+                    <Td>{p.name}</Td>
+                    <Td>{p.price}</Td>
+                    <Td>{p.is_active ? '啟用' : '停用'}</Td>
+                    <Td>
+                      <Link href={`/admin-portal/products/${p.id}`} className="text-blue-600">編輯</Link>
+                    </Td>
+                  </>
+                );
+              }}
             />
           </Table>
           <Pagination page={page} totalPages={totalPages} onPage={setPage} />
