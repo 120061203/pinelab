@@ -178,33 +178,33 @@ Acceptance (independent):
 
 ## 第 13 階段：商品分類與標籤管理功能 (P2)
 
- - [ ] T051 商品表單添加分類和標籤選擇功能於 frontend/src/components/admin/products/ProductForm.tsx
+ - [x] T051 商品表單添加分類和標籤選擇功能於 frontend/src/components/admin/products/ProductForm.tsx
    - 添加分類下拉選單（可選，支援清空）
    - 添加標籤多選功能（checkbox 或 multi-select）
    - 載入所有啟用的分類和標籤供選擇
    - 商品建立/編輯時可指定分類和標籤
    - 表單提交時包含 category_id 和 tag_ids
 
- - [ ] T052 分類頁面批量修改商品分類功能於 frontend/src/app/admin-portal/categories/page.tsx
+ - [x] T052 分類頁面批量修改商品分類功能於 frontend/src/app/admin-portal/categories/page.tsx
    - 添加批量選擇功能（checkbox）
    - 添加「批量修改分類」按鈕和操作面板
    - 選擇多個商品後，可批量將它們移動到指定分類
    - 顯示操作確認對話框
    - 後端需支援批量更新商品分類 API
 
- - [ ] T053 標籤頁面批量修改商品標籤功能於 frontend/src/app/admin-portal/tags/page.tsx
+ - [x] T053 標籤頁面批量修改商品標籤功能於 frontend/src/app/admin-portal/tags/page.tsx
    - 添加批量選擇功能（checkbox）
    - 添加「批量添加/移除標籤」按鈕和操作面板
    - 選擇多個商品後，可批量添加或移除標籤
    - 顯示操作確認對話框
    - 後端需支援批量更新商品標籤 API
 
- - [ ] T054 後端批量更新商品分類 API 於 backend/src/apps/products/admin_views.py
+ - [x] T054 後端批量更新商品分類 API 於 backend/src/apps/products/admin_views.py
    - 新增 API 端點：POST /api/admin/products/batch_update_category/
    - 接收商品 ID 列表和目標分類 ID，批量更新
    - 支援清空分類（category_id 為 null）
 
- - [ ] T055 後端批量更新商品標籤 API 於 backend/src/apps/products/admin_views.py
+ - [x] T055 後端批量更新商品標籤 API 於 backend/src/apps/products/admin_views.py
    - 新增 API 端點：POST /api/admin/products/batch_update_tags/
    - 接收商品 ID 列表和操作類型（add/remove/replace）以及標籤 ID 列表
    - 支援添加標籤、移除標籤、替換標籤三種操作

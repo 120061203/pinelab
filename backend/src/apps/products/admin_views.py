@@ -351,6 +351,127 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
                 'code': 'UPDATE_FAILED',
                 'message': f'批量更新失敗: {str(e)}',
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['post'], url_path='batch_update_category')
+    def batch_update_category(self, request):
+        """
+        批量更新商品分類
+        接收格式: { "product_ids": [1, 2, 3], "category_id": 5 } 或 { "product_ids": [1, 2, 3], "category_id": null }
+        """
+        product_ids = request.data.get('product_ids', [])
+        category_id = request.data.get('category_id')
+        
+        if not isinstance(product_ids, list) or len(product_ids) == 0:
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_FORMAT',
+                'message': 'product_ids 必須是非空陣列',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            from apps.categories.models import Category
+            # 如果 category_id 不是 None，驗證分類存在
+            category = None
+            if category_id is not None:
+                try:
+                    category = Category.objects.get(id=category_id)
+                except Category.DoesNotExist:
+                    return Response({
+                        'status': 'error',
+                        'code': 'CATEGORY_NOT_FOUND',
+                        'message': f'分類 ID {category_id} 不存在',
+                    }, status=status.HTTP_404_NOT_FOUND)
+            
+            # 批量更新商品分類
+            updated_count = Product.objects.filter(id__in=product_ids).update(category=category)
+            
+            return Response({
+                'status': 'success',
+                'data': {
+                    'updated_count': updated_count,
+                    'product_ids': product_ids,
+                    'category_id': category_id,
+                },
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'code': 'UPDATE_FAILED',
+                'message': f'批量更新失敗: {str(e)}',
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['post'], url_path='batch_update_tags')
+    def batch_update_tags(self, request):
+        """
+        批量更新商品標籤
+        接收格式: { "product_ids": [1, 2, 3], "operation": "add|remove|replace", "tag_ids": [5, 6] }
+        """
+        product_ids = request.data.get('product_ids', [])
+        operation = request.data.get('operation', 'replace')
+        tag_ids = request.data.get('tag_ids', [])
+        
+        if not isinstance(product_ids, list) or len(product_ids) == 0:
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_FORMAT',
+                'message': 'product_ids 必須是非空陣列',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if operation not in ['add', 'remove', 'replace']:
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_OPERATION',
+                'message': 'operation 必須是 add、remove 或 replace',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not isinstance(tag_ids, list):
+            tag_ids = []
+        
+        try:
+            from apps.tags.models import Tag
+            # 驗證標籤存在
+            if tag_ids:
+                existing_tags = Tag.objects.filter(id__in=tag_ids)
+                existing_tag_ids = set(existing_tags.values_list('id', flat=True))
+                missing_tag_ids = set(tag_ids) - existing_tag_ids
+                if missing_tag_ids:
+                    return Response({
+                        'status': 'error',
+                        'code': 'TAGS_NOT_FOUND',
+                        'message': f'標籤 ID {list(missing_tag_ids)} 不存在',
+                    }, status=status.HTTP_404_NOT_FOUND)
+            
+            # 取得要更新的商品
+            products = Product.objects.filter(id__in=product_ids)
+            updated_count = 0
+            
+            for product in products:
+                if operation == 'add':
+                    # 添加標籤（不重複）
+                    product.tags.add(*tag_ids)
+                elif operation == 'remove':
+                    # 移除標籤
+                    product.tags.remove(*tag_ids)
+                elif operation == 'replace':
+                    # 替換標籤
+                    product.tags.set(tag_ids)
+                updated_count += 1
+            
+            return Response({
+                'status': 'success',
+                'data': {
+                    'updated_count': updated_count,
+                    'product_ids': product_ids,
+                    'operation': operation,
+                    'tag_ids': tag_ids,
+                },
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'code': 'UPDATE_FAILED',
+                'message': f'批量更新失敗: {str(e)}',
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
