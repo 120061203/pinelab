@@ -26,6 +26,13 @@ Zeabur 自動檢測到 `frontend/` 目錄中的 Next.js，誤判為靜態網站�
 
 **注意：** 如果 Zeabur 不支援 Docker Compose，請使用方案二。
 
+**⚠️ 重要：** 如果遇到構建錯誤，請檢查：
+- **後端服務**：根目錄必須設置為 `backend`，否則會出現 `requirements.txt not found` 錯誤
+- **前端服務**：根目錄必須設置為 `frontend`，否則會出現 `/frontend not found` 錯誤
+- Dockerfile 路徑是否正確指向各自的 Dockerfile
+
+詳細排查方法請參考 `ZEABUR_TROUBLESHOOTING.md`
+
 ---
 
 ### 方案二：分別創建多個服務
@@ -36,8 +43,13 @@ Zeabur 自動檢測到 `frontend/` 目錄中的 Next.js，誤判為靜態網站�
 2. 連接同一個 GitHub 倉庫
 3. 配置如下：
    - **服務名稱**: `pinelab-backend` (或你喜歡的名稱)
-   - **根目錄 (Root Directory)**: `backend`
-   - **Dockerfile**: 自動檢測（已在 `backend/Dockerfile`）
+   - **根目錄 (Root Directory)**: `backend` ⚠️ **必須設置為 `backend`**
+   - **Dockerfile**: `Dockerfile` 或 `./Dockerfile`（在 `backend` 目錄中）
+   - **Build Context**: `backend`（與根目錄相同）
+
+**⚠️ 重要：** 
+- 確保「根目錄」設置為 `backend`，這樣 Dockerfile 才能找到 `requirements.txt`
+- 如果使用「配置」按鈕，選擇 Provider 為 `Docker`，根目錄為 `backend`
    - **環境變數**:
      ```
      PYTHONPATH=/app/src
@@ -58,8 +70,13 @@ Zeabur 自動檢測到 `frontend/` 目錄中的 Next.js，誤判為靜態網站�
 2. 連接同一個 GitHub 倉庫
 3. 配置如下：
    - **服務名稱**: `pinelab-frontend` (或你喜歡的名稱)
-   - **根目錄 (Root Directory)**: `frontend`
-   - **Dockerfile**: 自動檢測（已在 `frontend/Dockerfile`）
+   - **根目錄 (Root Directory)**: `frontend` ⚠️ **必須設置為 `frontend`**
+   - **Dockerfile**: `Dockerfile` 或 `./Dockerfile`（在 `frontend` 目錄中）
+   - **Build Context**: `frontend`（與根目錄相同）
+
+**⚠️ 重要：** 
+- 確保「根目錄」設置為 `frontend`，這樣 Dockerfile 才能找到 `package.json` 和其他文件
+- 如果使用「配置」按鈕，選擇 Provider 為 `Docker`，根目錄為 `frontend`
    - **環境變數**:
      ```
      NEXT_PUBLIC_API_URL=https://your-backend-domain.zeabur.app/api
