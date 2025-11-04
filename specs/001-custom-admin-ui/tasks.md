@@ -51,6 +51,8 @@ Contracts: ./contracts/openapi.yaml
 - [x] T022 [US2] Image manager UI (list, set primary, sort) at frontend/src/components/admin/products/ImageManager.tsx
 - [x] T023 [P] [US2] File upload UI (drag&drop, progress) at frontend/src/components/admin/products/ImageUpload.tsx
 - [x] T024 [US2] Bind uploaded path to product images at frontend/src/components/admin/products/ImageManager.tsx
+- [ ] T025 [US2] 上傳圖片時提供選擇主圖選項（checkbox）於 frontend/src/components/admin/products/ImageUpload.tsx
+- [ ] T026 [US2] 圖片管理區塊提供設定/取消主圖功能於 frontend/src/components/admin/products/ImageManager.tsx
 
 驗收標準（可獨立驗收）：
 - 能建立/編輯/刪除商品；可上傳圖片、設定主圖與排序。

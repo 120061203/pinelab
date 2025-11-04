@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
-import { adminDeleteProductImage } from '@/lib/admin-api';
+import { adminDeleteProductImage, adminSetPrimaryImage } from '@/lib/admin-api';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
 
 export default function ImageManager({ product, onChanged }: { product: any; onChanged: () => void }) {
@@ -17,6 +17,19 @@ export default function ImageManager({ product, onChanged }: { product: any; onC
       onChanged();
     } catch (e: any) {
       addToast({ type: 'error', message: e?.message || '刪除失敗' });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const onSetPrimary = async (imageId: number) => {
+    try {
+      setBusyId(imageId);
+      await adminSetPrimaryImage(product.id, imageId);
+      addToast({ type: 'success', message: '已設為主圖' });
+      onChanged();
+    } catch (e: any) {
+      addToast({ type: 'error', message: e?.message || '設定失敗' });
     } finally {
       setBusyId(null);
     }
@@ -49,15 +62,25 @@ export default function ImageManager({ product, onChanged }: { product: any; onC
                   }}
                 />
                 <div className="flex items-center justify-between text-sm">
-                  <span className={img.is_primary ? 'text-blue-600 font-medium' : ''}>
-                    {img.is_primary ? '主圖' : ''}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {img.is_primary ? (
+                      <span className="text-blue-600 font-medium">主圖</span>
+                    ) : (
+                      <button
+                        disabled={busyId===img.id}
+                        onClick={() => onSetPrimary(img.id)}
+                        className="text-blue-600 hover:text-blue-800 disabled:opacity-50 text-xs"
+                      >
+                        設為主圖
+                      </button>
+                    )}
+                  </div>
                   <button 
                     disabled={busyId===img.id} 
                     onClick={() => onDelete(img.id)} 
                     className="text-red-600 hover:text-red-800 disabled:opacity-50"
                   >
-                    {busyId===img.id ? '刪除中...' : '刪除'}
+                    {busyId===img.id ? '處理中...' : '刪除'}
                   </button>
                 </div>
               </div>

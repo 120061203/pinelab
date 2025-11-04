@@ -190,7 +190,7 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
             'data': serializer.data,
         }, status=status.HTTP_201_CREATED)
     
-    @action(detail=True, methods=['delete'], url_path='images/(?P<image_id>[^/.]+)')
+    @action(detail=True, methods=['delete'], url_path='images/(?P<image_id>[0-9]+)')
     def delete_image(self, request, pk=None, image_id=None):
         """
         刪除商品圖片
@@ -205,6 +205,49 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
                 'status': 'success',
                 'data': {'message': '圖片已刪除'},
             }, status=status.HTTP_200_OK)
+        except product.images.model.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'code': 'IMAGE_NOT_FOUND',
+                'message': '圖片不存在',
+            }, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=True, methods=['post'], url_path='set_primary_image')
+    def set_primary_image(self, request, pk=None):
+        """
+        設定商品主圖
+        從請求 body 中取得 image_id
+        """
+        product = self.get_object()
+        image_id = request.data.get('image_id')
+        
+        if not image_id:
+            return Response({
+                'status': 'error',
+                'code': 'MISSING_IMAGE_ID',
+                'message': '請提供圖片 ID',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            image_id = int(image_id)
+            image = product.images.get(id=image_id)
+            # 先取消其他主圖
+            product.images.filter(is_primary=True).update(is_primary=False)
+            # 設定當前圖片為主圖
+            image.is_primary = True
+            image.save()
+            
+            serializer = self.get_serializer(product)
+            return Response({
+                'status': 'success',
+                'data': serializer.data,
+            }, status=status.HTTP_200_OK)
+        except (ValueError, TypeError):
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_IMAGE_ID',
+                'message': '無效的圖片 ID',
+            }, status=status.HTTP_400_BAD_REQUEST)
         except product.images.model.DoesNotExist:
             return Response({
                 'status': 'error',

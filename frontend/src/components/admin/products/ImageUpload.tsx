@@ -7,19 +7,21 @@ import { useToast } from '@/components/admin/feedback/ToastProvider';
 export default function ImageUpload({ productId, onUploaded }: { productId: number; onUploaded?: () => void }) {
   const { addToast } = useToast();
   const [busy, setBusy] = useState(false);
+  const [isPrimary, setIsPrimary] = useState(false);
 
   const onFile = async (file: File) => {
     setBusy(true);
     try {
-      await uploadProductImage(productId, file);
-      addToast({ type: 'success', message: '上傳成功' });
+      await uploadProductImage(productId, file, { is_primary: isPrimary });
+      addToast({ type: 'success', message: isPrimary ? '上傳成功並設為主圖' : '上傳成功' });
       // 上傳成功後觸發刷新
       if (onUploaded) {
         onUploaded();
       }
-      // 清空 input，允許再次上傳同一個檔案
+      // 清空 input 和 checkbox，允許再次上傳同一個檔案
       const input = document.querySelector('input[type="file"]') as HTMLInputElement;
       if (input) input.value = '';
+      setIsPrimary(false);
     } catch (e: any) {
       addToast({ type: 'error', message: e?.message || '上傳失敗' });
     } finally {
@@ -57,6 +59,19 @@ export default function ImageUpload({ productId, onUploaded }: { productId: numb
         aria-label="上傳商品圖片"
         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
       />
+      <div className="mt-3 flex items-center gap-2">
+        <input
+          id="set-primary"
+          type="checkbox"
+          checked={isPrimary}
+          onChange={(e) => setIsPrimary(e.target.checked)}
+          disabled={busy}
+          className="w-4 h-4"
+        />
+        <label htmlFor="set-primary" className="text-sm text-gray-700 cursor-pointer">
+          設為主圖
+        </label>
+      </div>
       {busy && <p className="text-sm text-gray-500 mt-2">上傳中...</p>}
     </div>
   );
