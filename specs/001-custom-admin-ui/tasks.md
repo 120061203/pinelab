@@ -53,9 +53,30 @@ Contracts: ./contracts/openapi.yaml
 - [x] T024 [US2] Bind uploaded path to product images at frontend/src/components/admin/products/ImageManager.tsx
 - [ ] T025 [US2] 上傳圖片時提供選擇主圖選項（checkbox）於 frontend/src/components/admin/products/ImageUpload.tsx
 - [ ] T026 [US2] 圖片管理區塊提供設定/取消主圖功能於 frontend/src/components/admin/products/ImageManager.tsx
+- [ ] T057 [US2] 商品列表頁添加刪除按鈕於 frontend/src/app/admin-portal/products/page.tsx
+  - 每個商品行添加刪除按鈕
+  - 點擊刪除按鈕時顯示確認對話框
+  - 確認後調用刪除 API 並刷新列表
+- [ ] T058 [US2] 商品列表頁添加批量修改功能於 frontend/src/app/admin-portal/products/page.tsx
+  - 添加批量選擇功能（checkbox，支援全選/取消全選）
+  - 添加「批量修改」按鈕和操作面板
+  - 批量操作選項包括：
+    - 修改商品啟用狀態（啟用/停用）
+    - 隱藏商品（設定 is_hidden 狀態）
+    - 刪除商品（批量刪除）
+    - 暫存商品（設定為草稿狀態）
+  - 每個操作都顯示確認對話框
+  - 後端需支援批量更新商品狀態 API
+- [ ] T059 [US2] 後端批量更新商品狀態 API 於 backend/src/apps/products/admin_views.py
+  - 新增 API 端點：POST /api/admin/products/batch_update_status/
+  - 接收商品 ID 列表和操作類型（enable/disable/hide/show/delete/draft）
+  - 支援批量啟用、停用、隱藏、顯示、刪除、暫存等操作
 
 驗收標準（可獨立驗收）：
 - 能建立/編輯/刪除商品；可上傳圖片、設定主圖與排序。
+- 商品列表頁每個商品都有刪除按鈕，點擊後可刪除商品。
+- 商品列表頁支援批量選擇和批量修改（啟用狀態、隱藏、刪除、暫存）。
+- 批量操作後商品狀態正確更新。
 
 ---
 
@@ -64,9 +85,14 @@ Contracts: ./contracts/openapi.yaml
  - [x] T025 [US3] 分類列表與 CRUD 於 frontend/src/app/admin-portal/categories/page.tsx
  - [x] T026 [US3] 標籤列表與 CRUD 於 frontend/src/app/admin-portal/tags/page.tsx
  - [x] T027 [P] [US3] 分類/標籤表單（含驗證）於 frontend/src/components/admin/dicts/
+ - [ ] T056 [US3] 標籤表單添加取消按鈕於 frontend/src/components/admin/dicts/TagForm.tsx
+   - 編輯模式下顯示取消按鈕
+   - 點擊取消按鈕時重置表單並取消編輯狀態
+   - 新增模式下取消按鈕可清空表單
 
 驗收標準（可獨立驗收）：
 - 能新增/修改/刪除分類與標籤；刪除被引用分類時顯示阻擋提示。
+- 標籤表單提供取消按鈕，可取消編輯或清空表單。
 
 ---
 
