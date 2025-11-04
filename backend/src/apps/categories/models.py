@@ -1,6 +1,7 @@
 """
 分類模型
 """
+import time
 from django.db import models
 from django.utils.text import slugify
 
@@ -25,7 +26,26 @@ class Category(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name)
+            if not base_slug:  # 如果 slugify 結果為空（例如中文名稱）
+                # 使用時間戳來生成唯一 slug
+                base_slug = f"category-{int(time.time())}"
+            
+            slug = base_slug
+            counter = 1
+            # 確保 slug 唯一：如果已存在，在後面加上數字
+            # 使用 exclude 來排除當前對象（如果是更新操作）
+            queryset = Category.objects.filter(slug=slug)
+            if self.pk:
+                queryset = queryset.exclude(pk=self.pk)
+            
+            while queryset.exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+                queryset = Category.objects.filter(slug=slug)
+                if self.pk:
+                    queryset = queryset.exclude(pk=self.pk)
+            self.slug = slug
         super().save(*args, **kwargs)
     
     def __str__(self):
