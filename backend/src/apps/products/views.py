@@ -45,7 +45,17 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request, *args, **kwargs):
         """統一回應格式"""
         response = super().list(request, *args, **kwargs)
-        # 分頁回應已經由 StandardResultsSetPagination 處理
+        if response.status_code == 200:
+            # 統一返回格式為 {status: 'success', data: {...}}
+            return Response({
+                'status': 'success',
+                'data': {
+                    'count': response.data.get('count', 0),
+                    'next': response.data.get('next'),
+                    'previous': response.data.get('previous'),
+                    'results': response.data.get('results', []),
+                }
+            })
         return response
     
     def retrieve(self, request, *args, **kwargs):
