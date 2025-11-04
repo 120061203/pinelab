@@ -176,16 +176,61 @@ Acceptance (independent):
 
 ---
 
+## 第 13 階段：商品分類與標籤管理功能 (P2)
+
+ - [ ] T051 商品表單添加分類和標籤選擇功能於 frontend/src/components/admin/products/ProductForm.tsx
+   - 添加分類下拉選單（可選，支援清空）
+   - 添加標籤多選功能（checkbox 或 multi-select）
+   - 載入所有啟用的分類和標籤供選擇
+   - 商品建立/編輯時可指定分類和標籤
+   - 表單提交時包含 category_id 和 tag_ids
+
+ - [ ] T052 分類頁面批量修改商品分類功能於 frontend/src/app/admin-portal/categories/page.tsx
+   - 添加批量選擇功能（checkbox）
+   - 添加「批量修改分類」按鈕和操作面板
+   - 選擇多個商品後，可批量將它們移動到指定分類
+   - 顯示操作確認對話框
+   - 後端需支援批量更新商品分類 API
+
+ - [ ] T053 標籤頁面批量修改商品標籤功能於 frontend/src/app/admin-portal/tags/page.tsx
+   - 添加批量選擇功能（checkbox）
+   - 添加「批量添加/移除標籤」按鈕和操作面板
+   - 選擇多個商品後，可批量添加或移除標籤
+   - 顯示操作確認對話框
+   - 後端需支援批量更新商品標籤 API
+
+ - [ ] T054 後端批量更新商品分類 API 於 backend/src/apps/products/admin_views.py
+   - 新增 API 端點：POST /api/admin/products/batch_update_category/
+   - 接收商品 ID 列表和目標分類 ID，批量更新
+   - 支援清空分類（category_id 為 null）
+
+ - [ ] T055 後端批量更新商品標籤 API 於 backend/src/apps/products/admin_views.py
+   - 新增 API 端點：POST /api/admin/products/batch_update_tags/
+   - 接收商品 ID 列表和操作類型（add/remove/replace）以及標籤 ID 列表
+   - 支援添加標籤、移除標籤、替換標籤三種操作
+
+驗收標準（可獨立驗收）：
+- 商品表單可選擇分類和標籤
+- 分類和標籤頁面可批量選擇商品並修改
+- 批量操作後商品分類/標籤正確更新
+- 操作確認對話框正常運作
+
+---
+
 ## 依賴與順序
-- 故事順序：US1 → US2 →（US3 與 US4 並行）→ US5 → Dashboard/RBAC → Polish → 分類分組顯示 → 拖移排序
+- 故事順序：US1 → US2 →（US3 與 US4 並行）→ US5 → Dashboard/RBAC → Polish → 分類分組顯示 → 拖移排序 → 商品分類與標籤管理
 - 第 11 階段（分類分組顯示）可在 US2 完成後進行
 - 第 12 階段（拖移排序）建議在第 11 階段完成後進行，或可並行開發
+- 第 13 階段（商品分類與標籤管理）可在 US2 完成後進行，與其他階段可並行
 
 ## 並行建議
 - T019/T020/T023 可並行（不同檔案層）。
 - US3 與 US4 可在 US2 完成後並行。
 - T043 和 T044 可並行開發。
 - T045、T046、T047 可並行開發（不同的拖移排序場景）。
+- T051 可獨立開發（商品表單功能）。
+- T052 和 T053 可並行開發（不同的批量操作場景）。
+- T054 和 T055 可並行開發（不同的批量更新 API）。
 
 ## MVP 建議
 - 僅涵蓋 US1（登入與存取控制）+ US2（商品基本 CRUD 與圖片上傳）。
