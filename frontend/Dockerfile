@@ -6,15 +6,14 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy configuration files first
-COPY tsconfig.json ./
-COPY next.config.js ./
-COPY postcss.config.js ./
-COPY tailwind.config.js ./
+# Copy all files (excluding those in .dockerignore)
+# This ensures tsconfig.json and all source files are included
+COPY . .
 
-# Copy application code
-COPY src ./src
-COPY public ./public
+# Verify critical files exist before building
+RUN test -f src/lib/api.ts || (echo "ERROR: src/lib/api.ts not found!" && ls -la src/lib/ && exit 1) && \
+    test -f tsconfig.json || (echo "ERROR: tsconfig.json not found!" && exit 1) && \
+    echo "All required files present, proceeding with build..."
 
 # Build the application
 RUN npm run build
