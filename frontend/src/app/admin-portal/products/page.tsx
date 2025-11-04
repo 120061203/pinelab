@@ -2,15 +2,18 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { adminGetProducts } from "@/lib/admin-api";
+import { adminGetProducts, adminBatchUpdateProductSort } from "@/lib/admin-api";
 import { Table, Th, Td, Pagination } from "@/components/admin/table/Table";
 import FilterBar, { Filters } from "@/components/admin/filters/FilterBar";
 import { useUrlState } from "@/lib/url-state";
+import SortableTableBody from "@/components/admin/dnd/SortableTableBody";
+import { useToast } from "@/components/admin/feedback/ToastProvider";
 
 type ProductRow = {
   id: number;
   name: string;
   price: string | number;
+  sort_order: number;
   is_active: boolean;
   updated_at?: string;
 };
@@ -19,6 +22,7 @@ export default function AdminProductsPage() {
   const [items, setItems] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const { getAll, setAll } = useUrlState();
   const initQuery = getAll();
   const [search, setSearch] = useState(initQuery.keywords || "");
@@ -31,6 +35,7 @@ export default function AdminProductsPage() {
   });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const { addToast } = useToast();
 
   const load = async (pageNum = 1, q = "", f: Filters = {}) => {
     setLoading(true);
@@ -39,7 +44,12 @@ export default function AdminProductsPage() {
       const res: any = await adminGetProducts({ page: pageNum, search: q, ...f });
       const data = res?.data || res?.results || res || [];
       const list = Array.isArray(data) ? data : (data?.results || []);
-      setItems(list as ProductRow[]);
+      // 確保 sort_order 存在，如果沒有則使用默認值
+      const itemsWithSort = (list as ProductRow[]).map((item, index) => ({
+        ...item,
+        sort_order: item.sort_order ?? (list.length - index),
+      }));
+      setItems(itemsWithSort);
       const count = res?.count || data?.count || list.length;
       setTotalPages(Math.max(1, Math.ceil((count || 0) / 20)));
     } catch (e: any) {
@@ -58,6 +68,35 @@ export default function AdminProductsPage() {
     load(1, f.keywords || "", f);
   };
 
+  const handleReorder = async (newItems: ProductRow[]) => {
+    // 更新本地狀態
+    setItems(newItems);
+    
+    // 準備批量更新數據：從最大到最小分配 sort_order
+    const updateItems = newItems.map((item, index) => ({
+      id: item.id,
+      sort_order: newItems.length - index, // 第一個項目 sort_order 最大
+    }));
+
+    try {
+      setSaving(true);
+      const res = await adminBatchUpdateProductSort(updateItems);
+      if (res?.status === 'success') {
+        addToast({ type: 'success', message: '排序已更新' });
+      } else {
+        addToast({ type: 'error', message: res?.message || '更新排序失敗' });
+        // 如果失敗，重新載入數據
+        load(page, search, filters);
+      }
+    } catch (e: any) {
+      addToast({ type: 'error', message: e?.message || '更新排序失敗' });
+      // 如果失敗，重新載入數據
+      load(page, search, filters);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -73,9 +112,13 @@ export default function AdminProductsPage() {
         <div className="text-red-600">{error}</div>
       ) : (
         <>
+          {saving && (
+            <div className="text-sm text-gray-600">正在保存排序...</div>
+          )}
           <Table>
             <thead>
               <tr>
+                <Th>排序</Th>
                 <Th>ID</Th>
                 <Th>名稱</Th>
                 <Th>價格</Th>
@@ -83,9 +126,13 @@ export default function AdminProductsPage() {
                 <Th>操作</Th>
               </tr>
             </thead>
-            <tbody>
-              {items.map((p) => (
-                <tr key={p.id}>
+            <SortableTableBody
+              items={items}
+              onReorder={handleReorder}
+              getItemId={(item) => item.id}
+              renderItem={(p, index) => (
+                <>
+                  <Td className="text-gray-400 cursor-grab active:cursor-grabbing">⋮⋮</Td>
                   <Td>{p.id}</Td>
                   <Td>{p.name}</Td>
                   <Td>{p.price}</Td>
@@ -93,9 +140,9 @@ export default function AdminProductsPage() {
                   <Td>
                     <Link href={`/admin-portal/products/${p.id}`} className="text-blue-600">編輯</Link>
                   </Td>
-                </tr>
-              ))}
-            </tbody>
+                </>
+              )}
+            />
           </Table>
           <Pagination page={page} totalPages={totalPages} onPage={setPage} />
         </>

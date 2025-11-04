@@ -212,6 +212,56 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
                 'message': '圖片不存在',
             }, status=status.HTTP_404_NOT_FOUND)
     
+    @action(detail=True, methods=['post'], url_path='images/batch_update_sort')
+    def batch_update_image_sort(self, request, pk=None):
+        """
+        批量更新商品圖片排序
+        接收格式: { "items": [{"id": 1, "sort_order": 10}, {"id": 2, "sort_order": 20}] }
+        """
+        product = self.get_object()
+        items = request.data.get('items', [])
+        if not isinstance(items, list):
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_FORMAT',
+                'message': 'items 必須是陣列',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            from .models import ProductImage
+            # 批量更新
+            updates = []
+            for item in items:
+                image_id = item.get('id')
+                sort_order = item.get('sort_order')
+                
+                if image_id is None or sort_order is None:
+                    continue
+                
+                try:
+                    image = product.images.get(id=image_id)
+                    image.sort_order = sort_order
+                    image.save(update_fields=['sort_order'])
+                    updates.append({'id': image_id, 'sort_order': sort_order})
+                except ProductImage.DoesNotExist:
+                    continue
+            
+            serializer = self.get_serializer(product)
+            return Response({
+                'status': 'success',
+                'data': {
+                    'updated_count': len(updates),
+                    'items': updates,
+                    'product': serializer.data,
+                },
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'code': 'UPDATE_FAILED',
+                'message': f'批量更新失敗: {str(e)}',
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
     @action(detail=True, methods=['post'], url_path='set_primary_image')
     def set_primary_image(self, request, pk=None):
         """
@@ -254,6 +304,53 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
                 'code': 'IMAGE_NOT_FOUND',
                 'message': '圖片不存在',
             }, status=status.HTTP_404_NOT_FOUND)
+
+
+    @action(detail=False, methods=['post'], url_path='batch_update_sort')
+    def batch_update_sort(self, request):
+        """
+        批量更新商品排序
+        接收格式: { "items": [{"id": 1, "sort_order": 10}, {"id": 2, "sort_order": 20}] }
+        """
+        items = request.data.get('items', [])
+        if not isinstance(items, list):
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_FORMAT',
+                'message': 'items 必須是陣列',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # 批量更新
+            updates = []
+            for item in items:
+                product_id = item.get('id')
+                sort_order = item.get('sort_order')
+                
+                if product_id is None or sort_order is None:
+                    continue
+                
+                try:
+                    product = Product.objects.get(id=product_id)
+                    product.sort_order = sort_order
+                    product.save(update_fields=['sort_order'])
+                    updates.append({'id': product_id, 'sort_order': sort_order})
+                except Product.DoesNotExist:
+                    continue
+            
+            return Response({
+                'status': 'success',
+                'data': {
+                    'updated_count': len(updates),
+                    'items': updates,
+                },
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'code': 'UPDATE_FAILED',
+                'message': f'批量更新失敗: {str(e)}',
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])

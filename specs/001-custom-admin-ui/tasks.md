@@ -142,28 +142,32 @@ Acceptance (independent):
 
 ## 第 12 階段：拖移排序功能 (P2)
 
- - [ ] T045 後台商品列表拖移排序功能於 frontend/src/app/admin-portal/products/page.tsx
-   - 使用拖移排序庫（建議 @dnd-kit 或 react-beautiful-dnd）
+ - [x] T045 後台商品列表拖移排序功能於 frontend/src/app/admin-portal/products/page.tsx
+   - 使用拖移排序庫（@dnd-kit）
    - 商品列表支持拖移調整順序
    - 拖移後自動更新 sort_order 並調用 API 保存
-   - 顯示拖移時的視覺反饋（高亮、預覽位置）
+   - 顯示拖移時的視覺反饋（高亮、預覽位置、拖移圖標）
 
- - [ ] T046 後台分類列表拖移排序功能於 frontend/src/app/admin-portal/categories/page.tsx
+ - [x] T046 後台分類列表拖移排序功能於 frontend/src/app/admin-portal/categories/page.tsx
    - 分類列表支持拖移調整順序
    - 拖移後自動更新 sort_order 並調用 API 保存
 
- - [ ] T047 後台商品圖片拖移排序功能於 frontend/src/components/admin/products/ImageManager.tsx
+ - [x] T047 後台商品圖片拖移排序功能於 frontend/src/components/admin/products/ImageManager.tsx
    - 商品圖片支持拖移調整順序
    - 拖移後自動更新 sort_order 並調用 API 保存
+   - 顯示圖片排序編號
 
- - [ ] T048 後端批量更新排序 API 於 backend/src/apps/products/admin_views.py
+ - [x] T048 後端批量更新排序 API 於 backend/src/apps/products/admin_views.py
    - 新增 API 端點：POST /api/admin/products/batch_update_sort/
    - 接收商品 ID 列表和對應的 sort_order，批量更新
-   - 類似地為分類添加批量更新排序 API
 
- - [ ] T049 後端批量更新分類排序 API 於 backend/src/apps/categories/admin_views.py
+ - [x] T049 後端批量更新分類排序 API 於 backend/src/apps/categories/admin_views.py
    - 新增 API 端點：POST /api/admin/categories/batch_update_sort/
    - 接收分類 ID 列表和對應的 sort_order，批量更新
+
+ - [x] T050 後端批量更新商品圖片排序 API 於 backend/src/apps/products/admin_views.py
+   - 新增 API 端點：POST /api/admin/products/{id}/images/batch_update_sort/
+   - 接收圖片 ID 列表和對應的 sort_order，批量更新
 
 驗收標準（可獨立驗收）：
 - 管理員可通過拖移調整商品、分類、圖片的順序
