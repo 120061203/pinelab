@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { createContext, useContext } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -20,6 +20,9 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+
+// Context 來傳遞 listeners
+const SortableListenersContext = createContext<any>(null);
 
 interface SortableTableRowProps {
   id: string | number;
@@ -43,10 +46,17 @@ function SortableTableRow({ id, children }: SortableTableRowProps) {
   };
 
   return (
-    <tr ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      {children}
-    </tr>
+    <SortableListenersContext.Provider value={listeners}>
+      <tr ref={setNodeRef} style={style} {...attributes}>
+        {children}
+      </tr>
+    </SortableListenersContext.Provider>
   );
+}
+
+// Hook 來獲取當前行的 listeners
+export function useSortableRowListeners() {
+  return useContext(SortableListenersContext);
 }
 
 interface SortableTableBodyProps<T> {

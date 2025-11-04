@@ -6,7 +6,7 @@ import { Table, Th, Td } from '@/components/admin/table/Table';
 import CategoryForm from '@/components/admin/dicts/CategoryForm';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
 import ConfirmModal from '@/components/admin/modals/ConfirmModal';
-import SortableTableBody from '@/components/admin/dnd/SortableTableBody';
+import SortableTableBody, { useSortableRowListeners } from '@/components/admin/dnd/SortableTableBody';
 
 export default function AdminCategoriesPage() {
   const { addToast } = useToast();
@@ -272,19 +272,43 @@ export default function AdminCategoriesPage() {
               items={items}
               onReorder={handleReorder}
               getItemId={(item) => item.id}
-              renderItem={(c) => (
-                <>
-                  <Td className="text-gray-400 cursor-grab active:cursor-grabbing">⋮⋮</Td>
-                  <Td>{c.id}</Td>
-                  <Td>{c.name}</Td>
-                  <Td>{c.sort_order}</Td>
-                  <Td>{c.is_active ? '啟用' : '停用'}</Td>
-                  <Td className="space-x-3">
-                    <button className="text-blue-600" onClick={() => setEditing(c)}>編輯</button>
-                    <button className="text-red-600" onClick={() => setPendingDelete(c.id)}>刪除</button>
-                  </Td>
-                </>
-              )}
+              renderItem={(c, index) => {
+                const DragHandle = () => {
+                  const listeners = useSortableRowListeners();
+                  return (
+                    <Td className="text-gray-400 cursor-grab active:cursor-grabbing" {...listeners}>⋮⋮</Td>
+                  );
+                };
+                return (
+                  <>
+                    <DragHandle />
+                    <Td>{c.id}</Td>
+                    <Td>{c.name}</Td>
+                    <Td>{c.sort_order}</Td>
+                    <Td>{c.is_active ? '啟用' : '停用'}</Td>
+                    <Td className="space-x-3">
+                      <button 
+                        className="text-blue-600 hover:underline" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditing(c);
+                        }}
+                      >
+                        編輯
+                      </button>
+                      <button 
+                        className="text-red-600 hover:underline" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPendingDelete(c.id);
+                        }}
+                      >
+                        刪除
+                      </button>
+                    </Td>
+                  </>
+                );
+              }}
             />
           </Table>
         </>
