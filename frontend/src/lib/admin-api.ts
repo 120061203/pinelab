@@ -61,7 +61,25 @@ async function adminRequest<T>(
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || data?.detail || `API 請求失敗 (${response.status})`);
+    // 處理 DRF 驗證錯誤格式
+    let errorMessage = data?.message || data?.detail;
+    
+    // 如果沒有 message 或 detail，嘗試從字段錯誤中提取
+    if (!errorMessage && typeof data === 'object') {
+      const fieldErrors: string[] = [];
+      for (const [key, value] of Object.entries(data)) {
+        if (Array.isArray(value)) {
+          fieldErrors.push(`${key}: ${value.join(', ')}`);
+        } else if (typeof value === 'string') {
+          fieldErrors.push(`${key}: ${value}`);
+        }
+      }
+      if (fieldErrors.length > 0) {
+        errorMessage = fieldErrors.join('; ');
+      }
+    }
+    
+    throw new Error(errorMessage || `API 請求失敗 (${response.status})`);
   }
 
   return data;
