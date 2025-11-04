@@ -90,32 +90,91 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
     def upload_image(self, request, pk=None):
         """
         上傳商品圖片
+        支援兩種方式：
+        1. 檔案上傳（FormData，key 為 'file'）
+        2. 圖片 URL（JSON，key 為 'image_url'）
         """
+        import os
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+        from django.conf import settings
+        
         product = self.get_object()
-        image_url = request.data.get('image_url')
-        sort_order = request.data.get('sort_order', 0)
-        is_primary = request.data.get('is_primary', False)
+        sort_order = int(request.data.get('sort_order', 0))
+        is_primary = request.data.get('is_primary', False) in (True, 'true', 'True', '1', 1)
         
-        if not image_url:
+        # 優先處理檔案上傳
+        uploaded_file = request.FILES.get('file')
+        image_url = None
+        
+        if uploaded_file:
+            # 檔案上傳：儲存檔案並生成 URL
+            # 驗證檔案類型
+            allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+            file_ext = os.path.splitext(uploaded_file.name)[1].lower()
+            if file_ext not in allowed_extensions:
+                return Response({
+                    'status': 'error',
+                    'code': 'INVALID_FILE_TYPE',
+                    'message': f'不支援的檔案類型。允許的格式：{", ".join(allowed_extensions)}',
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # 驗證檔案大小（最大 5MB）
+            max_size = 5 * 1024 * 1024  # 5MB
+            if uploaded_file.size > max_size:
+                return Response({
+                    'status': 'error',
+                    'code': 'FILE_TOO_LARGE',
+                    'message': '檔案大小不能超過 5MB',
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # 生成儲存路徑：media/products/{product_id}/{filename}
+            product_dir = f'products/{product.id}'
+            filename = uploaded_file.name
+            # 確保檔名唯一（如果有同名檔案，加上時間戳）
+            if default_storage.exists(f'{product_dir}/{filename}'):
+                name, ext = os.path.splitext(filename)
+                import time
+                filename = f'{name}_{int(time.time())}{ext}'
+            
+            file_path = default_storage.save(
+                f'{product_dir}/{filename}',
+                ContentFile(uploaded_file.read())
+            )
+            
+            # 生成相對路徑 URL
+            image_url = f'/media/{file_path}'
+        
+        elif request.data.get('image_url'):
+            # 使用提供的圖片 URL
+            image_url = request.data.get('image_url')
+            # 驗證並清理圖片 URL
+            from .image_handler import clean_image_url, validate_image_url
+            cleaned_url = clean_image_url(image_url)
+            if not validate_image_url(cleaned_url):
+                return Response({
+                    'status': 'error',
+                    'code': 'INVALID_IMAGE_URL',
+                    'message': '無效的圖片 URL 格式',
+                }, status=status.HTTP_400_BAD_REQUEST)
+            image_url = cleaned_url
+        else:
+            # 兩種方式都沒有提供
             return Response({
                 'status': 'error',
-                'code': 'MISSING_IMAGE_URL',
-                'message': '請提供圖片 URL',
+                'code': 'MISSING_IMAGE',
+                'message': '請提供圖片檔案或圖片 URL',
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # 驗證並清理圖片 URL
-        cleaned_url = clean_image_url(image_url)
-        if not validate_image_url(cleaned_url):
-            return Response({
-                'status': 'error',
-                'code': 'INVALID_IMAGE_URL',
-                'message': '無效的圖片 URL 格式',
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
+        # 建立 ProductImage 記錄
         from .models import ProductImage
+        # 如果設定為主圖，先取消其他主圖
+        if is_primary:
+            ProductImage.objects.filter(product=product, is_primary=True).update(is_primary=False)
+        
         image = ProductImage.objects.create(
             product=product,
-            image_url=cleaned_url,
+            image_url=image_url,
             sort_order=sort_order,
             is_primary=is_primary
         )

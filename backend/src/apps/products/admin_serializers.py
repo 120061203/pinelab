@@ -11,10 +11,24 @@ class ProductImageAdminSerializer(serializers.ModelSerializer):
     """
     商品圖片管理序列化器
     """
+    full_url = serializers.SerializerMethodField()
+    
     class Meta:
         model = ProductImage
-        fields = ['id', 'product', 'image_url', 'sort_order', 'is_primary', 'created_at']
+        fields = ['id', 'product', 'image_url', 'full_url', 'sort_order', 'is_primary', 'created_at']
         read_only_fields = ['id', 'created_at']
+    
+    def get_full_url(self, obj):
+        """生成完整圖片 URL"""
+        request = self.context.get('request')
+        if request and obj.image_url:
+            # 如果是相對路徑，生成完整 URL
+            if obj.image_url.startswith('/'):
+                return request.build_absolute_uri(obj.image_url)
+            # 如果已經是完整 URL，直接返回
+            if obj.image_url.startswith('http://') or obj.image_url.startswith('https://'):
+                return obj.image_url
+        return obj.image_url
 
 
 class ProductAdminSerializer(serializers.ModelSerializer):

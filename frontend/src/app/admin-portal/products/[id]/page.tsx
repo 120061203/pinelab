@@ -14,22 +14,23 @@ export default function ProductEditPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadProduct = async () => {
+    if (!productId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res: any = await adminGetProduct(productId);
+      if (res?.status === 'success' && res.data) setProduct(res.data);
+      else setError(res?.message || '載入失敗');
+    } catch (e: any) {
+      setError(e?.message || '載入失敗');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      if (!productId) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const res: any = await adminGetProduct(productId);
-        if (res?.status === 'success' && res.data) setProduct(res.data);
-        else setError(res?.message || '載入失敗');
-      } catch (e: any) {
-        setError(e?.message || '載入失敗');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    loadProduct();
   }, [productId]);
 
   if (!productId) return <div>無效的商品 ID</div>;
@@ -41,8 +42,8 @@ export default function ProductEditPage() {
       <h1 className="text-xl font-semibold">編輯商品 #{productId}</h1>
       <ProductForm initial={product} productId={productId} />
       <div className="grid md:grid-cols-2 gap-6">
-        <ImageUpload productId={productId} />
-        <ImageManager product={product} onChanged={() => location.reload()} />
+        <ImageUpload productId={productId} onUploaded={loadProduct} />
+        <ImageManager product={product} onChanged={loadProduct} />
       </div>
     </div>
   );
