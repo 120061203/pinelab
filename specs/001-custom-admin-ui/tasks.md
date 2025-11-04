@@ -119,13 +119,71 @@ Acceptance (independent):
 
 ---
 
+## 第 11 階段：前端商品列表按分類分組顯示 (P2)
+
+ - [ ] T043 前端商品列表頁按分類分組顯示於 frontend/src/app/products/page.tsx
+   - 將商品按分類分組，每個分類一個獨立區塊
+   - 區塊標題顯示分類名稱
+   - 當有新分類時，自動創建新的區塊（不與現有商品混在一起）
+   - 區塊內商品按 sort_order 降序排列（數字越大越前）
+   - 無分類商品顯示在「未分類」區塊中
+
+ - [ ] T044 首頁商品列表按分類分組顯示於 frontend/src/app/page.tsx
+   - 首頁「最新商品」區塊改為按分類分組顯示
+   - 每個分類顯示該分類下的最新商品（按 sort_order 和 updated_at 排序）
+   - 分類區塊順序按分類的 sort_order 降序排列
+
+驗收標準（可獨立驗收）：
+- 商品列表頁按分類分組，每個分類一個區塊
+- 新增分類時自動創建新的區塊
+- 區塊內商品順序正確（sort_order 降序）
+
+---
+
+## 第 12 階段：拖移排序功能 (P2)
+
+ - [ ] T045 後台商品列表拖移排序功能於 frontend/src/app/admin-portal/products/page.tsx
+   - 使用拖移排序庫（建議 @dnd-kit 或 react-beautiful-dnd）
+   - 商品列表支持拖移調整順序
+   - 拖移後自動更新 sort_order 並調用 API 保存
+   - 顯示拖移時的視覺反饋（高亮、預覽位置）
+
+ - [ ] T046 後台分類列表拖移排序功能於 frontend/src/app/admin-portal/categories/page.tsx
+   - 分類列表支持拖移調整順序
+   - 拖移後自動更新 sort_order 並調用 API 保存
+
+ - [ ] T047 後台商品圖片拖移排序功能於 frontend/src/components/admin/products/ImageManager.tsx
+   - 商品圖片支持拖移調整順序
+   - 拖移後自動更新 sort_order 並調用 API 保存
+
+ - [ ] T048 後端批量更新排序 API 於 backend/src/apps/products/admin_views.py
+   - 新增 API 端點：POST /api/admin/products/batch_update_sort/
+   - 接收商品 ID 列表和對應的 sort_order，批量更新
+   - 類似地為分類添加批量更新排序 API
+
+ - [ ] T049 後端批量更新分類排序 API 於 backend/src/apps/categories/admin_views.py
+   - 新增 API 端點：POST /api/admin/categories/batch_update_sort/
+   - 接收分類 ID 列表和對應的 sort_order，批量更新
+
+驗收標準（可獨立驗收）：
+- 管理員可通過拖移調整商品、分類、圖片的順序
+- 拖移後順序自動保存到資料庫
+- 前端列表顯示順序與拖移後的順序一致
+
+---
+
 ## 依賴與順序
-- 故事順序：US1 → US2 →（US3 與 US4 並行）→ US5 → Dashboard/RBAC → Polish
+- 故事順序：US1 → US2 →（US3 與 US4 並行）→ US5 → Dashboard/RBAC → Polish → 分類分組顯示 → 拖移排序
+- 第 11 階段（分類分組顯示）可在 US2 完成後進行
+- 第 12 階段（拖移排序）建議在第 11 階段完成後進行，或可並行開發
 
 ## 並行建議
 - T019/T020/T023 可並行（不同檔案層）。
 - US3 與 US4 可在 US2 完成後並行。
+- T043 和 T044 可並行開發。
+- T045、T046、T047 可並行開發（不同的拖移排序場景）。
 
 ## MVP 建議
 - 僅涵蓋 US1（登入與存取控制）+ US2（商品基本 CRUD 與圖片上傳）。
+- 分類分組顯示和拖移排序功能為增強功能，可在 MVP 後續版本中實現。
 
