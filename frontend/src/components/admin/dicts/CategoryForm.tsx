@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { adminCreateCategory, adminUpdateCategory } from '@/lib/admin-api';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
 
@@ -12,6 +12,22 @@ export default function CategoryForm({ initial, onSaved }: { initial?: any; onSa
   const [isActive, setIsActive] = useState<boolean>(initial?.is_active ?? true);
   const [saving, setSaving] = useState(false);
 
+  // 當 initial prop 變化時，更新表單狀態
+  useEffect(() => {
+    if (initial) {
+      setName(initial.name || '');
+      setDescription(initial.description || '');
+      setSortOrder(initial.sort_order ?? 0);
+      setIsActive(initial.is_active ?? true);
+    } else {
+      // 如果 initial 為 undefined/null，重置表單為空
+      setName('');
+      setDescription('');
+      setSortOrder(0);
+      setIsActive(true);
+    }
+  }, [initial]);
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -22,6 +38,13 @@ export default function CategoryForm({ initial, onSaved }: { initial?: any; onSa
         : await adminCreateCategory(payload);
       if (res?.status === 'success' || res?.data) {
         addToast({ type: 'success', message: '分類已儲存' });
+        // 如果是新增，保存成功後重置表單
+        if (!initial?.id) {
+          setName('');
+          setDescription('');
+          setSortOrder(0);
+          setIsActive(true);
+        }
         onSaved();
       } else {
         addToast({ type: 'error', message: res?.message || '儲存失敗' });

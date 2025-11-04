@@ -24,13 +24,25 @@ class CategoryAdminViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """建立分類，統一響應格式"""
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response({
-            'status': 'success',
-            'data': serializer.data,
-        }, status=status.HTTP_201_CREATED)
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            return Response({
+                'status': 'success',
+                'data': serializer.data,
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            # 處理唯一性約束錯誤（例如重複的分類名稱）
+            error_message = str(e)
+            if 'unique' in error_message.lower() or 'already exists' in error_message.lower():
+                return Response({
+                    'status': 'error',
+                    'code': 'DUPLICATE_NAME',
+                    'message': '分類名稱已存在，請使用不同的名稱',
+                }, status=status.HTTP_400_BAD_REQUEST)
+            # 重新拋出其他異常，讓 DRF 處理
+            raise
     
     def update(self, request, *args, **kwargs):
         """更新分類，統一響應格式"""
