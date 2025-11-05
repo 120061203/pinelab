@@ -80,26 +80,46 @@ WSGI_APPLICATION = 'pinelab.wsgi.application'
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
     # 解析 DATABASE_URL: postgresql://user:password@host:port/database
+    # 支援 postgresql:// 和 postgres:// 兩種格式
     parsed = urlparse(DATABASE_URL)
+    # 確保從 DATABASE_URL 解析的值優先使用，只有在解析失敗時才使用單個環境變數
+    db_name = parsed.path[1:] if parsed.path and len(parsed.path) > 1 else None
+    db_user = parsed.username
+    db_password = parsed.password
+    db_host = parsed.hostname
+    db_port = parsed.port
+    
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': parsed.path[1:] if parsed.path else os.getenv('DB_NAME', 'pinelab_db'),  # 移除前導斜線
-            'USER': parsed.username or os.getenv('DB_USER', 'pinelab_user'),
-            'PASSWORD': parsed.password or os.getenv('DB_PASSWORD', 'pinelab_password'),
-            'HOST': parsed.hostname or os.getenv('DB_HOST', 'localhost'),
-            'PORT': parsed.port or os.getenv('DB_PORT', '5432'),
+            'NAME': db_name or os.getenv('DB_NAME', 'pinelab_db'),
+            'USER': db_user or os.getenv('DB_USER', 'pinelab_user'),
+            'PASSWORD': db_password or os.getenv('DB_PASSWORD', 'pinelab_password'),
+            'HOST': db_host or os.getenv('DB_HOST', 'localhost'),
+            'PORT': str(db_port) if db_port else os.getenv('DB_PORT', '5432'),
         }
     }
 else:
     # 使用單個環境變數（向後兼容）
+    # 注意：在 Zeabur 上，如果沒有 DATABASE_URL，DB_HOST 必須是實際的主機名，不能是 "postgresql"
+    db_host = os.getenv('DB_HOST', 'localhost')
+    if db_host == 'postgresql':
+        # 如果 DB_HOST 是 "postgresql"（可能是錯誤設置），嘗試從其他環境變數推斷
+        # 但在 Zeabur 上，應該使用 DATABASE_URL 或實際的主機名
+        import warnings
+        warnings.warn(
+            'DB_HOST is set to "postgresql" which may not resolve. '
+            'Please use DATABASE_URL or set DB_HOST to the actual database hostname.',
+            UserWarning
+        )
+    
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('DB_NAME', 'pinelab_db'),
             'USER': os.getenv('DB_USER', 'pinelab_user'),
             'PASSWORD': os.getenv('DB_PASSWORD', 'pinelab_password'),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'HOST': db_host,
             'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
