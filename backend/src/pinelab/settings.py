@@ -99,30 +99,63 @@ if DATABASE_URL:
             'PORT': str(db_port) if db_port else os.getenv('DB_PORT', '5432'),
         }
     }
+    # 在啟動時輸出資料庫配置資訊（不包含密碼）
+    if not DEBUG or os.getenv('SHOW_DB_CONFIG', 'False').lower() == 'true':
+        print(f"✓ Database configured from DATABASE_URL")
+        print(f"  Host: {db_host or 'N/A'}")
+        print(f"  Port: {db_port or 'N/A'}")
+        print(f"  Database: {db_name or 'N/A'}")
+        print(f"  User: {db_user or 'N/A'}")
 else:
     # 使用單個環境變數（向後兼容）
     # 注意：在 Zeabur 上，如果沒有 DATABASE_URL，DB_HOST 必須是實際的主機名，不能是 "postgresql"
     db_host = os.getenv('DB_HOST', 'localhost')
+    db_name = os.getenv('DB_NAME', 'pinelab_db')
+    db_user = os.getenv('DB_USER', 'pinelab_user')
+    db_port = os.getenv('DB_PORT', '5432')
+    
     if db_host == 'postgresql':
-        # 如果 DB_HOST 是 "postgresql"（可能是錯誤設置），嘗試從其他環境變數推斷
-        # 但在 Zeabur 上，應該使用 DATABASE_URL 或實際的主機名
-        import warnings
-        warnings.warn(
-            'DB_HOST is set to "postgresql" which may not resolve. '
-            'Please use DATABASE_URL or set DB_HOST to the actual database hostname.',
-            UserWarning
-        )
+        # 在 Zeabur 上，"postgresql" 無法解析，必須使用 DATABASE_URL 或實際主機名
+        print("=" * 80)
+        print("⚠️  WARNING: Database Configuration Issue")
+        print("=" * 80)
+        print("DB_HOST is set to 'postgresql' which cannot be resolved.")
+        print("")
+        print("To fix this issue, please do ONE of the following:")
+        print("")
+        print("Option 1 (Recommended): Use DATABASE_URL")
+        print("  - In Zeabur backend service, add DATABASE_URL environment variable")
+        print("  - Format: postgresql://user:password@host:port/database")
+        print("  - You can find this in your PostgreSQL service's connection info")
+        print("")
+        print("Option 2: Use the actual database hostname")
+        print("  - Remove DB_HOST=postgresql")
+        print("  - Set DB_HOST to the actual hostname from Zeabur PostgreSQL service")
+        print("  - Check the PostgreSQL service's 'Network' or 'Settings' tab")
+        print("=" * 80)
+        print("")
+        # 仍然嘗試使用，但會失敗並產生明確的錯誤
+        import sys
+        sys.stderr.write("ERROR: Cannot connect to database with DB_HOST='postgresql'\n")
+        sys.stderr.write("Please configure DATABASE_URL or use the correct DB_HOST.\n")
     
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'pinelab_db'),
-            'USER': os.getenv('DB_USER', 'pinelab_user'),
+            'NAME': db_name,
+            'USER': db_user,
             'PASSWORD': os.getenv('DB_PASSWORD', 'pinelab_password'),
             'HOST': db_host,
-            'PORT': os.getenv('DB_PORT', '5432'),
+            'PORT': db_port,
         }
     }
+    # 在啟動時輸出資料庫配置資訊
+    if not DEBUG or os.getenv('SHOW_DB_CONFIG', 'False').lower() == 'true':
+        print(f"✓ Database configured from individual environment variables")
+        print(f"  Host: {db_host}")
+        print(f"  Port: {db_port}")
+        print(f"  Database: {db_name}")
+        print(f"  User: {db_user}")
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
