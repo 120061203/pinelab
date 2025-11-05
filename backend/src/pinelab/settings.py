@@ -4,6 +4,7 @@ Django settings for pinelab project.
 
 from pathlib import Path
 import os
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -75,16 +76,33 @@ TEMPLATES = [
 WSGI_APPLICATION = 'pinelab.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'pinelab_db'),
-        'USER': os.getenv('DB_USER', 'pinelab_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'pinelab_password'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+# 優先使用 DATABASE_URL（Zeabur 等平台提供），否則使用單個環境變數
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    # 解析 DATABASE_URL: postgresql://user:password@host:port/database
+    parsed = urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': parsed.path[1:] if parsed.path else os.getenv('DB_NAME', 'pinelab_db'),  # 移除前導斜線
+            'USER': parsed.username or os.getenv('DB_USER', 'pinelab_user'),
+            'PASSWORD': parsed.password or os.getenv('DB_PASSWORD', 'pinelab_password'),
+            'HOST': parsed.hostname or os.getenv('DB_HOST', 'localhost'),
+            'PORT': parsed.port or os.getenv('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    # 使用單個環境變數（向後兼容）
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'pinelab_db'),
+            'USER': os.getenv('DB_USER', 'pinelab_user'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'pinelab_password'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
