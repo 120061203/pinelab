@@ -15,7 +15,7 @@ from .admin_serializers import (
     UserUpdateSerializer,
     UserSelfUpdateSerializer
 )
-from core.permissions import IsAdminUser
+from core.permissions import IsAdminUser, IsRoleAdmin
 
 
 class UserAdminViewSet(viewsets.ModelViewSet):
@@ -25,7 +25,16 @@ class UserAdminViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsRoleAdmin]
+
+    def get_permissions(self):
+        """依 action 動態指定權限：
+        - update_self, cancel_impersonation: 已登入即可
+        - 其他：僅 admin 角色可用
+        """
+        if self.action in ['update_self', 'cancel_impersonation']:
+            return [IsAuthenticated()]
+        return [perm() for perm in self.permission_classes]
     
     def get_queryset(self):
         """管理員可以查看所有帳號"""

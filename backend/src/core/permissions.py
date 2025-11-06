@@ -29,3 +29,19 @@ class IsAdminUser(permissions.BasePermission):
         except Exception:
             pass
         return bool(getattr(request.user, 'is_staff', False))
+
+
+class IsRoleAdmin(permissions.BasePermission):
+    """
+    僅允許角色為 admin（或 is_super_admin=True）的使用者
+    用於需要嚴格管理員權限的端點（例如：帳號管理）
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        try:
+            if getattr(request.user, 'is_super_admin', False):
+                return True
+            return getattr(request.user, 'role', None) == 'admin'
+        except Exception:
+            return False
