@@ -221,9 +221,9 @@ export default function AdminUsersPage() {
             <tbody>
               {items.map((user) => (
                 <tr key={user.id} className={!user.is_active ? 'opacity-50' : ''}>
-                  <Td>
+                  <Td className="whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      {getDisplayName(user)}
+                      <span className="inline-block max-w-[200px] truncate">{getDisplayName(user)}</span>
                       {user.is_super_admin && (
                         <span 
                           className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded"
@@ -234,9 +234,13 @@ export default function AdminUsersPage() {
                       )}
                     </div>
                   </Td>
-                  <Td>{user.email || '-'}</Td>
-                  <Td>{getRoleDisplay(user)}</Td>
-                  <Td>
+                  <Td className="whitespace-nowrap">
+                    <span className="inline-block max-w-[280px] truncate">
+                      {user.email || '-'}
+                    </span>
+                  </Td>
+                  <Td className="whitespace-nowrap">{getRoleDisplay(user)}</Td>
+                  <Td className="whitespace-nowrap">
                     {user.deletion_scheduled_at ? (
                       <div className="space-y-1">
                         <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded">
@@ -256,14 +260,14 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                   </Td>
-                  <Td>
+                  <Td className="whitespace-nowrap">
                     {user.created_at 
                       ? new Date(user.created_at).toLocaleDateString('zh-TW')
                       : '-'}
                   </Td>
                   {canEdit && (
-                    <Td>
-                      <div className="flex gap-2 flex-wrap">
+                    <Td className="whitespace-nowrap">
+                      <div className="flex gap-2 flex-nowrap">
                         <Link
                           href={`/admin-portal/users/${user.id}`}
                           className={`px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm ${
