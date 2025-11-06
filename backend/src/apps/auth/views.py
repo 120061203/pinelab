@@ -59,12 +59,22 @@ def login(request):
             'message': '使用者名稱/郵箱或密碼錯誤',
         }, status=status.HTTP_401_UNAUTHORIZED)
     
-    if not user.is_staff:
-        return Response({
-            'status': 'error',
-            'code': 'NOT_ADMIN',
-            'message': '只有管理員可以登入',
-        }, status=status.HTTP_403_FORBIDDEN)
+    # 允許『管理員、編輯者』登入 Admin Portal，禁止『分析師』
+    if hasattr(user, 'role'):
+        if user.role not in ['admin', 'editor']:
+            return Response({
+                'status': 'error',
+                'code': 'NOT_ALLOWED',
+                'message': '此帳號沒有權限登入後台（僅限管理員與編輯者）',
+            }, status=status.HTTP_403_FORBIDDEN)
+    else:
+        # 若無 role 欄位，回退至 is_staff 檢查
+        if not user.is_staff:
+            return Response({
+                'status': 'error',
+                'code': 'NOT_ALLOWED',
+                'message': '此帳號沒有權限登入後台',
+            }, status=status.HTTP_403_FORBIDDEN)
     
     # 生成 JWT tokens
     refresh = RefreshToken.for_user(user)
