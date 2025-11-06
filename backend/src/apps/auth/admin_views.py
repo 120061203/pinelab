@@ -363,22 +363,25 @@ class UserAdminViewSet(viewsets.ModelViewSet):
         
         target_user = self.get_object()
         
-        # 管理員不能模擬管理員
-        if target_user.role == 'admin':
+        # 管理員不能模擬管理員；唯有主管理員可模擬一般管理員
+        if target_user.role == 'admin' and not getattr(request.user, 'is_super_admin', False):
             return Response({
                 'status': 'error',
                 'code': 'CANNOT_IMPERSONATE_ADMIN',
-                'message': '不能模擬管理員角色',
+                'message': '只有主管理員可以模擬管理員',
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # 獲取要模擬的角色（如果沒有指定，使用目標使用者的角色）
         impersonate_role = request.data.get('role', target_user.role)
         
-        if impersonate_role not in ['editor', 'analyst']:
+        allowed_roles = ['editor', 'analyst']
+        if getattr(request.user, 'is_super_admin', False):
+            allowed_roles.append('admin')
+        if impersonate_role not in allowed_roles:
             return Response({
                 'status': 'error',
                 'code': 'INVALID_ROLE',
-                'message': '只能模擬編輯者或分析師角色',
+                'message': '只能模擬編輯者或分析師；主管理員可模擬管理員',
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # 生成帶有身份切換信息的 JWT token
@@ -430,11 +433,14 @@ class UserAdminViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_403_FORBIDDEN)
 
         impersonate_role = request.data.get('role')
-        if impersonate_role not in ['editor', 'analyst']:
+        allowed_roles = ['editor', 'analyst']
+        if getattr(current_user, 'is_super_admin', False):
+            allowed_roles.append('admin')
+        if impersonate_role not in allowed_roles:
             return Response({
                 'status': 'error',
                 'code': 'INVALID_ROLE',
-                'message': '只能切換為編輯者或分析師角色',
+                'message': '只能切換為編輯者或分析師；主管理員可切換為管理員',
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # 基於當前管理員生成帶有 impersonate_role 的 token

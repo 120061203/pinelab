@@ -13,7 +13,7 @@ export default function ImpersonatePage() {
   const { hasRole, role } = useRBAC();
   const { addToast } = useToast();
   
-  const [selectedRole, setSelectedRole] = useState<'editor' | 'analyst'>('editor');
+  const [selectedRole, setSelectedRole] = useState<'editor' | 'analyst' | 'admin'>('editor');
   const [impersonating, setImpersonating] = useState(false);
   const [isImpersonating, setIsImpersonating] = useState(false);
   const [originalUser, setOriginalUser] = useState<any>(null);
@@ -119,11 +119,13 @@ export default function ImpersonatePage() {
                 <label className="block text-sm font-medium mb-2">角色</label>
                 <select
                   value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as 'editor' | 'analyst')}
+                  onChange={(e) => setSelectedRole(e.target.value as 'editor' | 'analyst' | 'admin')}
                   className="w-full border rounded px-3 py-2"
                 >
                   <option value="editor">編輯者</option>
                   <option value="analyst">分析師</option>
+                  {/* 僅主管理員可切換為一般管理員 */}
+                  {currentUser?.is_super_admin && <option value="admin">管理員</option>}
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
                   選擇要體驗的角色。您將以該角色的權限操作系統。
