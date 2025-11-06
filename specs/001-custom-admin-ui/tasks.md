@@ -273,7 +273,7 @@ Acceptance (independent):
 
 ### 後端任務
 
-- [ ] T061 [US6] 擴充 User 模型添加角色欄位於 backend/src/apps/auth/models.py
+- [X] T061 [US6] 擴充 User 模型添加角色欄位於 backend/src/apps/auth/models.py
   - 添加 role 欄位（choices: 'admin', 'editor', 'analyst'），預設為 'editor'
   - 添加 is_super_admin 欄位（BooleanField, default=False, unique=True where is_super_admin=True，確保只有一位主管理員）
   - 添加 deletion_scheduled_at 欄位（DateTimeField, null=True, blank=True，用於7天猶豫期）
@@ -283,7 +283,7 @@ Acceptance (independent):
   - 添加資料庫約束：透過 UniqueConstraint 或資料庫層級約束確保 is_super_admin=True 只能有一個
   - 創建並執行資料庫遷移
 
-- [ ] T062 [US6] 創建帳號管理 ViewSet 於 backend/src/apps/auth/admin_views.py
+- [X] T062 [US6] 創建帳號管理 ViewSet 於 backend/src/apps/auth/admin_views.py
   - 實現 UserAdminViewSet 繼承 ModelViewSet
   - 端點：GET /api/admin/users/（列表，支援搜尋/分頁）
   - 端點：POST /api/admin/users/（新增帳號）
@@ -293,7 +293,7 @@ Acceptance (independent):
   - 自訂 action：POST /api/admin/users/{id}/cancel-deletion/（取消刪除，僅猶豫期內可用）
   - 實作權限檢查：管理員可操作所有人，編輯者不能新增管理員
 
-- [ ] T063 [US6] 實現帳號權限檢查邏輯於 backend/src/apps/auth/admin_views.py
+- [X] T063 [US6] 實現帳號權限檢查邏輯於 backend/src/apps/auth/admin_views.py
   - 在 create 方法中檢查：
     - 編輯者不能設定 role='admin'；分析師不能新增任何帳號
     - 如果嘗試創建 is_super_admin=True 的帳號，檢查是否已有主管理員，如有則拒絕
@@ -309,7 +309,7 @@ Acceptance (independent):
   - 分析師更新自己帳號時，只能更新 name、email、password，不能修改 role
   - 返回明確的錯誤訊息（403 Forbidden）
 
-- [ ] T064 [US6] 創建帳號序列化器於 backend/src/apps/auth/serializers.py
+- [X] T064 [US6] 創建帳號序列化器於 backend/src/apps/auth/admin_serializers.py
   - UserSerializer：用於列表和詳情（排除密碼欄位，包含 is_super_admin 標記）
   - UserCreateSerializer：用於新增（包含密碼，自動加密）
     - 驗證：如果 is_super_admin=True，檢查是否已有主管理員
@@ -318,31 +318,31 @@ Acceptance (independent):
   - UserSelfUpdateSerializer：用於使用者更新自己的資訊（僅允許更新 name、email、password，不允許修改 role 和 is_super_admin）
   - 驗證：email 格式、密碼強度（至少 8 字元）、角色選擇、主管理員唯一性
 
-- [ ] T065 [US6] 實現密碼重設請求端點於 backend/src/apps/auth/views.py
+- [X] T065 [US6] 實現密碼重設請求端點於 backend/src/apps/auth/views.py
   - 端點：POST /api/auth/password-reset-request/
   - 接收 email，生成重設 token，發送郵件
   - 使用 Django 的 PasswordResetTokenGenerator
   - 返回成功訊息（不洩露 email 是否存在）
 
-- [ ] T066 [US6] 實現密碼重設確認端點於 backend/src/apps/auth/views.py
+- [X] T066 [US6] 實現密碼重設確認端點於 backend/src/apps/auth/views.py
   - 端點：POST /api/auth/password-reset-confirm/
   - 接收 token、email、新密碼
   - 驗證 token 有效性，更新密碼
   - 返回成功或錯誤訊息
 
-- [ ] T067 [US6] 實現使用者自行重設密碼端點於 backend/src/apps/auth/views.py
+- [X] T067 [US6] 實現使用者自行重設密碼端點於 backend/src/apps/auth/views.py
   - 端點：POST /api/auth/change-password/
   - 需要 JWT 認證
   - 接收舊密碼、新密碼
   - 驗證舊密碼正確性，更新為新密碼
   - 返回成功或錯誤訊息
 
-- [ ] T068 [US6] 配置郵件發送設定於 backend/src/pinelab/settings.py
+- [X] T068 [US6] 配置郵件發送設定於 backend/src/pinelab/settings.py
   - 添加 EMAIL_BACKEND、EMAIL_HOST、EMAIL_PORT、EMAIL_USE_TLS 設定
   - 支援環境變數配置（EMAIL_HOST_USER、EMAIL_HOST_PASSWORD）
   - 開發環境可使用 console backend，生產環境使用 SMTP
 
-- [ ] T069 [US6] 創建郵件模板於 backend/src/apps/auth/templates/emails/
+- [X] T069 [US6] 創建郵件模板於 backend/src/apps/auth/templates/emails/
   - password_reset.html：密碼重設郵件模板
     - 包含重設連結（包含 token）
     - 連結格式：{frontend_url}/admin-portal/reset-password?token={token}&email={email}
@@ -352,14 +352,14 @@ Acceptance (independent):
     - 包含取消刪除連結（包含取消 token）
     - 提醒被刪除的管理員在7天內聯繫系統管理員或取消刪除
 
-- [ ] T070 [US6] 實現郵件發送服務於 backend/src/apps/auth/services.py
+- [X] T070 [US6] 實現郵件發送服務於 backend/src/apps/auth/services.py
   - send_password_reset_email(email, token) 函數
   - send_admin_deletion_notification_email(user, requested_by, deletion_date) 函數
     - 發送管理員刪除通知郵件，包含刪除請求者、刪除預定時間、取消連結
   - 使用 Django 的 EmailMessage 發送 HTML 郵件
   - 處理發送失敗的情況
 
-- [ ] T071 [US6] 添加帳號管理 URL 路由於 backend/src/apps/auth/admin_urls.py
+- [X] T071 [US6] 添加帳號管理 URL 路由於 backend/src/apps/auth/admin_urls.py
   - 創建新檔案，定義 UserAdminViewSet 的 router
   - 添加自訂 action：PUT /api/admin/users/me/（更新自己的帳號資訊）
   - 添加自訂 action：POST /api/admin/users/{id}/impersonate/（切換身份，僅管理員可用）
@@ -447,21 +447,21 @@ Acceptance (independent):
   - 顯示「取消身份切換」按鈕，返回原始管理員身份
   - 身份切換時顯示醒目的提示橫幅
 
-- [ ] T083 [US6] 實現管理員刪除猶豫期處理邏輯於 backend/src/apps/auth/admin_views.py
+- [X] T083 [US6] 實現管理員刪除猶豫期處理邏輯於 backend/src/apps/auth/management/commands/process_scheduled_deletions.py
   - 創建 Celery 定時任務或 Django management command
   - 檢查 deletion_scheduled_at 已過期且未取消的帳號
   - 執行實際刪除操作（軟刪除或硬刪除）
   - 記錄刪除操作日誌
   - 可選：在刪除前再次發送最後提醒郵件
 
-- [ ] T084 [US6] 實現取消刪除功能於 backend/src/apps/auth/admin_views.py
+- [X] T084 [US6] 實現取消刪除功能於 backend/src/apps/auth/admin_views.py
   - 端點：POST /api/admin/users/{id}/cancel-deletion/
   - 檢查 deletion_scheduled_at 是否在猶豫期內（7天內）
   - 清除 deletion_scheduled_at 欄位
   - 發送取消刪除通知郵件給被刪除的管理員
   - 返回成功訊息
 
-- [ ] T085 [US6] 實現身份切換功能於 backend/src/apps/auth/admin_views.py
+- [X] T085 [US6] 實現身份切換功能於 backend/src/apps/auth/admin_views.py 和 tokens.py
   - 端點：POST /api/admin/users/{id}/impersonate/
   - 檢查請求者是否為管理員
   - 檢查目標使用者是否存在且非管理員（管理員不能模擬管理員）

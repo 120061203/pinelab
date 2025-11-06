@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>管理員帳號刪除通知</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 5px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #dc3545;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #c82333;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>管理員帳號刪除通知</h2>
+        <p>親愛的 {{ user.username }}，</p>
+        <div class="warning">
+            <p><strong>重要通知：</strong>您的管理員帳號已被 {{ requested_by.username }} 標記為刪除。</p>
+            <p><strong>刪除日期：</strong>{{ deletion_date|date:"Y-m-d H:i:s" }}</p>
+        </div>
+        <p>您有 <strong>7 天</strong> 的猶豫期可以取消此刪除操作。</p>
+        <p>如果您認為這是誤操作，請點擊以下按鈕取消刪除：</p>
+        <p>
+            <a href="{{ cancel_url }}" class="button">取消刪除</a>
+        </p>
+        <p>或者複製以下連結到瀏覽器：</p>
+        <p style="word-break: break-all; color: #007bff;">{{ cancel_url }}</p>
+        <p>如果在猶豫期內未取消，您的帳號將在 {{ deletion_date|date:"Y-m-d H:i:s" }} 自動刪除。</p>
+        <div class="footer">
+            <p>此為系統自動發送的郵件，請勿回覆。</p>
+        </div>
+    </div>
+</body>
+</html>
+

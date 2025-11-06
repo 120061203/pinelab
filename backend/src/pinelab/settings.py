@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'django_filters',
     
     # Local apps
+    'apps.auth',  # 認證應用（包含 User 模型）
     'apps.products',
     'apps.categories',
     'apps.tags',
@@ -285,6 +286,21 @@ WHITENOISE_MANIFEST_STRICT = False  # 如果找不到 manifest 文件，不報�
 MEDIA_ROOT = os.getenv('MEDIA_ROOT', str(BASE_DIR / 'media'))
 MEDIA_URL = '/media/'
 
+# Email configuration
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+)
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@pinelab.com')
+
+# Frontend URL (for email links)
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+
 # Logging configuration
 # 在容器環境中只使用 console logging（由 Docker/Zeabur 收集）
 # 本地開發環境如果 logs 目錄存在，則額外使用文件日誌
@@ -338,8 +354,8 @@ if DEBUG and os.path.exists('/app/logs'):
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model (使用 Django 內建 User)
-# AUTH_USER_MODEL = 'auth.User'  # 暫時使用 Django 預設 User
+# Custom User Model
+AUTH_USER_MODEL = 'auth.User'  # 使用自定義 User 模型
 
 # REST Framework configuration
 REST_FRAMEWORK = {

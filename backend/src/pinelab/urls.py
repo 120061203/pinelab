@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/', include('apps.tags.admin_urls')),
     path('api/', include('apps.products.admin_urls')),
     path('api/', include('apps.contacts.admin_urls')),
+    path('api/admin/', include('apps.auth.admin_urls')),  # 帳號管理 API
 ]
 
 # Serve media files
