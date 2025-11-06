@@ -238,10 +238,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-# STATIC_ROOT 在 Docker 容器中應該是 /app/staticfiles
-# BASE_DIR 是 backend/src/pinelab/settings.py 的 parent.parent.parent = backend/
-# 在 Docker 中，backend/ 對應到 /app/，所以 STATIC_ROOT = /app/staticfiles
-STATIC_ROOT = BASE_DIR.parent.parent / 'staticfiles'
+# STATIC_ROOT 路徑計算：
+# BASE_DIR = backend/src/pinelab/settings.py 的 parent.parent.parent = backend/src/
+# 在 Docker 中，WORKDIR = /app，所以 backend/ 對應到 /app/
+# 因此 BASE_DIR = /app/src/
+# STATIC_ROOT 應該在 /app/staticfiles，所以使用 BASE_DIR.parent / 'staticfiles'
+STATIC_ROOT = BASE_DIR.parent / 'staticfiles'
 
 # WhiteNoise configuration for serving static files
 # 使用 WhiteNoise 在生產環境中提供靜態文件（不需要 Nginx）
