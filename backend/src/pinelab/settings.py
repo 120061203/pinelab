@@ -246,7 +246,9 @@ STATIC_URL = '/static/'
 #   parent.parent.parent = /app/
 # 所以 BASE_DIR = /app/
 # STATIC_ROOT 應該在 /app/staticfiles
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+# 可以通過環境變數 STATIC_ROOT 覆蓋（可選，通常不需要）
+# 如果設置了環境變數，使用環境變數；否則使用默認路徑
+STATIC_ROOT = os.getenv('STATIC_ROOT', str(BASE_DIR / 'staticfiles'))
 
 # 確保 staticfiles 目錄存在（在啟動時創建，避免 WhiteNoise 警告）
 # 注意：這個目錄會在 Dockerfile 和 collectstatic 中創建，這裡只是確保啟動時存在
