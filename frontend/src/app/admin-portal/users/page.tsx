@@ -208,6 +208,14 @@ export default function AdminUsersPage() {
       ) : (
         <>
           <Table>
+            <colgroup>
+              <col className="w-48" />
+              <col className="w-[340px]" />
+              <col className="w-28" />
+              <col className="w-24" />
+              <col className="w-28" />
+              {canEdit && <col className="w-[220px]" />}
+            </colgroup>
             <thead>
               <tr>
                 <Th>姓名</Th>
@@ -235,11 +243,13 @@ export default function AdminUsersPage() {
                     </div>
                   </Td>
                   <Td className="whitespace-nowrap">
-                    <span className="inline-block max-w-[280px] truncate">
+                    <span className="inline-block max-w-[320px] truncate align-middle">
                       {user.email || '-'}
                     </span>
                   </Td>
-                  <Td className="whitespace-nowrap">{getRoleDisplay(user)}</Td>
+                  <Td className="whitespace-nowrap">
+                    <span className="inline-block truncate align-middle">{getRoleDisplay(user)}</span>
+                  </Td>
                   <Td className="whitespace-nowrap">
                     {user.deletion_scheduled_at ? (
                       <div className="space-y-1">
