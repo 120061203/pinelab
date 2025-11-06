@@ -509,3 +509,60 @@ Acceptance (independent):
 - 僅涵蓋 US1（登入與存取控制）+ US2（商品基本 CRUD 與圖片上傳）。
 - 分類分組顯示和拖移排序功能為增強功能，可在 MVP 後續版本中實現。
 - 帳號管理功能（US6）建議在 MVP 後續版本中實現，但可與其他功能並行開發。
+
+---
+
+## 第 15 階段：使用者故事 7 - 管理員 User 分頁與超管規則 (P1)
+
+### 故事目標
+- 作為管理員，我需要一個 User 分頁可新增/修改/刪除帳號並設定角色權限。
+- 只有「主管理員」可以編輯「主管理員」的任何屬性（角色、啟用狀態等）。
+- 管理員可以代為發送密碼重設信給任一使用者。
+- 所有密碼在後端必須以 hash 方式儲存（禁止明文）。
+
+### 驗收標準（可獨立驗證）
+- 非主管理員嘗試修改主管理員時，後端返回 403，前端操作被禁用並有提示。
+- 管理員可在 User 分頁對非主管理員進行新增/編輯/刪除與角色調整。
+- 在 User 分頁可對任一使用者點擊「發送重設密碼信」，後端成功送出（或模擬）郵件並回傳成功訊息。
+- 後端建立/更新使用者時，密碼以 hash 儲存，任何 API 或資料庫不會出現明文密碼。
+
+### 後端任務
+
+- [ ] T086 [US7] 僅允許主管理員修改主管理員於 backend/src/apps/auth/admin_views.py
+  - 在 update/partial_update、destroy、任何角色/啟用狀態變更處新增檢查：若 target.is_super_admin 且 requester 非主管理員→403
+  - 回傳統一錯誤格式與明確訊息
+
+- [ ] T087 [US7] 新增代發密碼重設信端點於 backend/src/apps/auth/admin_views.py
+  - 端點：POST /api/admin/users/{id}/send-password-reset/
+  - 僅管理員可用，呼叫 services.send_password_reset_email(user.email, token)
+  - 產生 token 並送出郵件（沿用 T070 模板與服務）
+
+- [ ] T088 [US7] 確保密碼雜湊儲存於 backend/src/apps/auth/admin_serializers.py
+  - create/update 路徑強制使用 set_password（覆核現有邏輯）
+  - 禁止任何情境回傳明文密碼於響應
+
+### 前端任務
+
+- [ ] T089 [P] [US7] 在使用者列表/詳情加入「發送重設密碼信」按鈕
+  - 檔案：frontend/src/app/admin-portal/users/page.tsx、frontend/src/app/admin-portal/users/[id]/page.tsx
+  - 僅管理員可見；呼叫 adminSendPasswordReset(userId)
+  - 發送後 Toast 成功/失敗提示
+
+- [ ] T090 [P] [US7] 表單與操作約束：非主管理員不可編輯主管理員
+  - 檔案：frontend/src/components/admin/users/UserForm.tsx
+  - 主管理員標記時欄位鎖定/禁用（對於非主管理員）；提供明確提示文案
+
+- [ ] T091 [P] [US7] 使用者列表顯示規則與提示
+  - 檔案：frontend/src/app/admin-portal/users/page.tsx
+  - 對主管理員行加註徽章與「不可由非主管理員編輯」提示（tooltip）
+
+- [ ] T092 [P] [US7] 新增前端 API 函數 adminSendPasswordReset 於 frontend/src/lib/admin-api.ts
+  - `POST /api/admin/users/{id}/send-password-reset/`
+  - 回傳統一結構與錯誤處理
+
+### 文件與驗證
+
+- [ ] T093 [US7] 更新後台帳號管理文件於 specs/001-custom-admin-ui/tasks.md（本節）與 README/CREATE_ADMIN.md（若需）
+- [ ] T094 [US7] Runbook：如何代發重設密碼信與超管編輯規則說明（DOCKER_LOGIN_FIX.md 或新文件）
+
+---
