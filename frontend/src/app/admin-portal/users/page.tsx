@@ -138,8 +138,9 @@ export default function AdminUsersPage() {
   };
 
   const getDisplayName = (user: UserRow) => {
+    // 亞洲姓名顯示習慣：姓氏在前，名字在後
     if (user.first_name || user.last_name) {
-      return `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username;
+      return `${user.last_name || ''}${user.first_name ? ' ' + user.first_name : ''}`.trim() || user.username;
     }
     return user.username;
   };
