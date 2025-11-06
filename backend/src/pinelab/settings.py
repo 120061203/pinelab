@@ -23,7 +23,18 @@ DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 # 在生產環境中，必須明確設定 ALLOWED_HOSTS 環境變數
 allowed_hosts_env = os.getenv('ALLOWED_HOSTS')
 if allowed_hosts_env:
-    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
+    # 處理每個主機名，自動移除協議前綴（http:// 或 https://）
+    hosts = []
+    for host in allowed_hosts_env.split(','):
+        host = host.strip()
+        if not host:
+            continue
+        # 如果包含協議，提取主機名
+        if host.startswith('http://') or host.startswith('https://'):
+            parsed = urlparse(host)
+            host = parsed.hostname or host.replace('http://', '').replace('https://', '').split('/')[0]
+        hosts.append(host)
+    ALLOWED_HOSTS = hosts
 else:
     # 開發環境預設值
     if DEBUG:
