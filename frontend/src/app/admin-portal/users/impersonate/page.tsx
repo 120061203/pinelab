@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { adminGetUsers, adminImpersonateUser, adminCancelImpersonation } from '@/lib/admin-api';
+import { adminGetUsers, adminImpersonateUser, adminImpersonateRole, adminCancelImpersonation } from '@/lib/admin-api';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { useRBAC } from '@/lib/rbac';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
@@ -43,11 +43,11 @@ export default function ImpersonatePage() {
     const loadUsers = async () => {
       setLoading(true);
       try {
-        const res: any = await adminGetUsers({ role: 'editor' });
-        const editorRes: any = await adminGetUsers({ role: 'analyst' });
+        const editorRes: any = await adminGetUsers({ role: 'editor' });
+        const analystRes: any = await adminGetUsers({ role: 'analyst' });
         
         const editorList = Array.isArray(editorRes?.data) ? editorRes.data : (editorRes?.data?.results || []);
-        const analystList = Array.isArray(editorRes?.data) ? editorRes.data : (editorRes?.data?.results || []);
+        const analystList = Array.isArray(analystRes?.data) ? analystRes.data : (analystRes?.data?.results || []);
         
         // 合併編輯者和分析師列表
         const allUsers = [
@@ -71,14 +71,11 @@ export default function ImpersonatePage() {
   }, [canImpersonate, router, addToast]);
 
   const handleImpersonate = async () => {
-    if (!selectedUserId) {
-      addToast({ type: 'error', message: '請選擇要模擬的用戶' });
-      return;
-    }
-
     setImpersonating(true);
     try {
-      const res: any = await adminImpersonateUser(selectedUserId, selectedRole);
+      const res: any = selectedUserId
+        ? await adminImpersonateUser(selectedUserId, selectedRole)
+        : await adminImpersonateRole(selectedRole);
       
       if (res?.status === 'success' && res?.data) {
         // 更新 tokens 和 user

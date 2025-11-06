@@ -393,6 +393,58 @@ class UserAdminViewSet(viewsets.ModelViewSet):
                 },
             },
         }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], url_path='impersonate-role')
+    def impersonate_role(self, request):
+        """
+        無需指定用戶，直接以指定角色（editor/analyst）進行身份切換（僅管理員可用）
+        POST /api/admin/users/impersonate-role/
+        body: { "role": "editor" | "analyst" }
+        """
+        current_user = request.user
+        # 僅限管理員使用
+        if not hasattr(current_user, 'role') or current_user.role != 'admin':
+            return Response({
+                'status': 'error',
+                'code': 'PERMISSION_DENIED',
+                'message': '只有管理員可以使用身份切換功能',
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        impersonate_role = request.data.get('role')
+        if impersonate_role not in ['editor', 'analyst']:
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_ROLE',
+                'message': '只能切換為編輯者或分析師角色',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # 基於當前管理員生成帶有 impersonate_role 的 token
+        from .tokens import ImpersonationRefreshToken
+        token = ImpersonationRefreshToken.for_user_with_impersonation(
+            current_user,
+            impersonate_role=impersonate_role,
+            original_user_id=current_user.id,
+        )
+
+        from .admin_serializers import UserSerializer
+        user_serializer = UserSerializer(current_user)
+
+        return Response({
+            'status': 'success',
+            'data': {
+                'access': str(token.access_token),
+                'refresh': str(token),
+                'user': user_serializer.data,
+                'impersonation': {
+                    'is_impersonating': True,
+                    'impersonate_role': impersonate_role,
+                    'original_user': {
+                        'id': current_user.id,
+                        'username': current_user.username,
+                    },
+                },
+            },
+        }, status=status.HTTP_200_OK)
     
     @action(detail=False, methods=['post'], url_path='cancel-impersonation')
     def cancel_impersonation(self, request):

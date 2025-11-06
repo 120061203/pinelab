@@ -441,6 +441,13 @@ export async function adminImpersonateUser(id: number, role?: 'editor' | 'analys
   });
 }
 
+export async function adminImpersonateRole(role: 'editor' | 'analyst') {
+  return adminRequest('/admin/users/impersonate-role/', {
+    method: 'POST',
+    body: JSON.stringify({ role }),
+  });
+}
+
 export async function adminCancelImpersonation() {
   return adminRequest('/admin/users/cancel-impersonation/', {
     method: 'POST',
