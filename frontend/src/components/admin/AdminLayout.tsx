@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="bg-yellow-100 border-b border-yellow-200 px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-yellow-800 font-medium">
-              ⚠️ 您正在以 {role === 'editor' ? '編輯者' : '分析師'} 身份操作
+              ⚠️ 您正在以 {role === 'editor' ? '編輯者' : role === 'analyst' ? '分析師' : role === 'admin' ? '管理員' : role} 身份操作
             </span>
           </div>
           <button

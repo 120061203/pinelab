@@ -273,7 +273,9 @@ export default function UserForm({ initial, onSaved, onCancel }: UserFormProps) 
         />
       </div>
 
-      {(!!currentUser?.is_super_admin || !initial?.id || !!password) && (
+      {(!initial?.id || 
+        (initial?.id === currentUser?.id) || 
+        (initial?.id && initial.id !== currentUser?.id && !!currentUser?.is_super_admin)) && (
         <>
           <PasswordInput
             value={password}
@@ -284,7 +286,9 @@ export default function UserForm({ initial, onSaved, onCancel }: UserFormProps) 
             showStrength={true}
           />
 
-          {(!initial?.id || !!password || !!currentUser?.is_super_admin) && (
+          {(!initial?.id || 
+            (initial?.id === currentUser?.id && !!password) || 
+            (initial?.id && initial.id !== currentUser?.id && !!currentUser?.is_super_admin && !!password)) && (
             <div>
               <label className="block text-sm font-medium mb-1">確認密碼 <span className="text-red-500">*</span></label>
               <div className="relative">
@@ -293,7 +297,7 @@ export default function UserForm({ initial, onSaved, onCancel }: UserFormProps) 
                   className="w-full border rounded px-3 py-2 pr-10"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  required={!initial?.id || !!password || !!currentUser?.is_super_admin}
+                  required={!initial?.id || !!password}
                   minLength={8}
                   disabled={isEditingSuperAdmin}
                 />

@@ -36,14 +36,15 @@ export default function ImpersonatePage() {
       if (res?.status === 'success' && res?.data) {
         // 更新 tokens 和 user（以 impersonate_role 覆寫有效角色）
         setTokens({ access: res.data.access, refresh: res.data.refresh });
-        const impersonateRole = res?.data?.impersonation?.impersonate_role as 'editor' | 'analyst' | undefined;
+        const impersonateRole = res?.data?.impersonation?.impersonate_role as 'editor' | 'analyst' | 'admin' | undefined;
         const effectiveUser = impersonateRole
           ? { ...res.data.user, role: impersonateRole }
           : res.data.user;
         setUser(effectiveUser);
         setIsImpersonating(true);
         setOriginalUser(currentUser);
-        addToast({ type: 'success', message: `已切換為 ${selectedRole === 'editor' ? '編輯者' : '分析師'} 身份` });
+        const roleNames: Record<string, string> = { editor: '編輯者', analyst: '分析師', admin: '管理員' };
+        addToast({ type: 'success', message: `已切換為 ${roleNames[selectedRole] || selectedRole} 身份` });
         router.push('/admin-portal/dashboard');
       } else {
         addToast({ type: 'error', message: res?.message || '身份切換失敗' });
@@ -91,7 +92,7 @@ export default function ImpersonatePage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-yellow-800">
-                ⚠️ 您正在以 {role === 'editor' ? '編輯者' : '分析師'} 身份操作
+                ⚠️ 您正在以 {role === 'editor' ? '編輯者' : role === 'analyst' ? '分析師' : role === 'admin' ? '管理員' : role} 身份操作
               </p>
               {originalUser && (
                 <p className="text-sm text-yellow-700 mt-1">
