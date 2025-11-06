@@ -242,9 +242,6 @@ STATIC_URL = '/static/'
 # BASE_DIR 是 backend/src/pinelab/settings.py 的 parent.parent.parent = backend/
 # 在 Docker 中，backend/ 對應到 /app/，所以 STATIC_ROOT = /app/staticfiles
 STATIC_ROOT = BASE_DIR.parent.parent / 'staticfiles'
-# 確保目錄存在（如果不存在，collectstatic 會創建）
-import os
-os.makedirs(STATIC_ROOT, exist_ok=True)
 
 # WhiteNoise configuration for serving static files
 # 使用 WhiteNoise 在生產環境中提供靜態文件（不需要 Nginx）
