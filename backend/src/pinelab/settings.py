@@ -328,6 +328,30 @@ CORS_ALLOWED_ORIGINS = os.getenv(
 
 CORS_ALLOW_CREDENTIALS = True
 
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:3000'
+).split(',')
+
+# 如果在生產環境，自動添加 ZEABUR_WEB_URL
+if not DEBUG:
+    zeabur_url = os.getenv('ZEABUR_WEB_URL')
+    if zeabur_url:
+        # 確保 zeabur_url 不在列表中才添加
+        if zeabur_url not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(zeabur_url)
+    # 如果沒有 ZEABUR_WEB_URL，嘗試從 ALLOWED_HOSTS 推斷
+    elif ALLOWED_HOSTS and ALLOWED_HOSTS != ['*']:
+        # 將 ALLOWED_HOSTS 中的域名轉換為完整的 URL
+        for host in ALLOWED_HOSTS:
+            if host and host != '*':
+                # 判斷是生產環境（通常包含 .zeabur.app）
+                if '.zeabur.app' in host or not host.startswith('localhost'):
+                    trusted_url = f'https://{host}'
+                    if trusted_url not in CSRF_TRUSTED_ORIGINS:
+                        CSRF_TRUSTED_ORIGINS.append(trusted_url)
+
 # API Secret Key for HMAC-SHA256
 API_SECRET_KEY = os.getenv('API_SECRET_KEY', 'change-me-in-production')
 
