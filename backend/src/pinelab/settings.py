@@ -29,16 +29,30 @@ if allowed_hosts_env:
         host = host.strip()
         if not host:
             continue
-        # 如果包含協議，提取主機名
+        # 如果包含協議，提取主機名（保留端口）
         if host.startswith('http://') or host.startswith('https://'):
             parsed = urlparse(host)
-            host = parsed.hostname or host.replace('http://', '').replace('https://', '').split('/')[0]
+            # 保留端口信息（如果有的話）
+            if parsed.port:
+                host = f"{parsed.hostname}:{parsed.port}"
+            else:
+                host = parsed.hostname or host.replace('http://', '').replace('https://', '').split('/')[0]
         hosts.append(host)
     ALLOWED_HOSTS = hosts
+    
+    # 在開發環境中，如果包含 localhost，自動添加常見的端口變體
+    if DEBUG:
+        if 'localhost' in ALLOWED_HOSTS or '*' in ALLOWED_HOSTS:
+            # 添加常見的 localhost 端口變體
+            common_ports = ['8000', '3000', '8080']
+            for port in common_ports:
+                localhost_with_port = f'localhost:{port}'
+                if localhost_with_port not in ALLOWED_HOSTS:
+                    ALLOWED_HOSTS.append(localhost_with_port)
 else:
     # 開發環境預設值
     if DEBUG:
-        ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'localhost:8000', 'localhost:3000', '*']
     else:
         # 生產環境：如果沒有設定 ALLOWED_HOSTS，嘗試從 Zeabur 環境變數推斷
         # Zeabur 可能會提供 ZEABUR_SERVICE_URL 或類似環境變數
