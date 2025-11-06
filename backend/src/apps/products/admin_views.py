@@ -539,7 +539,7 @@ class ProductAdminViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAuthenticated])
 def dashboard_metrics(request):
     """
     Dashboard 指標（30 天）
