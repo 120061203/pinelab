@@ -33,9 +33,11 @@ export function navVisible(role: Role | undefined, item: 'products' | 'categorie
     case 'products':
     case 'categories':
     case 'tags':
-      return hasPermission(role, 'content_read');
+      // 僅對具備寫入權限（管理員、編輯者）顯示；分析師不顯示
+      return hasPermission(role, 'content_write');
     case 'contacts':
-      return hasPermission(role, 'content_read');
+      // 僅管理員/編輯者可見
+      return hasPermission(role, 'content_write');
     case 'dashboard':
       return hasPermission(role, 'view_analytics');
     default:
