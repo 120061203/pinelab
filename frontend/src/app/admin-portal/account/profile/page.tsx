@@ -5,11 +5,13 @@ import { adminUpdateSelf, changePassword } from '@/lib/admin-api';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
 import { useRouter } from 'next/navigation';
+import { useRBAC } from '@/lib/rbac';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, setUser } = useAdminAuth();
   const { addToast } = useToast();
+  const { role, hasRole } = useRBAC();
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -119,6 +121,40 @@ export default function ProfilePage() {
       </div>
 
       <div className="max-w-2xl space-y-6">
+        {/* 帳號資訊卡片 */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4">帳號資訊</h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2 border-b">
+              <span className="text-sm font-medium text-gray-700">使用者名稱</span>
+              <span className="text-sm text-gray-900">{user.username}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b">
+              <span className="text-sm font-medium text-gray-700">角色</span>
+              <div className="flex items-center gap-2">
+                <span className={`px-3 py-1 text-xs rounded font-medium ${
+                  role === 'admin' 
+                    ? 'bg-purple-100 text-purple-800' 
+                    : role === 'editor'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {role === 'admin' ? '管理員' : role === 'editor' ? '編輯者' : role === 'analyst' ? '分析師' : '未知'}
+                </span>
+                {user?.is_super_admin && (
+                  <span className="px-3 py-1 text-xs rounded font-medium bg-yellow-100 text-yellow-800">
+                    主管理員
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm font-medium text-gray-700">帳號 ID</span>
+              <span className="text-sm text-gray-900">#{user.id}</span>
+            </div>
+          </div>
+        </div>
+
         {/* 基本資訊表單 */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">基本資訊</h2>
