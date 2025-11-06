@@ -332,7 +332,7 @@ class UserAdminViewSet(viewsets.ModelViewSet):
     def update_self(self, request):
         """更新自己的帳號資訊（所有角色可用）"""
         user = request.user
-        serializer = UserSelfUpdateSerializer(user, data=request.data, partial=True)
+        serializer = UserSelfUpdateSerializer(user, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({

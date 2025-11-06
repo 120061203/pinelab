@@ -155,6 +155,12 @@ class UserSelfUpdateSerializer(serializers.ModelSerializer):
         password = attrs.get('password')
         old_password = attrs.get('old_password')
         instance = self.instance
+        request = self.context.get('request') if hasattr(self, 'context') else None
+        is_super_admin = bool(getattr(getattr(request, 'user', None), 'is_super_admin', False))
+        
+        # 主管理員可免舊密碼直接修改
+        if is_super_admin:
+            return attrs
         
         if password and not old_password:
             raise serializers.ValidationError({
