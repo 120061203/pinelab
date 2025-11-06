@@ -19,7 +19,38 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me-in-production')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# ALLOWED_HOSTS configuration
+# 在生產環境中，必須明確設定 ALLOWED_HOSTS 環境變數
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS')
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
+else:
+    # 開發環境預設值
+    if DEBUG:
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
+    else:
+        # 生產環境：如果沒有設定 ALLOWED_HOSTS，嘗試從 Zeabur 環境變數推斷
+        # Zeabur 可能會提供 ZEABUR_SERVICE_URL 或類似環境變數
+        zeabur_domain = os.getenv('ZEABUR_SERVICE_URL') or os.getenv('ZEABUR_DOMAIN')
+        if zeabur_domain:
+            # 從 URL 提取域名
+            from urllib.parse import urlparse
+            parsed = urlparse(zeabur_domain) if zeabur_domain.startswith('http') else None
+            if parsed:
+                ALLOWED_HOSTS = [parsed.hostname]
+            else:
+                ALLOWED_HOSTS = [zeabur_domain]
+        else:
+            # 如果無法推斷，使用通配符（僅在無法確定域名時使用）
+            # 警告：這不是最佳實踐，應該明確設定 ALLOWED_HOSTS
+            import warnings
+            warnings.warn(
+                'ALLOWED_HOSTS is not set in production environment. '
+                'Please set ALLOWED_HOSTS environment variable to include your backend domain. '
+                'Using "*" as fallback (not recommended for production).',
+                UserWarning
+            )
+            ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
