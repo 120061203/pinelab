@@ -2,19 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { adminGetUsers, adminImpersonateUser, adminImpersonateRole, adminCancelImpersonation } from '@/lib/admin-api';
+import { adminImpersonateRole, adminCancelImpersonation } from '@/lib/admin-api';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { useRBAC } from '@/lib/rbac';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
-
-type UserOption = {
-  id: number;
-  username: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  role: 'admin' | 'editor' | 'analyst';
-};
 
 export default function ImpersonatePage() {
   const router = useRouter();
@@ -22,9 +13,6 @@ export default function ImpersonatePage() {
   const { hasRole, role } = useRBAC();
   const { addToast } = useToast();
   
-  const [users, setUsers] = useState<UserOption[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [selectedRole, setSelectedRole] = useState<'editor' | 'analyst'>('editor');
   const [impersonating, setImpersonating] = useState(false);
   const [isImpersonating, setIsImpersonating] = useState(false);
@@ -38,44 +26,12 @@ export default function ImpersonatePage() {
       router.push('/admin-portal/dashboard');
       return;
     }
-
-    // 載入可切換的用戶列表（編輯者和分析師）
-    const loadUsers = async () => {
-      setLoading(true);
-      try {
-        const editorRes: any = await adminGetUsers({ role: 'editor' });
-        const analystRes: any = await adminGetUsers({ role: 'analyst' });
-        
-        const editorList = Array.isArray(editorRes?.data) ? editorRes.data : (editorRes?.data?.results || []);
-        const analystList = Array.isArray(analystRes?.data) ? analystRes.data : (analystRes?.data?.results || []);
-        
-        // 合併編輯者和分析師列表
-        const allUsers = [
-          ...editorList.filter((u: any) => u.role === 'editor'),
-          ...analystList.filter((u: any) => u.role === 'analyst'),
-        ];
-        
-        setUsers(allUsers);
-      } catch (e: any) {
-        addToast({ type: 'error', message: e?.message || '載入用戶列表失敗' });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUsers();
-
-    // 檢查是否正在身份切換
-    // TODO: 從 JWT token 中檢查是否有 impersonate_role
-    // 這裡暫時簡化處理
   }, [canImpersonate, router, addToast]);
 
   const handleImpersonate = async () => {
     setImpersonating(true);
     try {
-      const res: any = selectedUserId
-        ? await adminImpersonateUser(selectedUserId, selectedRole)
-        : await adminImpersonateRole(selectedRole);
+      const res: any = await adminImpersonateRole(selectedRole);
       
       if (res?.status === 'success' && res?.data) {
         // 更新 tokens 和 user（以 impersonate_role 覆寫有效角色）
@@ -122,14 +78,6 @@ export default function ImpersonatePage() {
     return null; // 已經在 useEffect 中導向
   }
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="text-center py-8">載入中...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -164,7 +112,7 @@ export default function ImpersonatePage() {
       {!isImpersonating && (
         <div className="max-w-2xl space-y-6">
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">選擇要模擬的角色</h2>
+            <h2 className="text-lg font-semibold mb-4">選擇要切換的角色</h2>
             
             <div className="space-y-4">
               <div>
@@ -182,30 +130,6 @@ export default function ImpersonatePage() {
                 </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">選擇用戶（可選）</label>
-                <select
-                  value={selectedUserId || ''}
-                  onChange={(e) => setSelectedUserId(e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-full border rounded px-3 py-2"
-                >
-                  <option value="">不指定用戶（使用角色切換）</option>
-                  {users
-                    .filter((u) => u.role === selectedRole)
-                    .map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.first_name || u.last_name
-                          ? `${u.first_name || ''} ${u.last_name || ''}`.trim()
-                          : u.username}{' '}
-                        ({u.email || u.username})
-                      </option>
-                    ))}
-                </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  選擇特定用戶進行身份切換，或留空以僅切換角色
-                </p>
-              </div>
-
               <button
                 onClick={handleImpersonate}
                 disabled={impersonating}
@@ -220,7 +144,7 @@ export default function ImpersonatePage() {
             <h3 className="font-medium text-blue-900 mb-2">使用說明</h3>
             <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
               <li>身份切換功能僅供管理員使用</li>
-              <li>您只能模擬編輯者或分析師角色，不能模擬其他管理員</li>
+              <li>您只能切換為編輯者或分析師角色，不能切換為其他管理員</li>
               <li>切換身份後，您將以該角色的權限操作系統</li>
               <li>可以隨時取消身份切換，返回原始管理員身份</li>
             </ul>
