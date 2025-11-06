@@ -10,9 +10,10 @@ import PasswordInput from '@/components/admin/forms/PasswordInput';
 type UserFormProps = {
   initial?: any;
   onSaved: () => void;
+  onCancel?: () => void;
 };
 
-export default function UserForm({ initial, onSaved }: UserFormProps) {
+export default function UserForm({ initial, onSaved, onCancel }: UserFormProps) {
   const { addToast } = useToast();
   const { user: currentUser } = useAdminAuth();
   const { hasRole } = useRBAC();
@@ -272,7 +273,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
         />
       </div>
 
-      {(!initial?.id || password) && (
+      {(!!currentUser?.is_super_admin || !initial?.id || !!password) && (
         <>
           <PasswordInput
             value={password}
@@ -283,7 +284,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
             showStrength={true}
           />
 
-          {(!initial?.id || password) && (
+          {(!initial?.id || !!password || !!currentUser?.is_super_admin) && (
             <div>
               <label className="block text-sm font-medium mb-1">確認密碼 <span className="text-red-500">*</span></label>
               <div className="relative">
@@ -292,7 +293,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
                   className="w-full border rounded px-3 py-2 pr-10"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  required={!initial?.id || !!password}
+                  required={!initial?.id || !!password || !!currentUser?.is_super_admin}
                   minLength={8}
                   disabled={isEditingSuperAdmin}
                 />
@@ -432,6 +433,15 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
         >
           {saving ? '儲存中…' : '儲存'}
         </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+          >
+            取消
+          </button>
+        )}
       </div>
       {isEditingSuperAdmin && (
         <p className="text-xs text-red-600">您沒有權限儲存主管理員的修改</p>

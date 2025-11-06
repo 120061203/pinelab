@@ -118,6 +118,7 @@ export default function AdminUserEditPage() {
         <UserForm
           initial={isNew ? undefined : initial}
           onSaved={handleSaved}
+          onCancel={() => router.push('/admin-portal/users')}
         />
       </div>
     </div>
