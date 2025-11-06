@@ -24,7 +24,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/backend/lib/
 lib64/
 parts/
 sdist/
@@ -75,4 +75,14 @@ htmlcov/
 # Temporary files
 *.tmp
 *.temp
+
+# Local DB dumps and helpers (should not be committed)
+backup.sql
+backup_*.sql
+backup_data_only.sql
+backup_data_only.clean.sql
+app_data_only.sql
+infra/backup.sql
+pinelab_data.json
+*.bak
 

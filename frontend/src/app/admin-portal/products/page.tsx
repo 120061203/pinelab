@@ -156,7 +156,8 @@ export default function AdminProductsPage() {
       if (res?.status === 'success') {
         const opText = pendingBatchUpdate.operation === 'enable' ? '啟用' : 
                        pendingBatchUpdate.operation === 'disable' ? '停用' : '刪除';
-        addToast({ type: 'success', message: `已批量${opText} ${res.data?.updated_count || selectedProductIds.length} 個商品` });
+        const data = res.data as { updated_count?: number } | undefined;
+        addToast({ type: 'success', message: `已批量${opText} ${data?.updated_count || selectedProductIds.length} 個商品` });
         setShowBatchUpdate(false);
         setSelectedProductIds([]);
         setBatchOperation('enable');
