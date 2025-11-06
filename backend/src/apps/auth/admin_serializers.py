@@ -69,10 +69,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """建立使用者並加密密碼"""
         password = validated_data.pop('password')
-        user = User.objects.create_user(
-            password=password,
-            **validated_data
-        )
+        role = validated_data.get('role')
+        # 根據角色自動設定 is_staff（admin/editor=True，analyst=False）
+        if role in ['admin', 'editor']:
+            validated_data['is_staff'] = True
+        elif role == 'analyst':
+            validated_data['is_staff'] = False
+
+        user = User.objects.create_user(password=password, **validated_data)
         return user
 
 
@@ -114,6 +118,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         
+        # 角色變更時，同步 is_staff 設定
+        role = validated_data.get('role', getattr(instance, 'role', None))
+        if role in ['admin', 'editor']:
+            instance.is_staff = True
+        elif role == 'analyst':
+            instance.is_staff = False
+
         if password:
             instance.set_password(password)
         

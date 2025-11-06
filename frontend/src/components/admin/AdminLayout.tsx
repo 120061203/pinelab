@@ -48,6 +48,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const canManageUsers = hasRole(['admin', 'editor']);
   const canImpersonate = hasRole(['admin']);
 
+  // 未登入：不要套用側欄版型，避免登入頁被擠壓
+  if (!user) {
+    return (
+      <ProtectedRoute>
+        <main className="p-6 w-full">{children}</main>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute>
       {/* 身份切換提示橫幅 */}
@@ -97,14 +106,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
             )}
 
-            {/* 個人設定（所有使用者可見） */}
+            {/* 個人設定（需登入才顯示） */}
             <div className="mt-2 pt-2 border-t">
               <div className="font-medium text-gray-700 mb-1">個人設定</div>
               <Link href="/admin-portal/account/profile" className="block ml-2 text-gray-600">
                 編輯帳號資訊
-              </Link>
-              <Link href="/admin-portal/account/profile" className="block ml-2 text-gray-600">
-                變更密碼
               </Link>
             </div>
 

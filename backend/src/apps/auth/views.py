@@ -59,22 +59,11 @@ def login(request):
             'message': '使用者名稱/郵箱或密碼錯誤',
         }, status=status.HTTP_401_UNAUTHORIZED)
     
-    # 允許『管理員、編輯者』登入 Admin Portal，禁止『分析師』
-    if hasattr(user, 'role'):
-        if user.role not in ['admin', 'editor']:
-            return Response({
-                'status': 'error',
-                'code': 'NOT_ALLOWED',
-                'message': '此帳號沒有權限登入後台（僅限管理員與編輯者）',
-            }, status=status.HTTP_403_FORBIDDEN)
-    else:
-        # 若無 role 欄位，回退至 is_staff 檢查
-        if not user.is_staff:
-            return Response({
-                'status': 'error',
-                'code': 'NOT_ALLOWED',
-                'message': '此帳號沒有權限登入後台',
-            }, status=status.HTTP_403_FORBIDDEN)
+    # 允許『管理員、編輯者、分析師』登入 Admin Portal。
+    # (分析師僅能瀏覽與修改自己的個人資料，其他寫入操作由前後端權限控管)
+    if not hasattr(user, 'role'):
+        # 舊帳號若無 role 欄位，回退至 is_staff；若不是 staff 也允許登入但權限由前端/後端再限制
+        pass
     
     # 生成 JWT tokens
     refresh = RefreshToken.for_user(user)
@@ -84,6 +73,8 @@ def login(request):
         'id': user.id,
         'username': user.username,
         'email': user.email,
+        'first_name': getattr(user, 'first_name', ''),
+        'last_name': getattr(user, 'last_name', ''),
     }
     
     # 添加角色相關資訊（如果 User 模型有這些欄位）

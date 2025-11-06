@@ -19,8 +19,13 @@ class IsAdminUser(permissions.BasePermission):
     只有 is_staff=True 的用戶才能訪問
     """
     def has_permission(self, request, view):
-        return (
-            request.user and
-            request.user.is_authenticated and
-            request.user.is_staff
-        )
+        if not request.user or not request.user.is_authenticated:
+            return False
+        # 允許 is_staff 或 具備角色 admin/editor 的使用者
+        try:
+            role = getattr(request.user, 'role', None)
+            if role in ['admin', 'editor']:
+                return True
+        except Exception:
+            pass
+        return bool(getattr(request.user, 'is_staff', False))
