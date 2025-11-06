@@ -89,7 +89,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             
             {/* 帳號管理（管理員和編輯者可見） */}
             {canManageUsers && (
-              <Link href="/admin-portal/users">帳號管理</Link>
+              <div className="mt-2 pt-2 border-t">
+                <div className="font-medium text-gray-700 mb-1">帳號管理</div>
+                <Link href="/admin-portal/users" className="block ml-2 text-gray-600">
+                  使用者管理
+                </Link>
+              </div>
             )}
 
             {/* 個人設定（所有使用者可見） */}
