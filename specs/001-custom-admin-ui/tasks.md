@@ -369,7 +369,7 @@ Acceptance (independent):
 
 ### 前端任務
 
-- [ ] T072 [P] [US6] 創建帳號管理列表頁於 frontend/src/app/admin-portal/users/page.tsx
+- [X] T072 [P] [US6] 創建帳號管理列表頁於 frontend/src/app/admin-portal/users/page.tsx
   - 顯示帳號列表（姓名、郵箱、角色、主管理員標記、狀態、刪除預定時間）
   - 主管理員顯示特殊標記（例如「主管理員」徽章或圖標）
   - 支援搜尋（姓名、郵箱）、分頁
@@ -380,7 +380,7 @@ Acceptance (independent):
   - 顯示刪除預定時間倒數計時
   - 分析師只能檢視列表，所有操作按鈕隱藏
 
-- [ ] T073 [P] [US6] 創建帳號表單元件於 frontend/src/components/admin/users/UserForm.tsx
+- [X] T073 [P] [US6] 創建帳號表單元件於 frontend/src/components/admin/users/UserForm.tsx
   - 表單欄位：姓名（first_name, last_name）、郵箱、密碼（新增時）、角色選擇、主管理員選項（僅管理員可見）
   - 主管理員選項：checkbox「設為主管理員」（僅在創建新管理員或編輯現有管理員時顯示）
   - 如果已有主管理員，顯示提示「系統已有主管理員，無法再設定主管理員」
@@ -388,12 +388,12 @@ Acceptance (independent):
   - 根據使用者角色隱藏/禁用角色選擇（編輯者不能選擇管理員）
   - 顯示載入狀態和錯誤訊息
 
-- [ ] T074 [US6] 創建帳號新增/編輯頁面於 frontend/src/app/admin-portal/users/[id]/page.tsx
+- [X] T074 [US6] 創建帳號新增/編輯頁面於 frontend/src/app/admin-portal/users/[id]/page.tsx
   - 使用 UserForm 元件
   - 處理新增和編輯模式
   - 成功後跳轉回列表頁
 
-- [ ] T075 [P] [US6] 添加帳號管理 API 函數於 frontend/src/lib/admin-api.ts
+- [X] T075 [P] [US6] 添加帳號管理 API 函數於 frontend/src/lib/admin-api.ts
   - adminGetUsers(params)：取得帳號列表
   - adminGetUser(id)：取得帳號詳情
   - adminCreateUser(data)：新增帳號（僅管理員和編輯者可用）
@@ -404,30 +404,30 @@ Acceptance (independent):
   - adminImpersonateUser(id, role)：切換身份模擬其他角色（僅管理員可用）
   - adminCancelImpersonation()：取消身份切換（返回原始管理員身份）
 
-- [ ] T076 [US6] 實現密碼重設請求頁面於 frontend/src/app/admin-portal/forgot-password/page.tsx
+- [X] T076 [US6] 實現密碼重設請求頁面於 frontend/src/app/admin-portal/forgot-password/page.tsx
   - 表單：輸入郵箱
   - 提交後顯示成功訊息（不洩露郵箱是否存在）
   - 提供返回登入頁連結
 
-- [ ] T077 [US6] 實現密碼重設確認頁面於 frontend/src/app/admin-portal/reset-password/page.tsx
+- [X] T077 [US6] 實現密碼重設確認頁面於 frontend/src/app/admin-portal/reset-password/page.tsx
   - 從 URL query 取得 token 和 email
   - 表單：新密碼、確認密碼
   - 驗證密碼強度和一致性
   - 提交後顯示成功訊息並導向登入頁
 
-- [ ] T078 [US6] 實現個人帳號資訊管理頁面於 frontend/src/app/admin-portal/account/profile/page.tsx
+- [X] T078 [US6] 實現個人帳號資訊管理頁面於 frontend/src/app/admin-portal/account/profile/page.tsx
   - 表單：姓名（first_name, last_name）、郵箱、密碼變更（可選）
   - 密碼變更區塊：舊密碼、新密碼、確認密碼（可選填）
   - 驗證：郵箱格式、舊密碼正確性（如變更密碼）、新密碼強度
   - 提交後顯示成功訊息
   - 分析師也可使用此頁面更新自己的資訊
 
-- [ ] T079 [P] [US6] 添加密碼相關 API 函數於 frontend/src/lib/admin-api.ts
+- [X] T079 [P] [US6] 添加密碼相關 API 函數於 frontend/src/lib/admin-api.ts
   - requestPasswordReset(email)：請求密碼重設
   - confirmPasswordReset(token, email, newPassword)：確認密碼重設
   - changePassword(oldPassword, newPassword)：變更密碼（需認證）
 
-- [ ] T080 [US6] 在導航選單添加帳號管理入口於 frontend/src/components/admin/AdminLayout.tsx
+- [X] T080 [US6] 在導航選單添加帳號管理入口於 frontend/src/components/admin/AdminLayout.tsx
   - 「帳號管理」選單項目：管理員和編輯者可見，分析師不可見
   - 添加「個人設定」選單項目（所有使用者可見）
   - 在個人設定中提供「變更密碼」和「編輯帳號資訊」連結
@@ -436,11 +436,11 @@ Acceptance (independent):
   - 身份切換時，在頁面頂部顯示身份切換提示橫幅，並提供「取消切換」按鈕
   - 身份切換後，UI 和功能權限對應切換後的角色
 
-- [ ] T081 [US6] 在登入頁添加「忘記密碼」連結於 frontend/src/app/admin-portal/login/page.tsx
+- [X] T081 [US6] 在登入頁添加「忘記密碼」連結於 frontend/src/app/admin-portal/login/page.tsx
   - 連結指向 /admin-portal/forgot-password
   - 樣式與登入表單一致
 
-- [ ] T082 [US6] 實現身份切換功能頁面於 frontend/src/app/admin-portal/users/impersonate/page.tsx
+- [X] T082 [US6] 實現身份切換功能頁面於 frontend/src/app/admin-portal/users/impersonate/page.tsx
   - 顯示當前身份切換狀態（如果正在模擬其他角色）
   - 提供身份切換下拉選單（編輯者、分析師），僅管理員可見
   - 選擇角色後切換身份，更新全域 auth context

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { adminLogin } from "@/lib/admin-api";
 import { useAdminAuth } from "@/lib/admin-auth";
 
@@ -72,6 +73,14 @@ export default function AdminLoginPage() {
             autoComplete="current-password"
             required
           />
+        </div>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/admin-portal/forgot-password"
+            className="text-sm text-blue-600 hover:underline"
+          >
+            忘記密碼？
+          </Link>
         </div>
         <button
           type="submit"

@@ -1,3 +1,5 @@
+import { useAdminAuth } from './admin-auth';
+
 export type Role = 'admin' | 'editor' | 'analyst';
 
 export type Permission =
@@ -39,6 +41,29 @@ export function navVisible(role: Role | undefined, item: 'products' | 'categorie
     default:
       return false;
   }
+}
+
+/**
+ * React Hook for RBAC
+ */
+export function useRBAC() {
+  const { user } = useAdminAuth();
+  const role = (user?.role as Role) || undefined;
+
+  const hasRole = (roles: Role[]) => {
+    if (!role) return false;
+    return roles.includes(role);
+  };
+
+  const hasPermissionCheck = (permission: Permission) => {
+    return hasPermission(role, permission);
+  };
+
+  return {
+    role,
+    hasRole,
+    hasPermission: hasPermissionCheck,
+  };
 }
 
 

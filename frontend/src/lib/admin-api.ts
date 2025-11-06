@@ -332,3 +332,111 @@ export async function adminBatchUpdateProductTags(productIds: number[], operatio
   });
 }
 
+/**
+ * 帳號管理 API
+ */
+export async function adminGetUsers(params?: Record<string, any>) {
+  const searchParams = new URLSearchParams();
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, value.toString());
+      }
+    });
+  }
+  const queryString = searchParams.toString();
+  const endpoint = queryString ? `/admin/users/?${queryString}` : '/admin/users/';
+  return adminRequest(endpoint);
+}
+
+export async function adminGetUser(id: number) {
+  return adminRequest(`/admin/users/${id}/`);
+}
+
+export async function adminCreateUser(data: Record<string, any>) {
+  return adminRequest('/admin/users/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminUpdateUser(id: number, data: Record<string, any>) {
+  return adminRequest(`/admin/users/${id}/`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminUpdateSelf(data: Record<string, any>) {
+  return adminRequest('/admin/users/me/', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminDeleteUser(id: number) {
+  return adminRequest(`/admin/users/${id}/`, {
+    method: 'DELETE',
+  });
+}
+
+export async function adminCancelUserDeletion(id: number) {
+  return adminRequest(`/admin/users/${id}/cancel-deletion/`, {
+    method: 'POST',
+  });
+}
+
+export async function adminImpersonateUser(id: number, role?: 'editor' | 'analyst') {
+  return adminRequest(`/admin/users/${id}/impersonate/`, {
+    method: 'POST',
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function adminCancelImpersonation() {
+  return adminRequest('/admin/users/cancel-impersonation/', {
+    method: 'POST',
+  });
+}
+
+/**
+ * 密碼相關 API
+ */
+export async function requestPasswordReset(email: string) {
+  const url = `${API_BASE_URL}/auth/password-reset-request/`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data?.message || '請求密碼重設失敗');
+  }
+  return data;
+}
+
+export async function confirmPasswordReset(token: string, email: string, newPassword: string) {
+  const url = `${API_BASE_URL}/auth/password-reset-confirm/`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, email, new_password: newPassword }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data?.message || '密碼重設失敗');
+  }
+  return data;
+}
+
+export async function changePassword(oldPassword: string, newPassword: string) {
+  return adminRequest('/auth/change-password/', {
+    method: 'POST',
+    body: JSON.stringify({
+      old_password: oldPassword,
+      new_password: newPassword,
+    }),
+  });
+}
+
