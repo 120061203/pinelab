@@ -24,5 +24,6 @@ COPY . .
 EXPOSE 8000
 
 # Run migrations, collect static files, and start server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn pinelab.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120 --access-logfile - --error-logfile -"]
+# 如果 collectstatic 失敗，只記錄警告但繼續啟動（避免服務無法啟動）
+CMD ["sh", "-c", "python manage.py migrate && (python manage.py collectstatic --noinput || echo 'Warning: collectstatic failed, continuing anyway...') && gunicorn pinelab.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120 --access-logfile - --error-logfile -"]
 

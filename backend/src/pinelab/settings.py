@@ -242,7 +242,13 @@ STATIC_ROOT = BASE_DIR.parent.parent / 'staticfiles'
 
 # WhiteNoise configuration for serving static files
 # 使用 WhiteNoise 在生產環境中提供靜態文件（不需要 Nginx）
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# 注意：CompressedManifestStaticFilesStorage 需要先運行 collectstatic
+# 如果 collectstatic 失敗，可以暫時改用 CompressedStaticFilesStorage
+if os.getenv('USE_COMPRESSED_MANIFEST', 'False').lower() == 'true':
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+else:
+    # 使用更寬鬆的配置，即使沒有運行 collectstatic 也能工作
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Media files
 MEDIA_ROOT = BASE_DIR.parent.parent / 'media'
