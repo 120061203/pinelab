@@ -18,16 +18,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [originalUser, setOriginalUser] = useState<any>(null);
   const [showImpersonateMenu, setShowImpersonateMenu] = useState(false);
 
-  // 檢查是否正在身份切換（從 JWT token 中解析）
+  // 檢查是否正在身份切換（從 JWT access token 解析 original_user_id/impersonate_role）
   React.useEffect(() => {
-    // TODO: 從 JWT token 中檢查是否有 impersonate_role 和 original_user_id
-    // 這裡先簡單檢查，實際應該從 token 解析
     const checkImpersonation = () => {
-      // 可以從 localStorage 或 context 中獲取身份切換狀態
-      // 暫時簡化處理
+      if (typeof window === 'undefined') return;
+      try {
+        const token = localStorage.getItem('admin.access');
+        if (!token) {
+          setIsImpersonating(false);
+          setOriginalUser(null);
+          return;
+        }
+        const [, payloadB64] = token.split('.');
+        if (!payloadB64) return;
+        const payloadJson = atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/'));
+        const payload = JSON.parse(decodeURIComponent(escape(payloadJson)));
+        if (payload && payload.original_user_id) {
+          setIsImpersonating(true);
+          setOriginalUser({ id: payload.original_user_id });
+        } else {
+          setIsImpersonating(false);
+          setOriginalUser(null);
+        }
+      } catch {
+        // 忽略解析錯誤
+      }
     };
     checkImpersonation();
-  }, []);
+  }, [user]);
 
   const handleCancelImpersonation = async () => {
     try {
@@ -114,7 +132,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             </div>
 
-            {/* 身份切換（僅管理員可見） */}
+            {/* 身份切換入口（僅管理員可見）；但取消按鈕由頂部橫幅提供，分析師也看得到 */}
             {canImpersonate && (
               <div className="mt-2 pt-2 border-t">
                 <div className="font-medium text-gray-700 mb-1">身份切換</div>
