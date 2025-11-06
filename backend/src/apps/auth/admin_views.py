@@ -110,6 +110,14 @@ class UserAdminViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         current_user = request.user
         
+        # T086: 僅允許主管理員修改主管理員
+        if instance.is_super_admin and not current_user.is_super_admin:
+            return Response({
+                'status': 'error',
+                'code': 'PERMISSION_DENIED',
+                'message': '只有主管理員可以修改主管理員的帳號',
+            }, status=status.HTTP_403_FORBIDDEN)
+        
         # 檢查編輯者權限
         if hasattr(current_user, 'role') and current_user.role == 'editor':
             # 編輯者不能將帳號改為管理員
@@ -411,5 +419,53 @@ class UserAdminViewSet(viewsets.ModelViewSet):
                 'status': 'error',
                 'code': 'INTERNAL_ERROR',
                 'message': '取消身份切換時發生錯誤',
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=True, methods=['post'], url_path='send-password-reset')
+    def send_password_reset(self, request, pk=None):
+        """
+        T087: 代發密碼重設信端點（僅管理員可用）
+        POST /api/admin/users/{id}/send-password-reset/
+        """
+        user = self.get_object()
+        current_user = request.user
+        
+        # 檢查權限：僅管理員可用
+        if not hasattr(current_user, 'role') or current_user.role != 'admin':
+            return Response({
+                'status': 'error',
+                'code': 'PERMISSION_DENIED',
+                'message': '只有管理員可以代發密碼重設信',
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # 檢查用戶是否有有效的郵箱
+        if not user.email:
+            return Response({
+                'status': 'error',
+                'code': 'NO_EMAIL',
+                'message': '該使用者沒有設定郵箱地址',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 生成 token
+        from django.contrib.auth.tokens import PasswordResetTokenGenerator
+        token_generator = PasswordResetTokenGenerator()
+        token = token_generator.make_token(user)
+        
+        # 發送郵件
+        from .services import send_password_reset_email
+        success = send_password_reset_email(user.email, token)
+        
+        if success:
+            return Response({
+                'status': 'success',
+                'data': {
+                    'message': f'密碼重設信已發送到 {user.email}',
+                },
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'status': 'error',
+                'code': 'EMAIL_SEND_FAILED',
+                'message': '發送郵件失敗，請檢查郵件服務配置',
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

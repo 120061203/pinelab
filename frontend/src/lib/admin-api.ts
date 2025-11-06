@@ -386,6 +386,12 @@ export async function adminCancelUserDeletion(id: number) {
   });
 }
 
+export async function adminSendPasswordReset(id: number) {
+  return adminRequest(`/admin/users/${id}/send-password-reset/`, {
+    method: 'POST',
+  });
+}
+
 export async function adminImpersonateUser(id: number, role?: 'editor' | 'analyst') {
   return adminRequest(`/admin/users/${id}/impersonate/`, {
     method: 'POST',

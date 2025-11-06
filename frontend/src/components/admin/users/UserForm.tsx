@@ -17,6 +17,9 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
   const { hasRole } = useRBAC();
   const isAdmin = hasRole(['admin']);
   const isEditor = hasRole(['editor']);
+  
+  // T090: 檢查是否為編輯主管理員且當前用戶非主管理員
+  const isEditingSuperAdmin = initial?.is_super_admin && !currentUser?.is_super_admin;
 
   const [firstName, setFirstName] = useState(initial?.first_name || '');
   const [lastName, setLastName] = useState(initial?.last_name || '');
@@ -165,21 +168,35 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      {isEditingSuperAdmin && (
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
+          <p className="text-sm text-yellow-800">
+            ⚠️ 警告：您正在嘗試編輯主管理員帳號，但您不是主管理員。只有主管理員可以修改主管理員的帳號。
+          </p>
+        </div>
+      )}
+      
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">名字</label>
           <input
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded px-3 py-2 ${
+              isEditingSuperAdmin ? 'bg-gray-100 cursor-not-allowed' : ''
+            }`}
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
+            disabled={isEditingSuperAdmin}
           />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">姓氏</label>
           <input
-            className="w-full border rounded px-3 py-2"
+            className={`w-full border rounded px-3 py-2 ${
+              isEditingSuperAdmin ? 'bg-gray-100 cursor-not-allowed' : ''
+            }`}
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
+            disabled={isEditingSuperAdmin}
           />
         </div>
       </div>
@@ -188,10 +205,13 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
         <label className="block text-sm font-medium mb-1">郵箱 <span className="text-red-500">*</span></label>
         <input
           type="email"
-          className="w-full border rounded px-3 py-2"
+          className={`w-full border rounded px-3 py-2 ${
+            isEditingSuperAdmin ? 'bg-gray-100 cursor-not-allowed' : ''
+          }`}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          disabled={isEditingSuperAdmin}
         />
       </div>
 
@@ -249,7 +269,9 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
       <div>
         <label className="block text-sm font-medium mb-1">角色 <span className="text-red-500">*</span></label>
         <select
-          className="w-full border rounded px-3 py-2"
+          className={`w-full border rounded px-3 py-2 ${
+            isEditingSuperAdmin ? 'bg-gray-100 cursor-not-allowed' : ''
+          }`}
           value={role}
           onChange={(e) => {
             const newRole = e.target.value as 'admin' | 'editor' | 'analyst';
@@ -264,7 +286,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
               setIsSuperAdmin(false);
             }
           }}
-          disabled={isEditor && role === 'admin'}
+          disabled={isEditingSuperAdmin || (isEditor && role === 'admin')}
         >
           <option value="editor">編輯者</option>
           <option value="analyst">分析師</option>
@@ -272,6 +294,9 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
         </select>
         {isEditor && role !== 'admin' && (
           <p className="text-xs text-gray-500 mt-1">編輯者不能新增管理員角色</p>
+        )}
+        {isEditingSuperAdmin && (
+          <p className="text-xs text-red-600 mt-1">只有主管理員可以修改主管理員的角色</p>
         )}
       </div>
 
@@ -283,7 +308,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
               type="checkbox"
               checked={isSuperAdmin}
               onChange={(e) => setIsSuperAdmin(e.target.checked)}
-              disabled={checkingSuperAdmin}
+              disabled={checkingSuperAdmin || isEditingSuperAdmin}
             />
             <label htmlFor="superAdmin" className="text-sm font-medium">設為主管理員</label>
           </div>
@@ -300,6 +325,11 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
               ⚠️ 系統中只能有一位主管理員
             </p>
           )}
+          {isEditingSuperAdmin && (
+            <p className="text-xs text-red-600">
+              ⚠️ 只有主管理員可以修改主管理員狀態
+            </p>
+          )}
         </div>
       )}
 
@@ -309,19 +339,26 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
           type="checkbox"
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
+          disabled={isEditingSuperAdmin}
         />
         <label htmlFor="active" className="text-sm">啟用</label>
       </div>
+      {isEditingSuperAdmin && (
+        <p className="text-xs text-red-600">只有主管理員可以修改主管理員的啟用狀態</p>
+      )}
 
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={saving || (isSuperAdmin && hasExistingSuperAdmin)}
+          disabled={saving || (isSuperAdmin && hasExistingSuperAdmin) || isEditingSuperAdmin}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {saving ? '儲存中…' : '儲存'}
         </button>
       </div>
+      {isEditingSuperAdmin && (
+        <p className="text-xs text-red-600">您沒有權限儲存主管理員的修改</p>
+      )}
     </form>
   );
 }

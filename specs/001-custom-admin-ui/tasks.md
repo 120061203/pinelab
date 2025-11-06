@@ -528,35 +528,35 @@ Acceptance (independent):
 
 ### 後端任務
 
-- [ ] T086 [US7] 僅允許主管理員修改主管理員於 backend/src/apps/auth/admin_views.py
+- [X] T086 [US7] 僅允許主管理員修改主管理員於 backend/src/apps/auth/admin_views.py
   - 在 update/partial_update、destroy、任何角色/啟用狀態變更處新增檢查：若 target.is_super_admin 且 requester 非主管理員→403
   - 回傳統一錯誤格式與明確訊息
 
-- [ ] T087 [US7] 新增代發密碼重設信端點於 backend/src/apps/auth/admin_views.py
+- [X] T087 [US7] 新增代發密碼重設信端點於 backend/src/apps/auth/admin_views.py
   - 端點：POST /api/admin/users/{id}/send-password-reset/
   - 僅管理員可用，呼叫 services.send_password_reset_email(user.email, token)
   - 產生 token 並送出郵件（沿用 T070 模板與服務）
 
-- [ ] T088 [US7] 確保密碼雜湊儲存於 backend/src/apps/auth/admin_serializers.py
+- [X] T088 [US7] 確保密碼雜湊儲存於 backend/src/apps/auth/admin_serializers.py
   - create/update 路徑強制使用 set_password（覆核現有邏輯）
   - 禁止任何情境回傳明文密碼於響應
 
 ### 前端任務
 
-- [ ] T089 [P] [US7] 在使用者列表/詳情加入「發送重設密碼信」按鈕
+- [X] T089 [P] [US7] 在使用者列表/詳情加入「發送重設密碼信」按鈕
   - 檔案：frontend/src/app/admin-portal/users/page.tsx、frontend/src/app/admin-portal/users/[id]/page.tsx
   - 僅管理員可見；呼叫 adminSendPasswordReset(userId)
   - 發送後 Toast 成功/失敗提示
 
-- [ ] T090 [P] [US7] 表單與操作約束：非主管理員不可編輯主管理員
+- [X] T090 [P] [US7] 表單與操作約束：非主管理員不可編輯主管理員
   - 檔案：frontend/src/components/admin/users/UserForm.tsx
   - 主管理員標記時欄位鎖定/禁用（對於非主管理員）；提供明確提示文案
 
-- [ ] T091 [P] [US7] 使用者列表顯示規則與提示
+- [X] T091 [P] [US7] 使用者列表顯示規則與提示
   - 檔案：frontend/src/app/admin-portal/users/page.tsx
   - 對主管理員行加註徽章與「不可由非主管理員編輯」提示（tooltip）
 
-- [ ] T092 [P] [US7] 新增前端 API 函數 adminSendPasswordReset 於 frontend/src/lib/admin-api.ts
+- [X] T092 [P] [US7] 新增前端 API 函數 adminSendPasswordReset 於 frontend/src/lib/admin-api.ts
   - `POST /api/admin/users/{id}/send-password-reset/`
   - 回傳統一結構與錯誤處理
 

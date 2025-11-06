@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { adminGetUser } from '@/lib/admin-api';
+import { adminGetUser, adminSendPasswordReset } from '@/lib/admin-api';
 import UserForm from '@/components/admin/users/UserForm';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
 import { useRBAC } from '@/lib/rbac';
@@ -19,8 +19,10 @@ export default function AdminUserEditPage() {
   const [initial, setInitial] = useState<any>(null);
   const [loading, setLoading] = useState(!isNew);
   const [error, setError] = useState<string | null>(null);
+  const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
 
   const canManageUsers = hasRole(['admin', 'editor']);
+  const canSendPasswordReset = hasRole(['admin']); // T089: 僅管理員可發送密碼重設信
 
   useEffect(() => {
     if (!canManageUsers) {
@@ -52,6 +54,23 @@ export default function AdminUserEditPage() {
     router.push('/admin-portal/users');
   };
 
+  const handleSendPasswordReset = async () => {
+    if (!userId) return;
+    setSendingPasswordReset(true);
+    try {
+      const res: any = await adminSendPasswordReset(userId);
+      if (res?.status === 'success') {
+        addToast({ type: 'success', message: res?.data?.message || '密碼重設信已發送' });
+      } else {
+        addToast({ type: 'error', message: res?.message || '發送失敗' });
+      }
+    } catch (e: any) {
+      addToast({ type: 'error', message: e?.message || '發送失敗' });
+    } finally {
+      setSendingPasswordReset(false);
+    }
+  };
+
   if (!canManageUsers) {
     return null; // 已經在 useEffect 中導向
   }
@@ -80,10 +99,19 @@ export default function AdminUserEditPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
+      <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">
           {isNew ? '新增帳號' : '編輯帳號'}
         </h1>
+        {!isNew && canSendPasswordReset && initial?.email && (
+          <button
+            onClick={handleSendPasswordReset}
+            disabled={sendingPasswordReset}
+            className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {sendingPasswordReset ? '發送中...' : '發送重設密碼信'}
+          </button>
+        )}
       </div>
 
       <div className="max-w-2xl">

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { adminGetUsers, adminDeleteUser, adminCancelUserDeletion } from "@/lib/admin-api";
+import { adminGetUsers, adminDeleteUser, adminCancelUserDeletion, adminSendPasswordReset } from "@/lib/admin-api";
 import { Table, Th, Td, Pagination } from "@/components/admin/table/Table";
 import { useToast } from "@/components/admin/feedback/ToastProvider";
 import ConfirmModal from "@/components/admin/modals/ConfirmModal";
@@ -38,12 +38,14 @@ export default function AdminUsersPage() {
   const { addToast } = useToast();
   const [pendingDelete, setPendingDelete] = useState<number | null>(null);
   const [pendingCancelDeletion, setPendingCancelDeletion] = useState<number | null>(null);
+  const [sendingPasswordReset, setSendingPasswordReset] = useState<number | null>(null);
 
   // 檢查權限
   const canManageUsers = hasRole(['admin', 'editor']);
   const canViewUsers = hasRole(['admin', 'editor', 'analyst']);
   const canEdit = hasRole(['admin', 'editor']);
   const canDelete = hasRole(['admin', 'editor']);
+  const canSendPasswordReset = hasRole(['admin']); // T089: 僅管理員可發送密碼重設信
 
   const load = async (pageNum = 1, searchQuery = "", role = "") => {
     setLoading(true);
@@ -103,6 +105,22 @@ export default function AdminUsersPage() {
       addToast({ type: 'error', message: e?.message || '取消失敗' });
     } finally {
       setPendingCancelDeletion(null);
+    }
+  };
+
+  const handleSendPasswordReset = async (id: number) => {
+    setSendingPasswordReset(id);
+    try {
+      const res: any = await adminSendPasswordReset(id);
+      if (res?.status === 'success') {
+        addToast({ type: 'success', message: res?.data?.message || '密碼重設信已發送' });
+      } else {
+        addToast({ type: 'error', message: res?.message || '發送失敗' });
+      }
+    } catch (e: any) {
+      addToast({ type: 'error', message: e?.message || '發送失敗' });
+    } finally {
+      setSendingPasswordReset(null);
     }
   };
 
@@ -207,7 +225,10 @@ export default function AdminUsersPage() {
                     <div className="flex items-center gap-2">
                       {getDisplayName(user)}
                       {user.is_super_admin && (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">
+                        <span 
+                          className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded"
+                          title="只有主管理員可以修改主管理員的帳號"
+                        >
                           主管理員
                         </span>
                       )}
@@ -242,13 +263,30 @@ export default function AdminUsersPage() {
                   </Td>
                   {canEdit && (
                     <Td>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Link
                           href={`/admin-portal/users/${user.id}`}
-                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm"
+                          className={`px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm ${
+                            user.is_super_admin && !currentUser?.is_super_admin
+                              ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                              : ''
+                          }`}
+                          title={user.is_super_admin && !currentUser?.is_super_admin 
+                            ? '只有主管理員可以編輯主管理員' 
+                            : '編輯'}
                         >
                           編輯
                         </Link>
+                        {canSendPasswordReset && user.email && (
+                          <button
+                            onClick={() => handleSendPasswordReset(user.id)}
+                            disabled={sendingPasswordReset === user.id}
+                            className="px-3 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="發送密碼重設信"
+                          >
+                            {sendingPasswordReset === user.id ? '發送中...' : '發送重設密碼信'}
+                          </button>
+                        )}
                         {user.deletion_scheduled_at ? (
                           <button
                             onClick={() => setPendingCancelDeletion(user.id)}
