@@ -20,25 +20,43 @@ from .models import User
 def login(request):
     """
     管理員登入端點
+    支援使用 username 或 email 登入
     返回 JWT access 和 refresh tokens
     """
-    username = request.data.get('username')
+    username_or_email = request.data.get('username') or request.data.get('email')
     password = request.data.get('password')
     
-    if not username or not password:
+    if not username_or_email or not password:
         return Response({
             'status': 'error',
             'code': 'MISSING_CREDENTIALS',
-            'message': '請提供使用者名稱和密碼',
+            'message': '請提供使用者名稱/郵箱和密碼',
         }, status=status.HTTP_400_BAD_REQUEST)
     
-    user = authenticate(username=username, password=password)
+    # 先嘗試用 username 登入
+    user = authenticate(username=username_or_email, password=password)
+    
+    # 如果 username 登入失敗，嘗試用 email 登入
+    if user is None:
+        try:
+            user_obj = User.objects.get(email=username_or_email)
+            user = authenticate(username=user_obj.username, password=password)
+        except User.DoesNotExist:
+            user = None
+        except User.MultipleObjectsReturned:
+            # 如果有多個相同 email 的使用者（理論上不應該發生，因為 email 應該是唯一的）
+            # 嘗試第一個
+            user_obj = User.objects.filter(email=username_or_email).first()
+            if user_obj:
+                user = authenticate(username=user_obj.username, password=password)
+            else:
+                user = None
     
     if user is None:
         return Response({
             'status': 'error',
             'code': 'INVALID_CREDENTIALS',
-            'message': '使用者名稱或密碼錯誤',
+            'message': '使用者名稱/郵箱或密碼錯誤',
         }, status=status.HTTP_401_UNAUTHORIZED)
     
     if not user.is_staff:

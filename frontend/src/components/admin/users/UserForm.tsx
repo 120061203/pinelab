@@ -21,6 +21,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
   // T090: 檢查是否為編輯主管理員且當前用戶非主管理員
   const isEditingSuperAdmin = initial?.is_super_admin && !currentUser?.is_super_admin;
 
+  const [username, setUsername] = useState(initial?.username || '');
   const [firstName, setFirstName] = useState(initial?.first_name || '');
   const [lastName, setLastName] = useState(initial?.last_name || '');
   const [email, setEmail] = useState(initial?.email || '');
@@ -60,6 +61,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
   // 當 initial prop 變化時，更新表單狀態
   useEffect(() => {
     if (initial) {
+      setUsername(initial.username || '');
       setFirstName(initial.first_name || '');
       setLastName(initial.last_name || '');
       setEmail(initial.email || '');
@@ -71,6 +73,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
       setConfirmPassword('');
     } else {
       // 重置表單
+      setUsername('');
       setFirstName('');
       setLastName('');
       setEmail('');
@@ -96,6 +99,11 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
     e.preventDefault();
 
     // 驗證
+    if (!username || username.trim() === '') {
+      addToast({ type: 'error', message: '請輸入使用者名稱' });
+      return;
+    }
+
     if (!email || !validateEmail(email)) {
       addToast({ type: 'error', message: '請輸入有效的郵箱地址' });
       return;
@@ -125,6 +133,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
     setSaving(true);
     try {
       const payload: Record<string, any> = {
+        username: username.trim(),
         first_name: firstName,
         last_name: lastName,
         email,
@@ -146,6 +155,7 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
         addToast({ type: 'success', message: '帳號已儲存' });
         if (isNew) {
           // 新增成功後重置表單
+          setUsername('');
           setFirstName('');
           setLastName('');
           setEmail('');
@@ -160,7 +170,36 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
         addToast({ type: 'error', message: res?.message || '儲存失敗' });
       }
     } catch (e: any) {
-      addToast({ type: 'error', message: e?.message || '儲存失敗' });
+      // 改進錯誤處理，正確解析錯誤訊息
+      let errorMessage = '儲存失敗';
+      if (e?.message) {
+        errorMessage = e.message;
+      } else if (typeof e === 'string') {
+        errorMessage = e;
+      } else if (e?.response?.data) {
+        const errorData = e.response.data;
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (typeof errorData === 'object') {
+          // 處理字段錯誤
+          const fieldErrors: string[] = [];
+          for (const [key, value] of Object.entries(errorData)) {
+            if (Array.isArray(value)) {
+              fieldErrors.push(`${key}: ${(value as string[]).join(', ')}`);
+            } else if (typeof value === 'string') {
+              fieldErrors.push(`${key}: ${value}`);
+            } else if (typeof value === 'object') {
+              fieldErrors.push(`${key}: ${JSON.stringify(value)}`);
+            }
+          }
+          if (fieldErrors.length > 0) {
+            errorMessage = fieldErrors.join('; ');
+          }
+        }
+      }
+      addToast({ type: 'error', message: errorMessage });
     } finally {
       setSaving(false);
     }
@@ -176,6 +215,22 @@ export default function UserForm({ initial, onSaved }: UserFormProps) {
         </div>
       )}
       
+      <div>
+        <label className="block text-sm font-medium mb-1">使用者名稱 <span className="text-red-500">*</span></label>
+        <input
+          type="text"
+          className={`w-full border rounded px-3 py-2 ${
+            isEditingSuperAdmin ? 'bg-gray-100 cursor-not-allowed' : ''
+          }`}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          disabled={isEditingSuperAdmin}
+          required
+          placeholder="請輸入登入時使用的使用者名稱"
+        />
+        <p className="text-xs text-gray-500 mt-1">此為登入時使用的帳號名稱，可包含字母、數字和 @/./+/-/_</p>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">名字</label>

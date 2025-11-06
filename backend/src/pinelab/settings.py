@@ -355,7 +355,7 @@ if DEBUG and os.path.exists('/app/logs'):
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
-AUTH_USER_MODEL = 'auth.User'  # 使用自定義 User 模型
+AUTH_USER_MODEL = 'custom_auth.User'  # 使用自定義 User 模型（apps.auth 的 label 是 custom_auth）
 
 # REST Framework configuration
 REST_FRAMEWORK = {

@@ -49,16 +49,19 @@ export default function AdminLoginPage() {
         )}
         <div className="space-y-1">
           <label className="text-sm" htmlFor="username">
-            使用者名稱
+            使用者名稱或郵箱
           </label>
           <input
             id="username"
+            type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full border rounded px-3 py-2"
             autoComplete="username"
+            placeholder="請輸入使用者名稱或郵箱地址"
             required
           />
+          <p className="text-xs text-gray-500 mt-1">可使用使用者名稱或郵箱地址登入</p>
         </div>
         <div className="space-y-1">
           <label className="text-sm" htmlFor="password">

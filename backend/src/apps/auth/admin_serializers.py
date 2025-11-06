@@ -49,7 +49,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         ]
     
     def validate(self, attrs):
-        """驗證主管理員唯一性"""
+        """驗證主管理員唯一性和 username 必填"""
         is_super_admin = attrs.get('is_super_admin', False)
         if is_super_admin:
             existing = User.objects.filter(is_super_admin=True).exists()
@@ -57,6 +57,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     'is_super_admin': '系統中只能有一位主管理員'
                 })
+        
+        # username 必須由使用者提供
+        if not attrs.get('username'):
+            raise serializers.ValidationError({
+                'username': '使用者名稱是必填欄位'
+            })
+        
         return attrs
     
     def create(self, validated_data):

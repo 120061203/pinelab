@@ -69,9 +69,24 @@ async function adminRequest<T>(
       const fieldErrors: string[] = [];
       for (const [key, value] of Object.entries(data)) {
         if (Array.isArray(value)) {
-          fieldErrors.push(`${key}: ${value.join(', ')}`);
+          fieldErrors.push(`${key}: ${(value as string[]).join(', ')}`);
         } else if (typeof value === 'string') {
           fieldErrors.push(`${key}: ${value}`);
+        } else if (typeof value === 'object' && value !== null) {
+          // 處理嵌套的錯誤對象
+          const nestedErrors: string[] = [];
+          for (const [nestedKey, nestedValue] of Object.entries(value)) {
+            if (Array.isArray(nestedValue)) {
+              nestedErrors.push(`${nestedKey}: ${(nestedValue as string[]).join(', ')}`);
+            } else {
+              nestedErrors.push(`${nestedKey}: ${String(nestedValue)}`);
+            }
+          }
+          if (nestedErrors.length > 0) {
+            fieldErrors.push(`${key}: ${nestedErrors.join('; ')}`);
+          } else {
+            fieldErrors.push(`${key}: ${JSON.stringify(value)}`);
+          }
         }
       }
       if (fieldErrors.length > 0) {
