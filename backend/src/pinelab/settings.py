@@ -248,6 +248,16 @@ STATIC_URL = '/static/'
 # STATIC_ROOT 應該在 /app/staticfiles
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# 確保 staticfiles 目錄存在（在啟動時創建，避免 WhiteNoise 警告）
+# 注意：這個目錄會在 Dockerfile 和 collectstatic 中創建，這裡只是確保啟動時存在
+staticfiles_dir = Path(STATIC_ROOT)
+if not staticfiles_dir.exists():
+    try:
+        staticfiles_dir.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError):
+        # 如果無法創建（可能是權限問題），collectstatic 會處理
+        pass
+
 # WhiteNoise configuration for serving static files
 # 使用 WhiteNoise 在生產環境中提供靜態文件（不需要 Nginx）
 # 注意：CompressedManifestStaticFilesStorage 需要先運行 collectstatic
