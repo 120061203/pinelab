@@ -278,7 +278,11 @@ WHITENOISE_AUTOREFRESH = DEBUG  # 在開發環境中自動刷新
 WHITENOISE_MANIFEST_STRICT = False  # 如果找不到 manifest 文件，不報錯
 
 # Media files
-MEDIA_ROOT = BASE_DIR.parent.parent / 'media'
+# MEDIA_ROOT 路徑計算（與 STATIC_ROOT 類似）：
+# BASE_DIR = /app/（在 Docker 中）
+# MEDIA_ROOT 應該在 /app/media
+# 可以通過環境變數 MEDIA_ROOT 覆蓋（可選）
+MEDIA_ROOT = os.getenv('MEDIA_ROOT', str(BASE_DIR / 'media'))
 MEDIA_URL = '/media/'
 
 # Logging configuration
