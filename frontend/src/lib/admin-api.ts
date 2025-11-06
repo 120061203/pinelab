@@ -62,12 +62,36 @@ async function adminRequest<T>(
 
   if (!response.ok) {
     // 處理 DRF 驗證錯誤格式
+    // 優先使用後端返回的統一格式
     let errorMessage = data?.message || data?.detail;
+    
+    // 如果後端返回了 errors 對象，也嘗試解析
+    if (!errorMessage && data?.errors) {
+      if (typeof data.errors === 'object') {
+        const fieldErrors: string[] = [];
+        for (const [key, value] of Object.entries(data.errors)) {
+          if (Array.isArray(value)) {
+            fieldErrors.push(`${key}: ${(value as string[]).join(', ')}`);
+          } else if (typeof value === 'string') {
+            fieldErrors.push(`${key}: ${value}`);
+          }
+        }
+        if (fieldErrors.length > 0) {
+          errorMessage = fieldErrors.join('; ');
+        }
+      } else if (typeof data.errors === 'string') {
+        errorMessage = data.errors;
+      }
+    }
     
     // 如果沒有 message 或 detail，嘗試從字段錯誤中提取
     if (!errorMessage && typeof data === 'object') {
       const fieldErrors: string[] = [];
       for (const [key, value] of Object.entries(data)) {
+        // 跳過已經處理的字段
+        if (key === 'status' || key === 'code' || key === 'message' || key === 'errors') {
+          continue;
+        }
         if (Array.isArray(value)) {
           fieldErrors.push(`${key}: ${(value as string[]).join(', ')}`);
         } else if (typeof value === 'string') {
@@ -94,7 +118,10 @@ async function adminRequest<T>(
       }
     }
     
-    throw new Error(errorMessage || `API 請求失敗 (${response.status})`);
+    // 創建錯誤對象，包含完整的錯誤資訊
+    const error = new Error(errorMessage || `API 請求失敗 (${response.status})`);
+    (error as any).response = { data, status: response.status };
+    throw error;
   }
 
   return data;

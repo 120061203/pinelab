@@ -97,13 +97,63 @@ class UserAdminViewSet(viewsets.ModelViewSet):
                     'message': '系統中只能有一位主管理員',
                 }, status=status.HTTP_400_BAD_REQUEST)
         
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response({
-            'status': 'success',
-            'data': serializer.data,
-        }, status=status.HTTP_201_CREATED)
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            return Response({
+                'status': 'success',
+                'data': serializer.data,
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            # 處理驗證錯誤
+            from rest_framework.exceptions import ValidationError
+            if isinstance(e, ValidationError):
+                # 格式化驗證錯誤
+                error_messages = []
+                if hasattr(e, 'detail'):
+                    if isinstance(e.detail, dict):
+                        for field, errors in e.detail.items():
+                            if isinstance(errors, list):
+                                error_messages.append(f"{field}: {', '.join(str(err) for err in errors)}")
+                            else:
+                                error_messages.append(f"{field}: {str(errors)}")
+                    elif isinstance(e.detail, list):
+                        error_messages = [str(err) for err in e.detail]
+                    else:
+                        error_messages = [str(e.detail)]
+                
+                return Response({
+                    'status': 'error',
+                    'code': 'VALIDATION_ERROR',
+                    'message': '; '.join(error_messages) if error_messages else '驗證失敗',
+                    'errors': e.detail if hasattr(e, 'detail') else str(e),
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # 處理資料庫唯一性約束錯誤
+            error_message = str(e)
+            if 'unique' in error_message.lower() or 'already exists' in error_message.lower() or 'duplicate' in error_message.lower():
+                if 'username' in error_message.lower() or 'users_username' in error_message.lower():
+                    return Response({
+                        'status': 'error',
+                        'code': 'DUPLICATE_USERNAME',
+                        'message': '使用者名稱已存在，請使用不同的使用者名稱',
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                elif 'email' in error_message.lower() or 'users_email' in error_message.lower():
+                    return Response({
+                        'status': 'error',
+                        'code': 'DUPLICATE_EMAIL',
+                        'message': '郵箱地址已存在，請使用不同的郵箱',
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({
+                        'status': 'error',
+                        'code': 'DUPLICATE',
+                        'message': '資料已存在，請檢查輸入的資料',
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # 重新拋出其他異常
+            raise
     
     def update(self, request, *args, **kwargs):
         """更新帳號，統一響應格式並檢查權限"""
