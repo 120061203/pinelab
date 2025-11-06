@@ -169,6 +169,16 @@ class UserAdminViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         current_user = request.user
         
+        # 僅主管理員可直接修改他人密碼（免舊密碼）
+        incoming_password = request.data.get('password')
+        if incoming_password and instance.id != getattr(current_user, 'id', None):
+            if not getattr(current_user, 'is_super_admin', False):
+                return Response({
+                    'status': 'error',
+                    'code': 'PERMISSION_DENIED',
+                    'message': '只有主管理員可以直接修改他人密碼',
+                }, status=status.HTTP_403_FORBIDDEN)
+
         # T086: 僅允許主管理員修改主管理員
         if instance.is_super_admin and not current_user.is_super_admin:
             return Response({
