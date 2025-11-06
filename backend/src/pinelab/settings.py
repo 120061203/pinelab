@@ -238,7 +238,13 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+# STATIC_ROOT 在 Docker 容器中應該是 /app/staticfiles
+# BASE_DIR 是 backend/src/pinelab/settings.py 的 parent.parent.parent = backend/
+# 在 Docker 中，backend/ 對應到 /app/，所以 STATIC_ROOT = /app/staticfiles
 STATIC_ROOT = BASE_DIR.parent.parent / 'staticfiles'
+# 確保目錄存在（如果不存在，collectstatic 會創建）
+import os
+os.makedirs(STATIC_ROOT, exist_ok=True)
 
 # WhiteNoise configuration for serving static files
 # 使用 WhiteNoise 在生產環境中提供靜態文件（不需要 Nginx）
@@ -249,6 +255,13 @@ if os.getenv('USE_COMPRESSED_MANIFEST', 'False').lower() == 'true':
 else:
     # 使用更寬鬆的配置，即使沒有運行 collectstatic 也能工作
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+# WhiteNoise 設定：確保靜態文件正確提供
+# 這些設定確保 WhiteNoise 能夠正確處理靜態文件請求
+# 注意：WhiteNoise 會自動從 STATIC_ROOT 提供靜態文件，不需要額外配置
+WHITENOISE_USE_FINDERS = DEBUG  # 只在開發環境中使用 finders
+WHITENOISE_AUTOREFRESH = DEBUG  # 在開發環境中自動刷新
+WHITENOISE_MANIFEST_STRICT = False  # 如果找不到 manifest 文件，不報錯
 
 # Media files
 MEDIA_ROOT = BASE_DIR.parent.parent / 'media'
