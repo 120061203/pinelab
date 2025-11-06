@@ -78,9 +78,13 @@ export default function ImpersonatePage() {
         : await adminImpersonateRole(selectedRole);
       
       if (res?.status === 'success' && res?.data) {
-        // 更新 tokens 和 user
+        // 更新 tokens 和 user（以 impersonate_role 覆寫有效角色）
         setTokens({ access: res.data.access, refresh: res.data.refresh });
-        setUser(res.data.user);
+        const impersonateRole = res?.data?.impersonation?.impersonate_role as 'editor' | 'analyst' | undefined;
+        const effectiveUser = impersonateRole
+          ? { ...res.data.user, role: impersonateRole }
+          : res.data.user;
+        setUser(effectiveUser);
         setIsImpersonating(true);
         setOriginalUser(currentUser);
         addToast({ type: 'success', message: `已切換為 ${selectedRole === 'editor' ? '編輯者' : '分析師'} 身份` });
