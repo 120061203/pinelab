@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   };
 
-  const canManageUsers = hasRole(['admin', 'editor']);
+  const canManageUsers = hasRole(['admin']);
   const canImpersonate = hasRole(['admin']);
 
   // 未登入：不要套用側欄版型，避免登入頁被擠壓
