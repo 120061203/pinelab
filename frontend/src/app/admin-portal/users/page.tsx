@@ -402,9 +402,9 @@ export default function AdminUsersPage() {
 
           {totalPages > 1 && (
             <Pagination
-              currentPage={page}
+              page={page}
               totalPages={totalPages}
-              onPageChange={setPage}
+              onPage={setPage}
             />
           )}
         </>
