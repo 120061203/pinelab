@@ -412,8 +412,8 @@ export default function AdminUsersPage() {
 
       {/* 刪除確認對話框 */}
       <ConfirmModal
-        isOpen={pendingDelete !== null}
-        onClose={() => setPendingDelete(null)}
+        open={pendingDelete !== null}
+        onCancel={() => setPendingDelete(null)}
         onConfirm={() => pendingDelete && handleDelete(pendingDelete)}
         title="確認刪除"
         message="確定要刪除這個帳號嗎？管理員刪除管理員時會進入7天猶豫期。"
@@ -421,8 +421,8 @@ export default function AdminUsersPage() {
 
       {/* 取消刪除確認對話框 */}
       <ConfirmModal
-        isOpen={pendingCancelDeletion !== null}
-        onClose={() => setPendingCancelDeletion(null)}
+        open={pendingCancelDeletion !== null}
+        onCancel={() => setPendingCancelDeletion(null)}
         onConfirm={() => pendingCancelDeletion && handleCancelDeletion(pendingCancelDeletion)}
         title="確認取消刪除"
         message="確定要取消這個帳號的刪除嗎？"
