@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Tokens = { access: string; refresh?: string };
-type AdminUser = { id: number; username: string; email?: string; is_staff?: boolean; role?: string } | null;
+type AdminUser = { id: number; username: string; email?: string; is_staff?: boolean; role?: string; first_name?: string; last_name?: string; is_super_admin?: boolean } | null;
 
 type AdminAuthContextType = {
   tokens: Tokens | null;
