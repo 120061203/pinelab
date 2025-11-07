@@ -143,7 +143,7 @@ def import_other_data(data):
     pass
 
 def main():
-    backup_file = '../backup/zeabur_backup_20251107_091555.sql'
+    backup_file = '../backup/zeabur_backup_20251107_120035.sql'
     
     if not os.path.exists(backup_file):
         print(f"❌ 備份文件不存在: {backup_file}")

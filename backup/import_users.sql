@@ -24,7 +24,8 @@ SELECT
     is_superuser AS is_super_admin
 FROM (
     VALUES 
-    (1, 'pbkdf2_sha256$600000$in3jNdWUn9ky1REi8TeLTI$g+gcfzaUN58uab3r9NnCZMs6Qo5BBqdUMUNGPOU6+R8=', '2025-11-06 03:07:05.560557+00', false, 'songlin.chen', '', '', 'ccssll120061203@gmail.com', true, true, '2025-11-03 06:18:40.023288+00')
+    -- 從 zeabur_backup_20251107_120035.sql 提取的用戶資料
+    (1, 'pbkdf2_sha256$600000$in3jNdWUn9ky1REi8TeLTI$g+gcfzaUN58uab3r9NnCZMs6Qo5BBqdUMUNGPOU6+R8=', '2025-11-06 03:07:05.560557+00', true, 'songlin.chen', '', '', 'ccssll120061203@gmail.com', true, true, '2025-11-03 06:18:40.023288+00')
 ) AS auth_user_data(id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined)
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE users.id = auth_user_data.id OR users.username = auth_user_data.username);
 
