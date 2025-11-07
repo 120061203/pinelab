@@ -39,7 +39,6 @@ export default function AdminUsersPage() {
   const [pendingDelete, setPendingDelete] = useState<number | null>(null);
   const [pendingCancelDeletion, setPendingCancelDeletion] = useState<number | null>(null);
   const [sendingPasswordReset, setSendingPasswordReset] = useState<number | null>(null);
-  const [emailPopoverId, setEmailPopoverId] = useState<number | null>(null);
 
   // 檢查權限
   const canManageUsers = hasRole(['admin', 'editor']);
@@ -181,10 +180,6 @@ export default function AdminUsersPage() {
     return `${firstTwo}***${lastTwo}@${domain}`;
   };
 
-  const toggleEmailPopover = (id: number) => {
-    setEmailPopoverId((prev) => (prev === id ? null : id));
-  };
-
   const copyEmail = async (email?: string) => {
     if (!email) return;
     try {
@@ -280,47 +275,13 @@ export default function AdminUsersPage() {
                     <span className="inline-block max-w-[200px] truncate">{getDisplayName(user)}</span>
                   </Td>
                   <Td className="whitespace-nowrap">
-                    <div className="relative flex items-center gap-2">
-                      <span className="inline-block align-middle">{maskEmail(user.email)}</span>
-                      <button
-                        type="button"
-                        onClick={() => toggleEmailPopover(user.id)}
-                        className="text-gray-500 hover:text-gray-700"
-                        title={emailPopoverId === user.id ? '隱藏郵箱' : '顯示完整郵箱'}
-                      >
-                        {emailPopoverId === user.id ? (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                          </svg>
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        )}
-                      </button>
-                      {emailPopoverId === user.id && (
-                        <div className="absolute left-0 top-full mt-1 z-20 w-[280px] max-w-[calc(100vw-3rem)] bg-white border rounded shadow p-3">
-                          <div className="text-sm break-all mb-2">{user.email || '-'}</div>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => copyEmail(user.email || '')}
-                              className="px-2 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
-                            >
-                              複製郵箱
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEmailPopoverId(null)}
-                              className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
-                            >
-                              關閉
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <span
+                      className="inline-block align-middle cursor-pointer hover:text-blue-600 transition-colors"
+                      title={user.email || '-'}
+                      onClick={() => copyEmail(user.email)}
+                    >
+                      {maskEmail(user.email)}
+                    </span>
                   </Td>
                   <Td className="whitespace-nowrap">
                     <span className={`inline-block ${getRoleTagClass(user)}`}>
