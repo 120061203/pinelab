@@ -220,9 +220,9 @@ export default function AdminUsersPage() {
               <col style={{ width: canEdit ? '15%' : '20%' }} />
               <col style={{ width: canEdit ? '20%' : '28%' }} />
               <col style={{ width: canEdit ? '10%' : '12%' }} />
+              <col style={{ width: canEdit ? '18%' : '22%' }} />
               <col style={{ width: canEdit ? '12%' : '18%' }} />
-              <col style={{ width: canEdit ? '10%' : '22%' }} />
-              {canEdit && <col style={{ width: '33%' }} />}
+              {canEdit && <col style={{ width: '25%' }} />}
             </colgroup>
             <thead>
               <tr>
@@ -267,10 +267,10 @@ export default function AdminUsersPage() {
                       {getRoleDisplay(user)}
                     </span>
                   </Td>
-                  <Td className="whitespace-nowrap">
+                  <Td className="whitespace-nowrap min-w-[140px]">
                     {user.deletion_scheduled_at ? (
                       <div className="flex flex-col gap-1">
-                        <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded inline-block w-fit">
+                        <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded inline-block w-fit max-w-full">
                           刪除中（7天猶豫期）
                         </span>
                         <div className="text-xs text-gray-500 leading-tight">
@@ -287,7 +287,7 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                   </Td>
-                  <Td className="whitespace-nowrap">
+                  <Td className="whitespace-nowrap pl-4">
                     {user.created_at 
                       ? new Date(user.created_at).toLocaleDateString('zh-TW')
                       : '-'}
