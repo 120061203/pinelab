@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { adminGetUsers } from "@/lib/admin-api";
+import { adminGetUsers, adminCancelUserDeletion } from "@/lib/admin-api";
 import { Table, Th, Td, Pagination } from "@/components/admin/table/Table";
 import { useToast } from "@/components/admin/feedback/ToastProvider";
 import { useAdminAuth } from "@/lib/admin-auth";
@@ -36,6 +36,7 @@ export default function AdminUsersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const { addToast } = useToast();
   const [hoveredEmailId, setHoveredEmailId] = useState<number | null>(null);
+  const [cancellingDeletion, setCancellingDeletion] = useState<number | null>(null);
 
   // 檢查權限
   const canManageUsers = hasRole(['admin', 'editor']);
@@ -70,6 +71,23 @@ export default function AdminUsersPage() {
       load(page, search, roleFilter);
     }
   }, [page, search, roleFilter, canViewUsers]);
+
+  const handleCancelDeletion = async (id: number) => {
+    setCancellingDeletion(id);
+    try {
+      const res: any = await adminCancelUserDeletion(id);
+      if (res?.status === 'success') {
+        addToast({ type: 'success', message: '刪除已取消，帳號已還原' });
+        load(page, search, roleFilter);
+      } else {
+        addToast({ type: 'error', message: res?.message || '取消失敗' });
+      }
+    } catch (e: any) {
+      addToast({ type: 'error', message: e?.message || '取消失敗' });
+    } finally {
+      setCancellingDeletion(null);
+    }
+  };
 
 
   const formatDeletionCountdown = (deletionDate: string) => {
@@ -251,11 +269,11 @@ export default function AdminUsersPage() {
                   </Td>
                   <Td className="whitespace-nowrap">
                     {user.deletion_scheduled_at ? (
-                      <div className="space-y-1">
-                        <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded">
+                      <div className="flex flex-col gap-1">
+                        <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded inline-block w-fit">
                           刪除中（7天猶豫期）
                         </span>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 leading-tight">
                           {formatDeletionCountdown(user.deletion_scheduled_at)}
                         </div>
                       </div>
@@ -276,19 +294,33 @@ export default function AdminUsersPage() {
                   </Td>
                   {canEdit && (
                     <Td className="overflow-hidden">
-                      <Link
-                        href={`/admin-portal/users/${user.id}`}
-                        className={`px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs whitespace-nowrap inline-block ${
-                          user.is_super_admin && !currentUser?.is_super_admin
-                            ? 'opacity-50 cursor-not-allowed pointer-events-none'
-                            : ''
-                        }`}
-                        title={user.is_super_admin && !currentUser?.is_super_admin 
-                          ? '只有主管理員可以編輯主管理員' 
-                          : '編輯'}
-                      >
-                        編輯
-                      </Link>
+                      <div className="flex flex-wrap gap-1 items-center">
+                        <Link
+                          href={`/admin-portal/users/${user.id}`}
+                          className={`px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs whitespace-nowrap ${
+                            user.is_super_admin && !currentUser?.is_super_admin
+                              ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                              : ''
+                          }`}
+                          title={user.is_super_admin && !currentUser?.is_super_admin 
+                            ? '只有主管理員可以編輯主管理員' 
+                            : '編輯'}
+                        >
+                          編輯
+                        </Link>
+                        {user.deletion_scheduled_at && 
+                         currentUser?.is_super_admin && 
+                         user.id !== currentUser?.id && (
+                          <button
+                            onClick={() => handleCancelDeletion(user.id)}
+                            disabled={cancellingDeletion === user.id}
+                            className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200 text-xs whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="還原帳號，取消刪除"
+                          >
+                            {cancellingDeletion === user.id ? '還原中...' : '還原'}
+                          </button>
+                        )}
+                      </div>
                     </Td>
                   )}
                 </tr>
