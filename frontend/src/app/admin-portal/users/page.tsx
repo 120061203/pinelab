@@ -39,6 +39,7 @@ export default function AdminUsersPage() {
   const [pendingDelete, setPendingDelete] = useState<number | null>(null);
   const [pendingCancelDeletion, setPendingCancelDeletion] = useState<number | null>(null);
   const [sendingPasswordReset, setSendingPasswordReset] = useState<number | null>(null);
+  const [hoveredEmailId, setHoveredEmailId] = useState<number | null>(null);
 
   // 檢查權限
   const canManageUsers = hasRole(['admin', 'editor']);
@@ -275,13 +276,26 @@ export default function AdminUsersPage() {
                     <span className="inline-block max-w-[200px] truncate">{getDisplayName(user)}</span>
                   </Td>
                   <Td className="whitespace-nowrap">
-                    <span
-                      className="inline-block align-middle cursor-pointer hover:text-blue-600 transition-colors"
-                      title={user.email || '-'}
-                      onClick={() => copyEmail(user.email)}
-                    >
-                      {maskEmail(user.email)}
-                    </span>
+                    {user.email ? (
+                      <div className="relative inline-block">
+                        <span
+                          className="inline-block align-middle cursor-pointer hover:text-blue-600 transition-colors"
+                          onClick={() => copyEmail(user.email)}
+                          onMouseEnter={() => setHoveredEmailId(user.id)}
+                          onMouseLeave={() => setHoveredEmailId(null)}
+                        >
+                          {maskEmail(user.email)}
+                        </span>
+                        {hoveredEmailId === user.id && (
+                          <div className="absolute left-0 bottom-full mb-2 z-50 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+                            {user.email}
+                            <div className="absolute left-2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="inline-block align-middle text-gray-400">-</span>
+                    )}
                   </Td>
                   <Td className="whitespace-nowrap">
                     <span className={`inline-block ${getRoleTagClass(user)}`}>
