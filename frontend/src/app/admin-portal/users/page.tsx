@@ -150,6 +150,21 @@ export default function AdminUsersPage() {
     return user.role_display || user.role;
   };
 
+  const getRoleTagClass = (user: UserRow) => {
+    if (user.is_super_admin) {
+      return 'px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded';
+    }
+    const role = user.role || '';
+    if (role === 'admin') {
+      return 'px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded';
+    } else if (role === 'editor') {
+      return 'px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded';
+    } else if (role === 'analyst') {
+      return 'px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded';
+    }
+    return 'px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded';
+  };
+
   const maskEmail = (email: string | undefined): string => {
     if (!email) return '-';
     const [localPart, domain] = email.split('@');
@@ -189,7 +204,7 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 w-full overflow-x-hidden">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">帳號管理</h1>
         {canManageUsers && (
@@ -241,12 +256,12 @@ export default function AdminUsersPage() {
         <>
           <Table>
             <colgroup>
-              <col className="w-48" />
-              <col className="w-[340px]" />
-              <col className="w-28" />
-              <col className="w-24" />
-              <col className="w-28" />
-              {canEdit && <col className="w-[220px]" />}
+              <col style={{ width: canEdit ? '15%' : '20%' }} />
+              <col style={{ width: canEdit ? '20%' : '28%' }} />
+              <col style={{ width: canEdit ? '10%' : '12%' }} />
+              <col style={{ width: canEdit ? '12%' : '18%' }} />
+              <col style={{ width: canEdit ? '10%' : '22%' }} />
+              {canEdit && <col style={{ width: '33%' }} />}
             </colgroup>
             <thead>
               <tr>
@@ -262,17 +277,7 @@ export default function AdminUsersPage() {
               {items.map((user) => (
                 <tr key={user.id} className={!user.is_active ? 'opacity-50' : ''}>
                   <Td className="whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block max-w-[200px] truncate">{getDisplayName(user)}</span>
-                      {user.is_super_admin && (
-                        <span 
-                          className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded"
-                          title="只有主管理員可以修改主管理員的帳號"
-                        >
-                          主管理員
-                        </span>
-                      )}
-                    </div>
+                    <span className="inline-block max-w-[200px] truncate">{getDisplayName(user)}</span>
                   </Td>
                   <Td className="whitespace-nowrap">
                     <div className="relative flex items-center gap-2">
@@ -295,7 +300,7 @@ export default function AdminUsersPage() {
                         )}
                       </button>
                       {emailPopoverId === user.id && (
-                        <div className="absolute left-0 top-full mt-1 z-20 w-[320px] max-w-[80vw] bg-white border rounded shadow p-3">
+                        <div className="absolute left-0 top-full mt-1 z-20 w-[280px] max-w-[calc(100vw-3rem)] bg-white border rounded shadow p-3">
                           <div className="text-sm break-all mb-2">{user.email || '-'}</div>
                           <div className="flex gap-2">
                             <button
@@ -318,7 +323,9 @@ export default function AdminUsersPage() {
                     </div>
                   </Td>
                   <Td className="whitespace-nowrap">
-                    <span className="inline-block truncate align-middle">{getRoleDisplay(user)}</span>
+                    <span className={`inline-block ${getRoleTagClass(user)}`}>
+                      {getRoleDisplay(user)}
+                    </span>
                   </Td>
                   <Td className="whitespace-nowrap">
                     {user.deletion_scheduled_at ? (
@@ -346,11 +353,11 @@ export default function AdminUsersPage() {
                       : '-'}
                   </Td>
                   {canEdit && (
-                    <Td className="whitespace-nowrap">
-                      <div className="flex gap-2 flex-nowrap">
+                    <Td className="overflow-hidden">
+                      <div className="flex flex-wrap gap-1 items-center">
                         <Link
                           href={`/admin-portal/users/${user.id}`}
-                          className={`px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm ${
+                          className={`px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs whitespace-nowrap ${
                             user.is_super_admin && !currentUser?.is_super_admin
                               ? 'opacity-50 cursor-not-allowed pointer-events-none'
                               : ''
@@ -365,24 +372,24 @@ export default function AdminUsersPage() {
                           <button
                             onClick={() => handleSendPasswordReset(user.id)}
                             disabled={sendingPasswordReset === user.id}
-                            className="px-3 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 text-xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                             title="發送密碼重設信"
                           >
-                            {sendingPasswordReset === user.id ? '發送中...' : '發送重設密碼信'}
+                            {sendingPasswordReset === user.id ? '發送中' : '重設'}
                           </button>
                         )}
                         {user.deletion_scheduled_at ? (
                           <button
                             onClick={() => setPendingCancelDeletion(user.id)}
-                            className="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 text-sm"
+                            className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200 text-xs whitespace-nowrap"
                           >
-                            取消刪除
+                            取消
                           </button>
                         ) : (
                           <button
                             onClick={() => setPendingDelete(user.id)}
                             disabled={user.is_super_admin}
-                            className={`px-3 py-1 rounded text-sm ${
+                            className={`px-1.5 py-0.5 rounded text-xs whitespace-nowrap ${
                               user.is_super_admin
                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                 : 'bg-red-100 text-red-700 hover:bg-red-200'

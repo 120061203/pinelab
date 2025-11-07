@@ -2,8 +2,8 @@ import React from 'react';
 
 export function Table({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-visible border rounded w-full">
-      <table className="w-full table-auto text-sm">{children}</table>
+    <div className="border rounded w-full overflow-x-auto">
+      <table className="w-full table-fixed text-sm min-w-[800px]">{children}</table>
     </div>
   );
 }

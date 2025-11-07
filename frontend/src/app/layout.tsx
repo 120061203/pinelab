@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-TW">
-      <body>
+    <html lang="zh-TW" className="overflow-x-hidden">
+      <body className="overflow-x-hidden">
         {/* Skip to content for keyboard users */}
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-black text-white px-3 py-1 rounded">跳到主要內容</a>
         <nav className="bg-white shadow-sm">
