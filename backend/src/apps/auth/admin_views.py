@@ -285,7 +285,7 @@ class UserAdminViewSet(viewsets.ModelViewSet):
             },
         }, status=status.HTTP_200_OK)
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], url_path='cancel-deletion')
     def cancel_deletion(self, request, pk=None):
         """取消刪除（僅猶豫期內可用）"""
         user = self.get_object()
