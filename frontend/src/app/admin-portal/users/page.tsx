@@ -2,10 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { adminGetUsers, adminDeleteUser, adminCancelUserDeletion, adminSendPasswordReset } from "@/lib/admin-api";
+import { adminGetUsers } from "@/lib/admin-api";
 import { Table, Th, Td, Pagination } from "@/components/admin/table/Table";
 import { useToast } from "@/components/admin/feedback/ToastProvider";
-import ConfirmModal from "@/components/admin/modals/ConfirmModal";
 import { useAdminAuth } from "@/lib/admin-auth";
 import { useRBAC } from "@/lib/rbac";
 
@@ -36,17 +35,12 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const { addToast } = useToast();
-  const [pendingDelete, setPendingDelete] = useState<number | null>(null);
-  const [pendingCancelDeletion, setPendingCancelDeletion] = useState<number | null>(null);
-  const [sendingPasswordReset, setSendingPasswordReset] = useState<number | null>(null);
   const [hoveredEmailId, setHoveredEmailId] = useState<number | null>(null);
 
   // 檢查權限
   const canManageUsers = hasRole(['admin', 'editor']);
   const canViewUsers = hasRole(['admin', 'editor', 'analyst']);
   const canEdit = hasRole(['admin', 'editor']);
-  const canDelete = hasRole(['admin', 'editor']);
-  const canSendPasswordReset = hasRole(['admin']); // T089: 僅管理員可發送密碼重設信
 
   const load = async (pageNum = 1, searchQuery = "", role = "") => {
     setLoading(true);
@@ -77,53 +71,6 @@ export default function AdminUsersPage() {
     }
   }, [page, search, roleFilter, canViewUsers]);
 
-  const handleDelete = async (id: number) => {
-    try {
-      const res: any = await adminDeleteUser(id);
-      if (res?.status === 'success') {
-        addToast({ type: 'success', message: res?.data?.message || '帳號已刪除' });
-        load(page, search, roleFilter);
-      } else {
-        addToast({ type: 'error', message: res?.message || '刪除失敗' });
-      }
-    } catch (e: any) {
-      addToast({ type: 'error', message: e?.message || '刪除失敗' });
-    } finally {
-      setPendingDelete(null);
-    }
-  };
-
-  const handleCancelDeletion = async (id: number) => {
-    try {
-      const res: any = await adminCancelUserDeletion(id);
-      if (res?.status === 'success') {
-        addToast({ type: 'success', message: '刪除已取消' });
-        load(page, search, roleFilter);
-      } else {
-        addToast({ type: 'error', message: res?.message || '取消失敗' });
-      }
-    } catch (e: any) {
-      addToast({ type: 'error', message: e?.message || '取消失敗' });
-    } finally {
-      setPendingCancelDeletion(null);
-    }
-  };
-
-  const handleSendPasswordReset = async (id: number) => {
-    setSendingPasswordReset(id);
-    try {
-      const res: any = await adminSendPasswordReset(id);
-      if (res?.status === 'success') {
-        addToast({ type: 'success', message: res?.data?.message || '密碼重設信已發送' });
-      } else {
-        addToast({ type: 'error', message: res?.message || '發送失敗' });
-      }
-    } catch (e: any) {
-      addToast({ type: 'error', message: e?.message || '發送失敗' });
-    } finally {
-      setSendingPasswordReset(null);
-    }
-  };
 
   const formatDeletionCountdown = (deletionDate: string) => {
     const now = new Date();
@@ -329,52 +276,19 @@ export default function AdminUsersPage() {
                   </Td>
                   {canEdit && (
                     <Td className="overflow-hidden">
-                      <div className="flex flex-wrap gap-1 items-center">
-                        <Link
-                          href={`/admin-portal/users/${user.id}`}
-                          className={`px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs whitespace-nowrap ${
-                            user.is_super_admin && !currentUser?.is_super_admin
-                              ? 'opacity-50 cursor-not-allowed pointer-events-none'
-                              : ''
-                          }`}
-                          title={user.is_super_admin && !currentUser?.is_super_admin 
-                            ? '只有主管理員可以編輯主管理員' 
-                            : '編輯'}
-                        >
-                          編輯
-                        </Link>
-                        {canSendPasswordReset && user.email && (
-                          <button
-                            onClick={() => handleSendPasswordReset(user.id)}
-                            disabled={sendingPasswordReset === user.id}
-                            className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 text-xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                            title="發送密碼重設信"
-                          >
-                            {sendingPasswordReset === user.id ? '發送中' : '重設'}
-                          </button>
-                        )}
-                        {user.deletion_scheduled_at ? (
-                          <button
-                            onClick={() => setPendingCancelDeletion(user.id)}
-                            className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded hover:bg-green-200 text-xs whitespace-nowrap"
-                          >
-                            取消
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => setPendingDelete(user.id)}
-                            disabled={user.is_super_admin}
-                            className={`px-1.5 py-0.5 rounded text-xs whitespace-nowrap ${
-                              user.is_super_admin
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-red-100 text-red-700 hover:bg-red-200'
-                            }`}
-                            title={user.is_super_admin ? '主管理員不能被刪除' : '刪除'}
-                          >
-                            刪除
-                          </button>
-                        )}
-                      </div>
+                      <Link
+                        href={`/admin-portal/users/${user.id}`}
+                        className={`px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs whitespace-nowrap inline-block ${
+                          user.is_super_admin && !currentUser?.is_super_admin
+                            ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                            : ''
+                        }`}
+                        title={user.is_super_admin && !currentUser?.is_super_admin 
+                          ? '只有主管理員可以編輯主管理員' 
+                          : '編輯'}
+                      >
+                        編輯
+                      </Link>
                     </Td>
                   )}
                 </tr>
@@ -392,23 +306,6 @@ export default function AdminUsersPage() {
         </>
       )}
 
-      {/* 刪除確認對話框 */}
-      <ConfirmModal
-        open={pendingDelete !== null}
-        onCancel={() => setPendingDelete(null)}
-        onConfirm={() => pendingDelete && handleDelete(pendingDelete)}
-        title="確認刪除"
-        message="確定要刪除這個帳號嗎？管理員刪除管理員時會進入7天猶豫期。"
-      />
-
-      {/* 取消刪除確認對話框 */}
-      <ConfirmModal
-        open={pendingCancelDeletion !== null}
-        onCancel={() => setPendingCancelDeletion(null)}
-        onConfirm={() => pendingCancelDeletion && handleCancelDeletion(pendingCancelDeletion)}
-        title="確認取消刪除"
-        message="確定要取消這個帳號的刪除嗎？"
-      />
     </div>
   );
 }
