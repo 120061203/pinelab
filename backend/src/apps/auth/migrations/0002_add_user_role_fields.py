@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name='deletion_requests',
-                to='auth.user',
+                to='custom_auth.User',
                 verbose_name='刪除請求者'
             ),
         ),
