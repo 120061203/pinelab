@@ -271,7 +271,7 @@ export default function AdminUsersPage() {
                     {user.deletion_scheduled_at ? (
                       <div className="flex flex-col gap-1">
                         <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded inline-block w-fit max-w-full">
-                          刪除中（7天猶豫期）
+                          待刪除
                         </span>
                         <div className="text-xs text-gray-500 leading-tight">
                           {formatDeletionCountdown(user.deletion_scheduled_at)}
