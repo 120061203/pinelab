@@ -10,10 +10,10 @@ export default function AdminServiceEditPage() {
   const params = useParams();
   const router = useRouter();
   const { addToast } = useToast();
-  const id = params.id as string;
-  const isNew = id === 'new';
+  const id = params?.id as string | undefined;
+  const isNew = id === 'new' || !id;
   
-  const [loading, setLoading] = useState(!isNew);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<ServiceCreateRequest>({
     title: '',
@@ -26,15 +26,35 @@ export default function AdminServiceEditPage() {
   const [currentIconUrl, setCurrentIconUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isNew) {
-      load();
+    // 新增模式，不需要載入
+    if (isNew) {
+      setLoading(false);
+      return;
     }
+    
+    // 編輯模式：必須有有效的 ID
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+    
+    // 檢查 ID 是否為有效數字
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId) || numericId <= 0) {
+      addToast({ type: 'error', message: '無效的服務項目 ID' });
+      router.push('/admin-portal/services');
+      setLoading(false);
+      return;
+    }
+    
+    load(numericId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
-  const load = async () => {
+  const load = async (serviceId: number) => {
     setLoading(true);
     try {
-      const res: any = await adminGetService(parseInt(id));
+      const res: any = await adminGetService(serviceId);
       if (res?.status === 'success' && res.data) {
         setFormData({
           title: res.data.title,
@@ -60,8 +80,12 @@ export default function AdminServiceEditPage() {
     try {
       if (isNew) {
         const createData: ServiceCreateRequest = {
-          ...formData,
+          title: formData.title,
+          description: formData.description,
+          icon_type: formData.icon_type,
+          icon_value: formData.icon_value || undefined,
           icon_file: iconFile || undefined,
+          sort_order: formData.sort_order,
         };
         const res: any = await adminCreateService(createData);
         if (res?.status === 'success') {
@@ -71,11 +95,24 @@ export default function AdminServiceEditPage() {
           addToast({ type: 'error', message: res?.message || '建立失敗' });
         }
       } else {
+        if (!id || isNew) {
+          addToast({ type: 'error', message: '無效的服務項目 ID' });
+          return;
+        }
+        const numericId = parseInt(id);
+        if (isNaN(numericId)) {
+          addToast({ type: 'error', message: '無效的服務項目 ID' });
+          return;
+        }
         const updateData: ServiceUpdateRequest = {
-          ...formData,
+          title: formData.title,
+          description: formData.description,
+          icon_type: formData.icon_type,
+          icon_value: formData.icon_value || undefined,
           icon_file: iconFile || undefined,
+          sort_order: formData.sort_order,
         };
-        const res: any = await adminUpdateService(parseInt(id), updateData);
+        const res: any = await adminUpdateService(numericId, updateData);
         if (res?.status === 'success') {
           addToast({ type: 'success', message: '已更新服務項目' });
           router.push('/admin-portal/services');
@@ -84,7 +121,9 @@ export default function AdminServiceEditPage() {
         }
       }
     } catch (e: any) {
-      addToast({ type: 'error', message: e?.message || '儲存失敗' });
+      console.error('Service save error:', e);
+      const errorMessage = e?.response?.data?.message || e?.message || '儲存失敗';
+      addToast({ type: 'error', message: errorMessage });
     } finally {
       setSaving(false);
     }
@@ -152,26 +191,51 @@ export default function AdminServiceEditPage() {
           {formData.icon_type === 'fontawesome' && (
             <div>
               <label className="block text-sm font-medium mb-2">Font Awesome 圖標名稱</label>
-              <input
-                type="text"
-                value={formData.icon_value}
-                onChange={(e) => setFormData({ ...formData, icon_value: e.target.value })}
-                className="w-full px-3 py-2 border rounded-md"
-                placeholder="例如: fa-home"
-              />
+              <div className="flex items-center gap-4">
+                <input
+                  type="text"
+                  value={formData.icon_value}
+                  onChange={(e) => setFormData({ ...formData, icon_value: e.target.value })}
+                  className="flex-1 px-3 py-2 border rounded-md"
+                  placeholder="例如: fa-home"
+                />
+                {formData.icon_value && (
+                  <div className="flex items-center justify-center w-16 h-16 bg-gray-50 border border-gray-200 rounded-lg">
+                    <i 
+                      className={`fa ${
+                        formData.icon_value.startsWith('fa-') 
+                          ? formData.icon_value 
+                          : `fa-${formData.icon_value}`
+                      } text-2xl text-blue-600`}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           )}
           
           {formData.icon_type === 'material' && (
             <div>
               <label className="block text-sm font-medium mb-2">Material Icons 圖標名稱</label>
-              <input
-                type="text"
-                value={formData.icon_value}
-                onChange={(e) => setFormData({ ...formData, icon_value: e.target.value })}
-                className="w-full px-3 py-2 border rounded-md"
-                placeholder="例如: home"
-              />
+              <div className="flex items-center gap-4">
+                <input
+                  type="text"
+                  value={formData.icon_value}
+                  onChange={(e) => setFormData({ ...formData, icon_value: e.target.value })}
+                  className="flex-1 px-3 py-2 border rounded-md"
+                  placeholder="例如: home"
+                />
+                {formData.icon_value && (
+                  <div className="flex items-center justify-center w-16 h-16 bg-gray-50 border border-gray-200 rounded-lg">
+                    <span 
+                      className="material-icons text-2xl text-blue-600"
+                      style={{ fontFamily: 'Material Icons' }}
+                    >
+                      {formData.icon_value}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
           
@@ -198,16 +262,6 @@ export default function AdminServiceEditPage() {
             </div>
           )}
           
-          <div>
-            <label className="block text-sm font-medium mb-2">排序順序</label>
-            <input
-              type="number"
-              value={formData.sort_order}
-              onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border rounded-md"
-            />
-            <p className="text-xs text-gray-500 mt-1">數字越大越前面</p>
-          </div>
         </div>
 
         <div className="flex gap-4">

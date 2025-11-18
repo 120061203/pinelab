@@ -52,7 +52,10 @@ export default function ServicesSection({ services }: ServicesSectionProps) {
 
     if (service.icon_type === 'material') {
       return (
-        <span className="material-icons text-4xl text-blue-600">
+        <span 
+          className="material-icons text-4xl text-blue-600"
+          style={{ fontFamily: 'Material Icons' }}
+        >
           {service.icon_value}
         </span>
       );

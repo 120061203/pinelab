@@ -255,4 +255,50 @@ class ServiceAdminViewSet(viewsets.ModelViewSet):
             'status': 'success',
             'data': serializer.data,
         }, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['post'], url_path='batch_update_sort')
+    def batch_update_sort(self, request):
+        """
+        批量更新服務項目排序
+        接收格式: { "items": [{"id": 1, "sort_order": 10}, {"id": 2, "sort_order": 20}] }
+        """
+        items = request.data.get('items', [])
+        if not isinstance(items, list):
+            return Response({
+                'status': 'error',
+                'code': 'INVALID_FORMAT',
+                'message': 'items 必須是陣列',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # 批量更新
+            updates = []
+            for item in items:
+                service_id = item.get('id')
+                sort_order = item.get('sort_order')
+                
+                if service_id is None or sort_order is None:
+                    continue
+                
+                try:
+                    service = Service.objects.get(id=service_id)
+                    service.sort_order = sort_order
+                    service.save(update_fields=['sort_order'])
+                    updates.append({'id': service_id, 'sort_order': sort_order})
+                except Service.DoesNotExist:
+                    continue
+            
+            return Response({
+                'status': 'success',
+                'data': {
+                    'updated_count': len(updates),
+                    'items': updates,
+                },
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'code': 'UPDATE_FAILED',
+                'message': f'批量更新失敗: {str(e)}',
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

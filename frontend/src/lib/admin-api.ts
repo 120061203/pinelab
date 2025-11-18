@@ -718,10 +718,22 @@ export async function adminCreateService(data: ServiceCreateRequest) {
   
   formData.append('title', data.title);
   formData.append('description', data.description);
-  if (data.icon_type) formData.append('icon_type', data.icon_type);
-  if (data.icon_value) formData.append('icon_value', data.icon_value);
+  if (data.icon_type) {
+    formData.append('icon_type', data.icon_type);
+  } else {
+    // 如果沒有 icon_type，傳送空字串以清除
+    formData.append('icon_type', '');
+  }
+  if (data.icon_value) {
+    formData.append('icon_value', data.icon_value);
+  } else if (data.icon_type && data.icon_type !== 'custom') {
+    // 對於 fontawesome 和 material，如果沒有 icon_value，傳送空字串
+    formData.append('icon_value', '');
+  }
   if (data.icon_file) formData.append('icon_file', data.icon_file);
-  if (data.sort_order !== undefined) formData.append('sort_order', String(data.sort_order));
+  if (data.sort_order !== undefined) {
+    formData.append('sort_order', String(data.sort_order));
+  }
   
   const token = getAccessToken();
   if (!token) {
@@ -751,7 +763,26 @@ export async function adminCreateService(data: ServiceCreateRequest) {
   
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData?.message || `API 請求失敗: ${response.status}`);
+    // 處理驗證錯誤
+    if (response.status === 400 && responseData) {
+      const errorMessages: string[] = [];
+      if (responseData.icon_type) {
+        errorMessages.push(...(Array.isArray(responseData.icon_type) ? responseData.icon_type : [responseData.icon_type]));
+      }
+      if (responseData.icon_value) {
+        errorMessages.push(...(Array.isArray(responseData.icon_value) ? responseData.icon_value : [responseData.icon_value]));
+      }
+      if (responseData.icon_file) {
+        errorMessages.push(...(Array.isArray(responseData.icon_file) ? responseData.icon_file : [responseData.icon_file]));
+      }
+      if (responseData.non_field_errors) {
+        errorMessages.push(...(Array.isArray(responseData.non_field_errors) ? responseData.non_field_errors : [responseData.non_field_errors]));
+      }
+      if (errorMessages.length > 0) {
+        throw new Error(errorMessages.join(', '));
+      }
+    }
+    throw new Error(responseData?.message || responseData?.detail || `API 請求失敗: ${response.status}`);
   }
 
   return responseData;
@@ -812,5 +843,15 @@ export async function adminUpdateServiceSortOrder(id: number, sortOrder: number)
     method: 'PATCH',
     body: JSON.stringify({ sort_order: sortOrder }),
   });
+}
+
+export async function adminBatchUpdateServiceSort(items: Array<{ id: number; sort_order: number }>) {
+  return adminRequest<{ updated_count: number; items: Array<{ id: number; sort_order: number }> }>(
+    '/admin/services/batch_update_sort/',
+    {
+      method: 'POST',
+      body: JSON.stringify({ items }),
+    }
+  );
 }
 
