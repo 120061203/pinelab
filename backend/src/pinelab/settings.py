@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     'apps.categories',
     'apps.tags',
     'apps.contacts',
+    'apps.site_settings',
 ]
 
 MIDDLEWARE = [

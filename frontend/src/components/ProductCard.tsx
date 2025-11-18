@@ -1,14 +1,41 @@
 /**
  * 商品卡片元件
  */
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ProductListItem } from '@/types/product';
+import { getSiteSettings, ApiResponse } from '@/lib/api';
+import { SiteSettings } from '@/types/site-settings';
 
 interface ProductCardProps {
   product: ProductListItem;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSiteSettings = async () => {
+      try {
+        const response = await getSiteSettings() as ApiResponse<SiteSettings>;
+        if (response.status === 'success' && response.data) {
+          setSiteSettings(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to load site settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSiteSettings();
+  }, []);
+
+  const showPrice = siteSettings?.show_price ?? true;
+
   return (
     <Link href={`/products/${product.id}`} className="block">
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
@@ -47,9 +74,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
           
           <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold text-primary">
-              NT$ {product.price}
-            </span>
+            {showPrice && (
+              <span className="text-2xl font-bold text-primary">
+                NT$ {product.price}
+              </span>
+            )}
+            {!showPrice && <span></span>}
             
             {product.category && (
               <span className="text-sm text-gray-500">

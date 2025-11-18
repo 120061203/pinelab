@@ -28,7 +28,7 @@ export function canAccessRoute(role: Role | undefined, path: string) {
   return true;
 }
 
-export function navVisible(role: Role | undefined, item: 'products' | 'categories' | 'tags' | 'contacts' | 'dashboard') {
+export function navVisible(role: Role | undefined, item: 'products' | 'categories' | 'tags' | 'contacts' | 'dashboard' | 'site-settings' | 'news' | 'services') {
   switch (item) {
     case 'products':
     case 'categories':
@@ -37,6 +37,11 @@ export function navVisible(role: Role | undefined, item: 'products' | 'categorie
       return hasPermission(role, 'content_write');
     case 'contacts':
       // 僅管理員/編輯者可見
+      return hasPermission(role, 'content_write');
+    case 'site-settings':
+    case 'news':
+    case 'services':
+      // 網站設定、最新消息、服務項目需要寫入權限
       return hasPermission(role, 'content_write');
     case 'dashboard':
       return hasPermission(role, 'view_analytics');

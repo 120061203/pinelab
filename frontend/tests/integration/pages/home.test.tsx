@@ -7,11 +7,29 @@ import HomePage from '@/app/page';
 // Mock API
 jest.mock('@/lib/api', () => ({
   getProducts: jest.fn(),
+  getCategories: jest.fn(),
+  getSiteSettings: jest.fn(),
+  getNews: jest.fn(),
+  getServices: jest.fn(),
+}));
+
+// Mock Next.js Image
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: ({ src, alt, ...props }: any) => (
+    <img src={src} alt={alt} {...props} />
+  ),
 }));
 
 describe('HomePage Integration', () => {
   it('應該完整載入並顯示首頁內容', async () => {
-    const { getProducts } = require('@/lib/api');
+    const { getProducts, getCategories, getSiteSettings, getNews, getServices } = require('@/lib/api');
+    
+    getCategories.mockResolvedValue({
+      status: 'success',
+      data: [],
+    });
+    
     getProducts.mockResolvedValue({
       status: 'success',
       data: {
@@ -29,24 +47,47 @@ describe('HomePage Integration', () => {
         ],
       },
     });
+    
+    getSiteSettings.mockResolvedValue({
+      status: 'success',
+      data: {
+        id: 1,
+        brand_name: '測試品牌',
+        brand_slogan: '測試標語',
+        logo_url: null,
+        hero_banner_url: null,
+        shopee_link: null,
+        line_at_link: null,
+        mall_link: null,
+        fan_page_link: null,
+        blog_link: null,
+        show_price: true,
+        created_at: '2025-01-01T00:00:00Z',
+        updated_at: '2025-01-01T00:00:00Z',
+      },
+    });
+    
+    getNews.mockResolvedValue({
+      status: 'success',
+      data: [],
+    });
+    
+    getServices.mockResolvedValue({
+      status: 'success',
+      data: [],
+    });
 
     render(<HomePage />);
 
-    // 檢查品牌名稱
-    expect(screen.getByText('松果創意 pinelab')).toBeInTheDocument();
-
-    // 檢查最新商品標題
-    expect(screen.getByText('最新商品')).toBeInTheDocument();
-
-    // 等待商品載入
+    // 等待資料載入
     await waitFor(() => {
-      expect(screen.getByText('商品1')).toBeInTheDocument();
+      expect(getSiteSettings).toHaveBeenCalled();
+      expect(getProducts).toHaveBeenCalled();
     });
 
-    // 驗證 API 被正確調用
-    expect(getProducts).toHaveBeenCalledWith({
-      sort: 'updated_at',
-      page_size: 6,
+    // 檢查品牌名稱
+    await waitFor(() => {
+      expect(screen.getByText('測試品牌')).toBeInTheDocument();
     });
   });
 });

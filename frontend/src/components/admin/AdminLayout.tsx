@@ -113,6 +113,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {navVisible(user?.role as any, 'contacts') && (
               <Link href="/admin-portal/contacts">Contacts</Link>
             )}
+            {navVisible(user?.role as any, 'site-settings') && (
+              <Link href="/admin-portal/site-settings">網站設定</Link>
+            )}
+            {navVisible(user?.role as any, 'news') && (
+              <Link href="/admin-portal/news">最新消息</Link>
+            )}
+            {navVisible(user?.role as any, 'services') && (
+              <Link href="/admin-portal/services">服務項目</Link>
+            )}
             
             {/* 帳號管理（管理員和編輯者可見） */}
             {canManageUsers && (

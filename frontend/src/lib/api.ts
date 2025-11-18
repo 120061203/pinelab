@@ -1,6 +1,9 @@
 /**
  * API 客戶端基礎結構
  */
+import { SiteSettings } from '@/types/site-settings';
+import { News } from '@/types/news';
+import { Service } from '@/types/service';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -135,5 +138,27 @@ export async function getTags() {
  */
 export async function submitContact(data: Record<string, any>) {
   return apiClient.post('/contact/', data);
+}
+
+/**
+ * 網站設定相關 API 方法
+ */
+export async function getSiteSettings() {
+  return apiClient.get<SiteSettings>('/site-settings/');
+}
+
+/**
+ * 最新消息相關 API 方法
+ */
+export async function getNews(limit?: number) {
+  const endpoint = limit ? `/news/?limit=${limit}` : '/news/';
+  return apiClient.get<News[]>(endpoint);
+}
+
+/**
+ * 服務項目相關 API 方法
+ */
+export async function getServices() {
+  return apiClient.get<Service[]>('/services/');
 }
 

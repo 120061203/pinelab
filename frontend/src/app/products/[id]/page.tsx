@@ -5,14 +5,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getProduct, ApiResponse } from '@/lib/api';
+import { getProduct, getSiteSettings, ApiResponse } from '@/lib/api';
 import { Product } from '@/types/product';
+import { SiteSettings } from '@/types/site-settings';
 import RelatedProducts from '@/components/RelatedProducts';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params?.id ? parseInt(params.id as string) : null;
   const [product, setProduct] = useState<Product | null>(null);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,15 +25,22 @@ export default function ProductDetailPage() {
       return;
     }
 
-    const fetchProduct = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await getProduct(productId) as ApiResponse<Product>;
+        const [productRes, siteSettingsRes] = await Promise.all([
+          getProduct(productId) as Promise<ApiResponse<Product>>,
+          getSiteSettings() as Promise<ApiResponse<SiteSettings>>,
+        ]);
         
-        if (response.status === 'success' && response.data) {
-          setProduct(response.data);
+        if (productRes.status === 'success' && productRes.data) {
+          setProduct(productRes.data);
         } else {
           setError('無法載入商品資訊');
+        }
+        
+        if (siteSettingsRes.status === 'success' && siteSettingsRes.data) {
+          setSiteSettings(siteSettingsRes.data);
         }
       } catch (err) {
         setError('載入商品時發生錯誤');
@@ -41,7 +50,7 @@ export default function ProductDetailPage() {
       }
     };
 
-    fetchProduct();
+    fetchData();
   }, [productId]);
 
   if (loading) {
@@ -100,11 +109,13 @@ export default function ProductDetailPage() {
         <div>
           <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
           
-          <div className="mb-6">
-            <span className="text-3xl font-bold text-primary">
-              NT$ {product.price}
-            </span>
-          </div>
+          {siteSettings?.show_price && (
+            <div className="mb-6">
+              <span className="text-3xl font-bold text-primary">
+                NT$ {product.price}
+              </span>
+            </div>
+          )}
           
           {product.category && (
             <div className="mb-4">

@@ -1,17 +1,49 @@
 /**
  * Footer 元件
+ * 顯示品牌資訊和外部連結
  */
+'use client';
+
+import { useEffect, useState } from 'react';
+import { getSiteSettings, ApiResponse } from '@/lib/api';
+import { SiteSettings } from '@/types/site-settings';
+import Link from 'next/link';
+
 export default function Footer() {
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSiteSettings = async () => {
+      try {
+        const response = await getSiteSettings() as ApiResponse<SiteSettings>;
+        if (response.status === 'success' && response.data) {
+          setSiteSettings(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to load site settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSiteSettings();
+  }, []);
+
+  const brandName = siteSettings?.brand_name || '松果創意 pinelab';
+  const brandSlogan = siteSettings?.brand_slogan || '提供優質的商品與服務';
+
+  // 使用新的 external_links 格式
+  const externalLinks = siteSettings?.external_links || [];
+
   return (
     <footer className="bg-gray-800 text-white mt-12">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* 品牌資訊 */}
           <div>
-            <h3 className="text-xl font-bold mb-4">松果創意 pinelab</h3>
-            <p className="text-gray-400">
-              提供優質的商品與服務
-            </p>
+            <h3 className="text-xl font-bold mb-4">{brandName}</h3>
+            <p className="text-gray-400">{brandSlogan}</p>
           </div>
           
           {/* 快速連結 */}
@@ -19,64 +51,49 @@ export default function Footer() {
             <h4 className="text-lg font-semibold mb-4">快速連結</h4>
             <ul className="space-y-2">
               <li>
-                <a href="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/" className="text-gray-400 hover:text-white transition-colors">
                   首頁
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/products" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/products" className="text-gray-400 hover:text-white transition-colors">
                   商品列表
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
                   聯絡我們
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
           
-          {/* 社群連結 */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">關注我們</h4>
-            <div className="flex gap-4">
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Instagram"
-              >
-                Instagram
-              </a>
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Facebook"
-              >
-                Facebook
-              </a>
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Line@"
-              >
-                Line@
-              </a>
+          {/* 外部連結 */}
+          {externalLinks.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold mb-4">關注我們</h4>
+              <div className="flex flex-col gap-2">
+                {externalLinks.map((link, index) => (
+                  <a
+                    key={index}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    {link.name}
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
         
         {/* 版權資訊 */}
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; {new Date().getFullYear()} 松果創意 pinelab. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {brandName}. All rights reserved.</p>
         </div>
       </div>
     </footer>
   );
 }
-

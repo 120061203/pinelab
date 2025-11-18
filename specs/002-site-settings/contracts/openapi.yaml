@@ -1,0 +1,812 @@
+openapi: 3.0.3
+info:
+  title: Pinelab Site Settings API
+  description: 網站設定管理 API 規範（品牌資訊、最新消息、服務項目）
+  version: 1.0.0
+  contact:
+    name: Pinelab API Support
+
+servers:
+  - url: http://localhost:8000/api
+    description: 開發環境
+  - url: https://api.pinelab.example.com/api
+    description: 生產環境
+
+paths:
+  # ==================== 公開端點 ====================
+  
+  /site-settings/:
+    get:
+      summary: 取得網站設定
+      description: 取得網站全局設定（品牌資訊、外部連結、價格顯示設定等）
+      tags:
+        - Site Settings
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteSettingsResponse'
+  
+  /news/:
+    get:
+      summary: 取得已發布的最新消息列表
+      description: 取得所有已發布且發布日期小於等於當前日期的最新消息
+      tags:
+        - News
+      parameters:
+        - name: limit
+          in: query
+          description: 限制返回數量（預設 5）
+          schema:
+            type: integer
+            default: 5
+            maximum: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsListResponse'
+  
+  /services/:
+    get:
+      summary: 取得服務項目列表
+      description: 取得所有服務項目，按排序順序排列
+      tags:
+        - Services
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceListResponse'
+  
+  # ==================== 管理端點 ====================
+  
+  /admin/site-settings/:
+    get:
+      summary: 取得網站設定（管理員）
+      description: 管理員取得網站設定
+      tags:
+        - Admin - Site Settings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteSettingsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    put:
+      summary: 更新網站設定
+      description: 管理員更新網站設定
+      tags:
+        - Admin - Site Settings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SiteSettingsUpdateRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteSettingsUpdateRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteSettingsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  
+  /admin/news/:
+    get:
+      summary: 取得最新消息列表（管理員）
+      description: 管理員取得所有最新消息（包括草稿）
+      tags:
+        - Admin - News
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: 篩選狀態（draft, published）
+          schema:
+            type: string
+            enum: [draft, published]
+        - name: page
+          in: query
+          description: 頁碼
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          description: 每頁筆數
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsListResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    post:
+      summary: 建立最新消息
+      description: 管理員建立新的最新消息
+      tags:
+        - Admin - News
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsCreateRequest'
+      responses:
+        '201':
+          description: 成功建立
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  
+  /admin/news/{id}/:
+    get:
+      summary: 取得最新消息詳情（管理員）
+      description: 管理員取得單一最新消息詳情
+      tags:
+        - Admin - News
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 最新消息 ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    put:
+      summary: 更新最新消息
+      description: 管理員更新最新消息
+      tags:
+        - Admin - News
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 最新消息 ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsUpdateRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    delete:
+      summary: 刪除最新消息
+      description: 管理員刪除最新消息
+      tags:
+        - Admin - News
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 最新消息 ID
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 成功刪除
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    patch:
+      summary: 切換最新消息狀態
+      description: 管理員切換最新消息的發布狀態（草稿↔已發布）
+      tags:
+        - Admin - News
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 最新消息 ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [draft, published]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  
+  /admin/services/:
+    get:
+      summary: 取得服務項目列表（管理員）
+      description: 管理員取得所有服務項目
+      tags:
+        - Admin - Services
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceListResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    post:
+      summary: 建立服務項目
+      description: 管理員建立新的服務項目
+      tags:
+        - Admin - Services
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceCreateRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceCreateRequest'
+      responses:
+        '201':
+          description: 成功建立
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  
+  /admin/services/{id}/:
+    get:
+      summary: 取得服務項目詳情（管理員）
+      description: 管理員取得單一服務項目詳情
+      tags:
+        - Admin - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 服務項目 ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    put:
+      summary: 更新服務項目
+      description: 管理員更新服務項目
+      tags:
+        - Admin - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 服務項目 ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceUpdateRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceUpdateRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    delete:
+      summary: 刪除服務項目
+      description: 管理員刪除服務項目
+      tags:
+        - Admin - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 服務項目 ID
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 成功刪除
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    patch:
+      summary: 更新服務項目排序
+      description: 管理員更新服務項目的排序順序
+      tags:
+        - Admin - Services
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 服務項目 ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sort_order
+              properties:
+                sort_order:
+                  type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    SiteSettingsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/SiteSettings'
+    
+    SiteSettings:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        brand_name:
+          type: string
+          nullable: true
+          example: 松果創意 pinelab
+        brand_slogan:
+          type: string
+          nullable: true
+          example: 提供優質的商品與服務
+        logo_url:
+          type: string
+          nullable: true
+          example: /media/site/logo.svg
+        hero_banner_url:
+          type: string
+          nullable: true
+          example: /media/site/hero-banner.jpg
+        shopee_link:
+          type: string
+          nullable: true
+          example: https://shopee.tw/shop/123456
+        line_at_link:
+          type: string
+          nullable: true
+          example: https://line.me/R/ti/p/@pinelab
+        mall_link:
+          type: string
+          nullable: true
+          example: https://mall.example.com
+        fan_page_link:
+          type: string
+          nullable: true
+          example: https://facebook.com/pinelab
+        blog_link:
+          type: string
+          nullable: true
+          example: https://blog.pinelab.com
+        show_price:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    
+    SiteSettingsUpdateRequest:
+      type: object
+      properties:
+        brand_name:
+          type: string
+          maxLength: 200
+        brand_slogan:
+          type: string
+          maxLength: 500
+        logo:
+          type: string
+          format: binary
+          description: Logo 檔案（SVG格式，≤2MB）
+        hero_banner:
+          type: string
+          format: binary
+          description: Hero橫幅檔案（jpg/jpeg/png/webp，≤5MB）
+        shopee_link:
+          type: string
+          format: uri
+        line_at_link:
+          type: string
+          format: uri
+        mall_link:
+          type: string
+          format: uri
+        fan_page_link:
+          type: string
+          format: uri
+        blog_link:
+          type: string
+          format: uri
+        show_price:
+          type: boolean
+    
+    NewsListResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/News'
+    
+    NewsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/News'
+    
+    News:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: 最新產品上架
+        content:
+          type: string
+          example: 我們很高興宣布新產品上架...
+        publish_date:
+          type: string
+          format: date
+          example: 2025-01-27
+        status:
+          type: string
+          enum: [draft, published]
+          example: published
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    
+    NewsCreateRequest:
+      type: object
+      required:
+        - title
+        - content
+        - publish_date
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+          maxLength: 5000
+        publish_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [draft, published]
+          default: draft
+    
+    NewsUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+          maxLength: 5000
+        publish_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [draft, published]
+    
+    ServiceListResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+    
+    ServiceResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/Service'
+    
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: 商品設計
+        description:
+          type: string
+          example: 提供專業的商品設計服務
+        icon_type:
+          type: string
+          nullable: true
+          enum: [fontawesome, material, custom]
+          example: fontawesome
+        icon_value:
+          type: string
+          nullable: true
+          example: fa-palette
+        sort_order:
+          type: integer
+          example: 10
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    
+    ServiceCreateRequest:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        icon_type:
+          type: string
+          enum: [fontawesome, material, custom]
+        icon_value:
+          type: string
+        icon_file:
+          type: string
+          format: binary
+          description: 自訂圖標檔案（SVG/PNG，≤1MB，僅當 icon_type='custom' 時需要）
+        sort_order:
+          type: integer
+          default: 0
+    
+    ServiceUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        icon_type:
+          type: string
+          enum: [fontawesome, material, custom]
+        icon_value:
+          type: string
+        icon_file:
+          type: string
+          format: binary
+          description: 自訂圖標檔案（SVG/PNG，≤1MB）
+        sort_order:
+          type: integer
+    
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: 驗證失敗
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+  
+  responses:
+    UnauthorizedError:
+      description: 未授權
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            code: UNAUTHORIZED
+            message: 需要身份驗證
+    
+    ValidationError:
+      description: 驗證錯誤
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            code: VALIDATION_ERROR
+            message: 驗證失敗
+            errors:
+              title: ["此欄位為必填"]
+    
+    NotFoundError:
+      description: 資源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: error
+            code: NOT_FOUND
+            message: 資源不存在
+

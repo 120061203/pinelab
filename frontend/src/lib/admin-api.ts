@@ -51,10 +51,9 @@ async function adminRequest<T>(
 
   // 先讀取文本，然後嘗試解析 JSON
   const text = await response.text();
-  let data: any;
-  
+  let responseData: any;
   try {
-    data = JSON.parse(text);
+    responseData = JSON.parse(text);
   } catch (e) {
     // 如果解析失敗，可能是返回了 HTML 錯誤頁面
     throw new Error(`API 返回了非 JSON 響應 (${response.status}): ${text.substring(0, 200)}`);
@@ -63,13 +62,13 @@ async function adminRequest<T>(
   if (!response.ok) {
     // 處理 DRF 驗證錯誤格式
     // 優先使用後端返回的統一格式
-    let errorMessage = data?.message || data?.detail;
+    let errorMessage = responseData?.message || responseData?.detail;
     
     // 如果後端返回了 errors 對象，也嘗試解析
-    if (!errorMessage && data?.errors) {
-      if (typeof data.errors === 'object') {
+    if (!errorMessage && responseData?.errors) {
+      if (typeof responseData.errors === 'object') {
         const fieldErrors: string[] = [];
-        for (const [key, value] of Object.entries(data.errors)) {
+        for (const [key, value] of Object.entries(responseData.errors)) {
           if (Array.isArray(value)) {
             fieldErrors.push(`${key}: ${(value as string[]).join(', ')}`);
           } else if (typeof value === 'string') {
@@ -79,15 +78,15 @@ async function adminRequest<T>(
         if (fieldErrors.length > 0) {
           errorMessage = fieldErrors.join('; ');
         }
-      } else if (typeof data.errors === 'string') {
-        errorMessage = data.errors;
+      } else if (typeof responseData.errors === 'string') {
+        errorMessage = responseData.errors;
       }
     }
     
     // 如果沒有 message 或 detail，嘗試從字段錯誤中提取
-    if (!errorMessage && typeof data === 'object') {
+    if (!errorMessage && typeof responseData === 'object') {
       const fieldErrors: string[] = [];
-      for (const [key, value] of Object.entries(data)) {
+      for (const [key, value] of Object.entries(responseData)) {
         // 跳過已經處理的字段
         if (key === 'status' || key === 'code' || key === 'message' || key === 'errors') {
           continue;
@@ -120,11 +119,11 @@ async function adminRequest<T>(
     
     // 創建錯誤對象，包含完整的錯誤資訊
     const error = new Error(errorMessage || `API 請求失敗 (${response.status})`);
-    (error as any).response = { data, status: response.status };
+    (error as any).response = { data: responseData, status: response.status };
     throw error;
   }
 
-  return data;
+  return responseData;
 }
 
 /**
@@ -322,11 +321,11 @@ export async function adminLogin(username: string, password: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
   });
-  const data = await response.json();
+  const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(data?.message || '登入失敗');
+    throw new Error(responseData?.message || '登入失敗');
   }
-  return data;
+  return responseData;
 }
 
 // Dashboard metrics
@@ -464,11 +463,11 @@ export async function requestPasswordReset(email: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   });
-  const data = await response.json();
+  const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(data?.message || '請求密碼重設失敗');
+    throw new Error(responseData?.message || '請求密碼重設失敗');
   }
-  return data;
+  return responseData;
 }
 
 export async function confirmPasswordReset(token: string, email: string, newPassword: string) {
@@ -478,11 +477,11 @@ export async function confirmPasswordReset(token: string, email: string, newPass
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, email, new_password: newPassword }),
   });
-  const data = await response.json();
+  const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(data?.message || '密碼重設失敗');
+    throw new Error(responseData?.message || '密碼重設失敗');
   }
-  return data;
+  return responseData;
 }
 
 export async function changePassword(oldPassword: string, newPassword: string) {
@@ -492,6 +491,326 @@ export async function changePassword(oldPassword: string, newPassword: string) {
       old_password: oldPassword,
       new_password: newPassword,
     }),
+  });
+}
+
+/**
+ * 網站設定管理 API
+ */
+import { SiteSettings, SiteSettingsUpdateRequest } from '@/types/site-settings';
+import { News, NewsCreateRequest, NewsUpdateRequest } from '@/types/news';
+import { Service, ServiceCreateRequest, ServiceUpdateRequest } from '@/types/service';
+
+export async function adminGetSiteSettings() {
+  return adminRequest<SiteSettings>('/admin/site-settings/');
+}
+
+export async function adminUpdateSiteSettings(data: SiteSettingsUpdateRequest) {
+  const formData = new FormData();
+  
+  // 添加文字欄位
+  if (data.brand_name !== undefined) formData.append('brand_name', data.brand_name);
+  if (data.brand_slogan !== undefined) formData.append('brand_slogan', data.brand_slogan);
+  if (data.external_links !== undefined) {
+    formData.append('external_links', JSON.stringify(data.external_links));
+  }
+  if (data.show_price !== undefined) formData.append('show_price', String(data.show_price));
+  
+  // 添加檔案
+  if (data.logo) formData.append('logo', data.logo);
+  if (data.hero_banner) formData.append('hero_banner', data.hero_banner);
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error('未登入，請先登入');
+  }
+  
+  // 對於單例模式，需要先獲取實例 ID，然後使用 detail URL
+  let instanceId = 1; // 預設值
+  try {
+    const getResponse = await fetch(`${API_BASE_URL}/admin/site-settings/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (getResponse.ok) {
+      const getData = await getResponse.json();
+      if (getData?.data?.id) {
+        instanceId = getData.data.id;
+      }
+    }
+  } catch (e) {
+    // 如果獲取失敗，使用預設值
+  }
+  
+  const url = `${API_BASE_URL}/admin/site-settings/${instanceId}/`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  
+  if (response.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin.access');
+      localStorage.removeItem('admin.refresh');
+      localStorage.removeItem('admin.user');
+      if (!location.pathname.startsWith('/admin-portal/login')) {
+        location.href = '/admin-portal/login';
+      }
+    }
+    throw new Error('認證失敗，請重新登入');
+  }
+  
+  const contentType = response.headers.get('content-type');
+  let responseData: any;
+  if (contentType && contentType.includes('application/json')) {
+    responseData = await response.json();
+  } else {
+    if (response.status === 204) {
+      return { status: 'success' } as ApiResponse<SiteSettings>;
+    }
+    throw new Error(`Unexpected content type: ${contentType}`);
+  }
+
+  if (!response.ok) {
+    throw new Error(responseData?.message || `API 請求失敗: ${response.status}`);
+  }
+
+  return responseData;
+}
+
+/**
+ * 最新消息管理 API
+ */
+export async function adminGetNews(params?: { status?: 'draft' | 'published'; page?: number; page_size?: number }) {
+  const searchParams = new URLSearchParams();
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, value.toString());
+      }
+    });
+  }
+  const queryString = searchParams.toString();
+  const endpoint = queryString ? `/admin/news/?${queryString}` : '/admin/news/';
+  return adminRequest<News[]>(endpoint);
+}
+
+export async function adminGetNewsItem(id: number) {
+  return adminRequest<News>(`/admin/news/${id}/`);
+}
+
+export async function adminCreateNews(data: NewsCreateRequest) {
+  const formData = new FormData();
+  
+  formData.append('title', data.title);
+  formData.append('content', data.content);
+  formData.append('publish_date', data.publish_date);
+  formData.append('status', data.status || 'draft');
+  if (data.image) formData.append('image', data.image);
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error('未登入，請先登入');
+  }
+  
+  const url = `${API_BASE_URL}/admin/news/`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  
+  if (response.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin.access');
+      localStorage.removeItem('admin.refresh');
+      localStorage.removeItem('admin.user');
+      if (!location.pathname.startsWith('/admin-portal/login')) {
+        location.href = '/admin-portal/login';
+      }
+    }
+    throw new Error('認證失敗，請重新登入');
+  }
+  
+  const responseData = await response.json();
+  if (!response.ok) {
+    throw new Error(responseData?.message || `API 請求失敗: ${response.status}`);
+  }
+  
+  return responseData;
+}
+
+export async function adminUpdateNews(id: number, data: NewsUpdateRequest) {
+  const formData = new FormData();
+  
+  if (data.title !== undefined) formData.append('title', data.title);
+  if (data.content !== undefined) formData.append('content', data.content);
+  if (data.publish_date !== undefined) formData.append('publish_date', data.publish_date);
+  if (data.status !== undefined) formData.append('status', data.status);
+  if (data.image) formData.append('image', data.image);
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error('未登入，請先登入');
+  }
+  
+  const url = `${API_BASE_URL}/admin/news/${id}/`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  
+  if (response.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin.access');
+      localStorage.removeItem('admin.refresh');
+      localStorage.removeItem('admin.user');
+      if (!location.pathname.startsWith('/admin-portal/login')) {
+        location.href = '/admin-portal/login';
+      }
+    }
+    throw new Error('認證失敗，請重新登入');
+  }
+  
+  const responseData = await response.json();
+  if (!response.ok) {
+    throw new Error(responseData?.message || `API 請求失敗: ${response.status}`);
+  }
+  
+  return responseData;
+}
+
+export async function adminDeleteNews(id: number) {
+  return adminRequest(`/admin/news/${id}/`, {
+    method: 'DELETE',
+  });
+}
+
+export async function adminToggleNewsStatus(id: number, status: 'draft' | 'published') {
+  return adminRequest<News>(`/admin/news/${id}/toggle-status/`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
+
+/**
+ * 服務項目管理 API
+ */
+export async function adminGetServices() {
+  return adminRequest<Service[]>('/admin/services/');
+}
+
+export async function adminGetService(id: number) {
+  return adminRequest<Service>(`/admin/services/${id}/`);
+}
+
+export async function adminCreateService(data: ServiceCreateRequest) {
+  const formData = new FormData();
+  
+  formData.append('title', data.title);
+  formData.append('description', data.description);
+  if (data.icon_type) formData.append('icon_type', data.icon_type);
+  if (data.icon_value) formData.append('icon_value', data.icon_value);
+  if (data.icon_file) formData.append('icon_file', data.icon_file);
+  if (data.sort_order !== undefined) formData.append('sort_order', String(data.sort_order));
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error('未登入，請先登入');
+  }
+  
+  const url = `${API_BASE_URL}/admin/services/`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  
+  if (response.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin.access');
+      localStorage.removeItem('admin.refresh');
+      localStorage.removeItem('admin.user');
+      if (!location.pathname.startsWith('/admin-portal/login')) {
+        location.href = '/admin-portal/login';
+      }
+    }
+    throw new Error('認證失敗，請重新登入');
+  }
+  
+  const responseData = await response.json();
+  if (!response.ok) {
+    throw new Error(responseData?.message || `API 請求失敗: ${response.status}`);
+  }
+
+  return responseData;
+}
+
+export async function adminUpdateService(id: number, data: ServiceUpdateRequest) {
+  const formData = new FormData();
+  
+  if (data.title !== undefined) formData.append('title', data.title);
+  if (data.description !== undefined) formData.append('description', data.description);
+  if (data.icon_type !== undefined) formData.append('icon_type', data.icon_type || '');
+  if (data.icon_value !== undefined) formData.append('icon_value', data.icon_value || '');
+  if (data.icon_file) formData.append('icon_file', data.icon_file);
+  if (data.sort_order !== undefined) formData.append('sort_order', String(data.sort_order));
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error('未登入，請先登入');
+  }
+  
+  const url = `${API_BASE_URL}/admin/services/${id}/`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  
+  if (response.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin.access');
+      localStorage.removeItem('admin.refresh');
+      localStorage.removeItem('admin.user');
+      if (!location.pathname.startsWith('/admin-portal/login')) {
+        location.href = '/admin-portal/login';
+      }
+    }
+    throw new Error('認證失敗，請重新登入');
+  }
+  
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result?.message || `API 請求失敗: ${response.status}`);
+  }
+  
+  return result;
+}
+
+export async function adminDeleteService(id: number) {
+  return adminRequest(`/admin/services/${id}/`, {
+    method: 'DELETE',
+  });
+}
+
+export async function adminUpdateServiceSortOrder(id: number, sortOrder: number) {
+  return adminRequest<Service>(`/admin/services/${id}/update-sort/`, {
+    method: 'PATCH',
+    body: JSON.stringify({ sort_order: sortOrder }),
   });
 }
 

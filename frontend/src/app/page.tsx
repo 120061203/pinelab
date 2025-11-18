@@ -5,10 +5,16 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { getProducts, getCategories, ApiResponse } from '@/lib/api';
+import { getProducts, getCategories, getSiteSettings, getNews, getServices, ApiResponse } from '@/lib/api';
 import { ProductListItem, PaginatedResponse } from '@/types/product';
 import { Category } from '@/types/category';
+import { SiteSettings } from '@/types/site-settings';
+import { News } from '@/types/news';
+import { Service } from '@/types/service';
 import ProductCard from '@/components/ProductCard';
+import HeroSection from '@/components/HeroSection';
+import NewsSection from '@/components/NewsSection';
+import ServicesSection from '@/components/ServicesSection';
 
 // 商品分組類型
 type ProductGroup = {
@@ -19,6 +25,9 @@ type ProductGroup = {
 export default function HomePage() {
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [news, setNews] = useState<News[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,13 +37,16 @@ export default function HomePage() {
       try {
         setLoading(true);
         
-        // 並行載入分類和商品
-        const [categoriesRes, productsRes] = await Promise.all([
+        // 並行載入所有資料
+        const [categoriesRes, productsRes, siteSettingsRes, newsRes, servicesRes] = await Promise.all([
           getCategories() as Promise<ApiResponse<Category[]>>,
           getProducts({
             sort: 'sort_order', // 按 sort_order 排序，然後按 updated_at
             page_size: 100, // 載入足夠的商品以便分組
           }) as Promise<ApiResponse<PaginatedResponse<ProductListItem>>>,
+          getSiteSettings() as Promise<ApiResponse<SiteSettings>>,
+          getNews(5) as Promise<ApiResponse<News[]>>,
+          getServices() as Promise<ApiResponse<Service[]>>,
         ]);
         
         if (categoriesRes.status === 'success' && categoriesRes.data) {
@@ -45,6 +57,18 @@ export default function HomePage() {
           setProducts(productsRes.data.results || []);
         } else {
           setError('無法載入商品');
+        }
+        
+        if (siteSettingsRes.status === 'success' && siteSettingsRes.data) {
+          setSiteSettings(siteSettingsRes.data);
+        }
+        
+        if (newsRes.status === 'success' && newsRes.data) {
+          setNews(newsRes.data);
+        }
+        
+        if (servicesRes.status === 'success' && servicesRes.data) {
+          setServices(servicesRes.data);
         }
       } catch (err) {
         setError('載入商品時發生錯誤');
@@ -116,14 +140,26 @@ export default function HomePage() {
   }, [products, categories]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* 品牌介紹 */}
-      <section className="mb-12 text-center">
-        <h1 className="text-4xl font-bold mb-4">松果創意 pinelab</h1>
-        <p className="text-lg text-gray-600">
-          歡迎來到松果創意，我們提供優質的商品與服務
-        </p>
-      </section>
+    <div>
+      {/* Hero Section */}
+      <HeroSection siteSettings={siteSettings} />
+      
+      <div className="container mx-auto px-4 py-8">
+        {/* 品牌介紹 */}
+        {siteSettings?.brand_name && (
+          <section className="mb-12 text-center">
+            <h1 className="text-4xl font-bold mb-4">{siteSettings.brand_name}</h1>
+            {siteSettings.brand_slogan && (
+              <p className="text-lg text-gray-600">{siteSettings.brand_slogan}</p>
+            )}
+          </section>
+        )}
+        
+        {/* 服務項目 */}
+        <ServicesSection services={services} />
+        
+        {/* 最新消息 */}
+        <NewsSection news={news} />
 
       {/* 按分類分組的商品 */}
       {loading && (
@@ -168,6 +204,7 @@ export default function HomePage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

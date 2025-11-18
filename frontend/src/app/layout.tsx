@@ -4,6 +4,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Footer from '@/components/Footer';
+import Navigation from '@/components/Navigation';
 import { AdminAuthProvider } from '@/lib/admin-auth';
 import { ToastProvider } from '@/components/admin/feedback/ToastProvider';
 import React from 'react';
@@ -20,29 +21,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-TW" className="overflow-x-hidden">
+      <head>
+        {/* Font Awesome CDN */}
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+        />
+        {/* Material Icons CDN */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        />
+      </head>
       <body className="overflow-x-hidden">
         {/* Skip to content for keyboard users */}
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-black text-white px-3 py-1 rounded">跳到主要內容</a>
-        <nav className="bg-white shadow-sm">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <a href="/" className="text-xl font-bold">
-                松果創意 pinelab
-              </a>
-              <div className="flex gap-4">
-                <a href="/" className="hover:text-blue-600">首頁</a>
-                <a href="/products" className="hover:text-blue-600">商品</a>
-                <a href="/contact" className="hover:text-blue-600">聯絡我們</a>
-                {/* 簡易：若有 token 顯示 Admin 入口 */}
-                {typeof window !== 'undefined' && typeof localStorage !== 'undefined' && localStorage.getItem('admin.access') ? (
-                  <a href="/admin-portal/dashboard" className="hover:text-blue-600">Admin</a>
-                ) : (
-                  <a href="/admin-portal/login" className="hover:text-blue-600">Admin</a>
-                )}
-              </div>
-            </div>
-          </div>
-        </nav>
+        <Navigation />
         
         <ToastProvider>
           <AdminAuthProvider>

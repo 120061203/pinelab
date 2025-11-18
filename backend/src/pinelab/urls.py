@@ -18,12 +18,14 @@ urlpatterns = [
     path('api/', include('apps.categories.urls')),
     path('api/', include('apps.tags.urls')),
     path('api/', include('apps.contacts.urls')),
+    path('api/', include('apps.site_settings.urls')),
     # 管理員 API
     path('api/', include('apps.categories.admin_urls')),
     path('api/', include('apps.tags.admin_urls')),
     path('api/', include('apps.products.admin_urls')),
     path('api/', include('apps.contacts.admin_urls')),
     path('api/admin/', include('apps.auth.admin_urls')),  # 帳號管理 API
+    path('api/admin/', include('apps.site_settings.admin_urls')),
 ]
 
 # Serve media files
