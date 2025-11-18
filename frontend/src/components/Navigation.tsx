@@ -36,51 +36,51 @@ export default function Navigation() {
   const logoUrl = siteSettings?.logo_url;
 
   return (
-    <nav className="bg-white shadow-sm">
-      <div className="container mx-auto px-4 py-4">
+    <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+      <div className="container mx-auto px-6 py-5">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 group">
             {logoUrl ? (
               (() => {
                 const fullLogoUrl = getImageUrl(logoUrl);
-                if (!fullLogoUrl) return <span className="text-xl font-bold">{brandName}</span>;
+                if (!fullLogoUrl) return <span className="text-2xl font-bold text-gray-900">{brandName}</span>;
                 return fullLogoUrl.startsWith('http') ? (
                   <img
                     src={fullLogoUrl}
                     alt={brandName}
-                    className="h-10 w-auto"
+                    className="h-12 w-auto transition-opacity group-hover:opacity-80"
                   />
                 ) : (
                   <Image
                     src={fullLogoUrl}
                     alt={brandName}
-                    width={120}
-                    height={40}
-                    className="h-10 w-auto object-contain"
+                    width={140}
+                    height={48}
+                    className="h-12 w-auto object-contain transition-opacity group-hover:opacity-80"
                     priority
                   />
                 );
               })()
             ) : (
-              <span className="text-xl font-bold">{brandName}</span>
+              <span className="text-2xl font-bold text-gray-900">{brandName}</span>
             )}
           </Link>
-          <div className="flex gap-4">
-            <Link href="/" className="hover:text-blue-600 transition-colors">
+          <div className="flex items-center gap-8">
+            <Link href="/" className="text-gray-700 hover:text-gray-900 font-medium transition-colors text-sm uppercase tracking-wide">
               首頁
             </Link>
-            <Link href="/products" className="hover:text-blue-600 transition-colors">
+            <Link href="/products" className="text-gray-700 hover:text-gray-900 font-medium transition-colors text-sm uppercase tracking-wide">
               商品
             </Link>
-            <Link href="/contact" className="hover:text-blue-600 transition-colors">
+            <Link href="/contact" className="text-gray-700 hover:text-gray-900 font-medium transition-colors text-sm uppercase tracking-wide">
               聯絡我們
             </Link>
             {typeof window !== 'undefined' && typeof localStorage !== 'undefined' && localStorage.getItem('admin.access') ? (
-              <Link href="/admin-portal/dashboard" className="hover:text-blue-600 transition-colors">
+              <Link href="/admin-portal/dashboard" className="text-gray-500 hover:text-gray-700 transition-colors text-sm">
                 Admin
               </Link>
             ) : (
-              <Link href="/admin-portal/login" className="hover:text-blue-600 transition-colors">
+              <Link href="/admin-portal/login" className="text-gray-500 hover:text-gray-700 transition-colors text-sm">
                 Admin
               </Link>
             )}

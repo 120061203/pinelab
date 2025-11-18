@@ -144,13 +144,17 @@ export default function HomePage() {
       {/* Hero Section */}
       <HeroSection siteSettings={siteSettings} />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-16">
         {/* 品牌介紹 */}
-        {siteSettings?.brand_name && (
-          <section className="mb-12 text-center">
-            <h1 className="text-4xl font-bold mb-4">{siteSettings.brand_name}</h1>
+        {siteSettings?.brand_name && !siteSettings?.hero_banner_url && (
+          <section className="mb-20 text-center">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 tracking-tight">
+              {siteSettings.brand_name}
+            </h1>
             {siteSettings.brand_slogan && (
-              <p className="text-lg text-gray-600">{siteSettings.brand_slogan}</p>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                {siteSettings.brand_slogan}
+              </p>
             )}
           </section>
         )}
@@ -181,21 +185,23 @@ export default function HomePage() {
       )}
       
       {!loading && !error && productGroups.length > 0 && (
-        <div className="space-y-12">
+        <div className="space-y-20 mt-20">
           {productGroups.map((group) => (
-            <section key={group.category?.id || 'uncategorized'} className="space-y-4">
+            <section key={group.category?.id || 'uncategorized'} className="space-y-8">
               {/* 分類標題 */}
-              <h2 className="text-2xl font-bold border-b pb-2">
-                {group.category ? group.category.name : '未分類'}
+              <div className="text-center">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
+                  {group.category ? group.category.name : '未分類'}
+                </h2>
                 {group.category?.description && (
-                  <span className="text-sm font-normal text-gray-600 ml-2">
+                  <p className="text-gray-600 text-lg max-w-2xl mx-auto">
                     {group.category.description}
-                  </span>
+                  </p>
                 )}
-              </h2>
+              </div>
               
               {/* 該分類下的商品 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {group.products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

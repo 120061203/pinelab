@@ -62,22 +62,27 @@ export default function ServicesSection({ services }: ServicesSectionProps) {
   };
 
   return (
-    <section className="py-12 bg-white">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">我們的服務</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section className="py-20 bg-gray-50">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">我們的服務</h2>
+          <div className="w-24 h-1 bg-gray-900 mx-auto"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service) => (
             <div
               key={service.id}
-              className="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition-shadow text-center"
+              className="bg-white rounded-lg border border-gray-100 p-8 hover:border-gray-300 hover:shadow-xl transition-all duration-300 text-center group"
             >
               {renderIcon(service) && (
-                <div className="flex justify-center mb-4">
-                  {renderIcon(service)}
+                <div className="flex justify-center mb-6">
+                  <div className="p-4 bg-gray-50 rounded-full group-hover:bg-gray-100 transition-colors">
+                    {renderIcon(service)}
+                  </div>
                 </div>
               )}
               <h3 className="text-xl font-semibold text-gray-900 mb-3">{service.title}</h3>
-              <p className="text-gray-600">{service.description}</p>
+              <p className="text-gray-600 leading-relaxed">{service.description}</p>
             </div>
           ))}
         </div>

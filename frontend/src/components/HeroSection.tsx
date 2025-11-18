@@ -26,7 +26,7 @@ export default function HeroSection({ siteSettings }: HeroSectionProps) {
   }
 
   return (
-    <section className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] flex items-center justify-center overflow-hidden">
+    <section className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
       {hasHeroBanner && siteSettings.hero_banner_url && (
         <div className="absolute inset-0 z-0">
           {(() => {
@@ -48,14 +48,14 @@ export default function HeroSection({ siteSettings }: HeroSectionProps) {
               />
             );
           })()}
-          {/* 遮罩層，確保文字可讀性 */}
-          <div className="absolute inset-0 bg-black/30" />
+          {/* 優雅的漸層遮罩層 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50" />
         </div>
       )}
       
       {hasSlogan && (
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-2xl leading-tight tracking-tight">
             {siteSettings.brand_slogan}
           </h1>
         </div>

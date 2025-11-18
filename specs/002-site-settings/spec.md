@@ -1,7 +1,7 @@
 # Feature Specification: 網站設定管理
 
 **Feature Branch**: `002-site-settings`  
-**Created**: 2025-01-27  
+**Created**: 2025-11-18  
 **Status**: Draft  
 **Input**: User description: "我對網站的需求有更明確的了 但有些功能已經有了 你可以忽略 只新增還沒有的功能"
 
