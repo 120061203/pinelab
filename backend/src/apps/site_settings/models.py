@@ -132,17 +132,17 @@ class News(models.Model):
         verbose_name='標題'
     )
     content = models.TextField(
-        max_length=5000,
+        max_length=10000,
         verbose_name='內容'
     )
     publish_date = models.DateField(
         verbose_name='發布日期'
     )
-    image_url = models.CharField(
-        max_length=500,
+    images = models.JSONField(
+        default=list,
         blank=True,
-        null=True,
-        verbose_name='圖片 URL'
+        verbose_name='圖片列表',
+        help_text='格式：[{"url": "/media/site/news/image.jpg", "alt": "圖片描述"}]'
     )
     status = models.CharField(
         max_length=20,
@@ -164,11 +164,8 @@ class News(models.Model):
         verbose_name = '最新消息'
         verbose_name_plural = '最新消息'
         ordering = ['-publish_date', '-created_at']
-        indexes = [
-            models.Index(fields=['status']),
-            models.Index(fields=['publish_date']),
-            models.Index(fields=['-publish_date', 'status']),
-        ]
+        # 索引已通過遷移創建，這裡不重複定義以避免衝突
+        # 注意：數據庫中的實際索引名稱可能與遷移文件中的不同
     
     def __str__(self):
         return self.title

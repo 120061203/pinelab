@@ -77,26 +77,28 @@ class Migration(migrations.Migration):
                 'ordering': ['-sort_order', '-updated_at'],
             },
         ),
-        migrations.AddIndex(
-            model_name='news',
-            index=models.Index(fields=['status'], name='news_status_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='news',
-            index=models.Index(fields=['publish_date'], name='news_publish_date_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='news',
-            index=models.Index(fields=['-publish_date', 'status'], name='news_publish_date_status_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='service',
-            index=models.Index(fields=['sort_order'], name='services_sort_order_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='service',
-            index=models.Index(fields=['-sort_order', '-updated_at'], name='services_sort_order_updated_idx'),
-        ),
+        # 索引已通過手動 SQL 創建，這裡跳過以避免衝突
+        # migrations.AddIndex(
+        #     model_name='news',
+        #     index=models.Index(fields=['status']),
+        # ),
+        # migrations.AddIndex(
+        #     model_name='news',
+        #     index=models.Index(fields=['publish_date'], name='news_publish_date_idx'),
+        # ),
+        # migrations.AddIndex(
+        #     model_name='news',
+        #     index=models.Index(fields=['-publish_date', 'status'], name='news_publish_date_status_idx'),
+        # ),
+        # 索引已通過手動 SQL 創建，這裡跳過以避免衝突
+        # migrations.AddIndex(
+        #     model_name='service',
+        #     index=models.Index(fields=['sort_order'], name='services_sort_order_idx'),
+        # ),
+        # migrations.AddIndex(
+        #     model_name='service',
+        #     index=models.Index(fields=['-sort_order', '-updated_at'], name='services_sort_order_updated_idx'),
+        # ),
         migrations.RunPython(create_site_settings),
     ]
 

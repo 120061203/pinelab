@@ -178,17 +178,22 @@ class SiteSettingsAdminSerializer(serializers.ModelSerializer):
 class NewsAdminSerializer(serializers.ModelSerializer):
     """
     最新消息管理序列化器（管理員專用）
-    支援圖片上傳
+    支援多張圖片上傳
     """
-    image = serializers.ImageField(write_only=True, required=False, allow_null=True)
+    images_upload = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
     
     class Meta:
         model = News
         fields = [
-            'id', 'title', 'content', 'publish_date', 'image_url', 'status',
-            'created_at', 'updated_at', 'image'
+            'id', 'title', 'content', 'publish_date', 'images', 'status',
+            'created_at', 'updated_at', 'images_upload'
         ]
-        read_only_fields = ['id', 'image_url', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
     
     def validate_title(self, value):
         """驗證標題長度"""
@@ -198,15 +203,29 @@ class NewsAdminSerializer(serializers.ModelSerializer):
     
     def validate_content(self, value):
         """驗證內容長度"""
-        if len(value) > 5000:
-            raise ValidationError('內容長度不能超過 5000 字元')
+        if len(value) > 10000:
+            raise ValidationError('內容長度不能超過 10000 字元')
+        return value
+    
+    def validate_images(self, value):
+        """驗證圖片列表格式"""
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValidationError('圖片列表必須是一個陣列')
+        for idx, img in enumerate(value):
+            if not isinstance(img, dict):
+                raise ValidationError(f'圖片第 {idx + 1} 項必須是一個物件')
+            if 'url' not in img:
+                raise ValidationError(f'圖片第 {idx + 1} 項缺少 URL')
         return value
     
     def create(self, validated_data):
-        """建立最新消息，處理圖片上傳"""
-        image_file = validated_data.pop('image', None)
+        """建立最新消息，處理多張圖片上傳"""
+        images_upload = validated_data.pop('images_upload', None) or []
+        uploaded_images = []
         
-        if image_file:
+        for image_file in images_upload:
             # 儲存圖片檔案
             ext = validate_image_file(image_file, ['jpg', 'jpeg', 'png', 'webp'], 5, '消息圖片')
             file_name = get_timestamp_filename('news', ext)
@@ -217,25 +236,39 @@ class NewsAdminSerializer(serializers.ModelSerializer):
                 for chunk in image_file.chunks():
                     f.write(chunk)
             
-            validated_data['image_url'] = f'/media/site/news/{file_name}'
+            uploaded_images.append({
+                'url': f'/media/site/news/{file_name}',
+                'alt': ''
+            })
+        
+        # 如果沒有上傳新圖片，使用現有的 images 或空列表
+        if uploaded_images:
+            validated_data['images'] = uploaded_images
+        elif 'images' not in validated_data:
+            validated_data['images'] = []
         
         return super().create(validated_data)
     
     def update(self, instance, validated_data):
-        """更新最新消息，處理圖片上傳"""
-        image_file = validated_data.pop('image', None)
+        """更新最新消息，處理多張圖片上傳"""
+        images_upload = validated_data.pop('images_upload', None) or []
+        # 保留現有的圖片（如果沒有明確更新）
+        existing_images = validated_data.get('images', None)
+        if existing_images is None:
+            existing_images = list(instance.images) if instance.images else []
+        else:
+            # 如果 images 是字符串，解析它
+            if isinstance(existing_images, str):
+                import json
+                try:
+                    existing_images = json.loads(existing_images)
+                except json.JSONDecodeError:
+                    existing_images = list(instance.images) if instance.images else []
         
-        if image_file:
-            # 刪除舊圖片
-            if instance.image_url:
-                old_path = os.path.join(settings.MEDIA_ROOT, instance.image_url.lstrip('/media/'))
-                if os.path.exists(old_path):
-                    try:
-                        os.remove(old_path)
-                    except OSError:
-                        pass
-            
-            # 儲存新圖片
+        uploaded_images = list(existing_images)
+        
+        for image_file in images_upload:
+            # 儲存圖片檔案
             ext = validate_image_file(image_file, ['jpg', 'jpeg', 'png', 'webp'], 5, '消息圖片')
             file_name = get_timestamp_filename('news', ext)
             file_path = os.path.join(settings.MEDIA_ROOT, 'site', 'news', file_name)
@@ -245,7 +278,13 @@ class NewsAdminSerializer(serializers.ModelSerializer):
                 for chunk in image_file.chunks():
                     f.write(chunk)
             
-            validated_data['image_url'] = f'/media/site/news/{file_name}'
+            uploaded_images.append({
+                'url': f'/media/site/news/{file_name}',
+                'alt': ''
+            })
+        
+        # 更新 images
+        validated_data['images'] = uploaded_images
         
         return super().update(instance, validated_data)
 

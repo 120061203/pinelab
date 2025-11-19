@@ -1,15 +1,17 @@
-/**
- * 最新消息詳細頁面
- */
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { getNews } from '@/lib/api';
 import { News } from '@/types/news';
 import { ApiResponse } from '@/lib/api';
 import { getImageUrl } from '@/lib/image-utils';
 import Link from 'next/link';
+
+// 動態導入 react-markdown（避免 SSR 問題）
+const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
+const remarkGfm = require('remark-gfm');
 
 export default function NewsDetailPage() {
   const params = useParams();
@@ -78,11 +80,11 @@ export default function NewsDetailPage() {
         </Link>
         
         <article className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {news.image_url && (
+          {news.images && news.images.length > 0 && (
             <div className="w-full h-96 overflow-hidden">
               <img
-                src={getImageUrl(news.image_url) || ''}
-                alt={news.title}
+                src={getImageUrl(news.images[0].url) || ''}
+                alt={news.images[0].alt || news.title}
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
@@ -101,9 +103,7 @@ export default function NewsDetailPage() {
             </div>
             
             <div className="prose max-w-none">
-              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {news.content}
-              </p>
+              <MarkdownContent content={news.content} images={news.images || []} />
             </div>
           </div>
         </article>
@@ -112,3 +112,55 @@ export default function NewsDetailPage() {
   );
 }
 
+// Markdown 內容渲染組件
+function MarkdownContent({ content, images }: { content: string; images: any[] }) {
+  
+  // 處理圖片 URL（將相對路徑轉換為完整 URL）
+  const processContent = (text: string) => {
+    let processed = text;
+    images.forEach((image) => {
+      const imageUrl = getImageUrl(image.url) || image.url;
+      processed = processed.replace(
+        new RegExp(`!\\[([^\\]]*)\\]\\(${image.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g'),
+        `![$1](${imageUrl})`
+      );
+    });
+    return processed;
+  };
+
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        img: ({ node, ...props }: any) => (
+          <img
+            {...props}
+            className="max-w-full h-auto rounded my-4"
+            alt={props.alt || ''}
+          />
+        ),
+        p: ({ node, ...props }: any) => <p {...props} className="mb-4 leading-relaxed" />,
+        h1: ({ node, ...props }: any) => <h1 {...props} className="text-3xl font-bold mb-4 mt-6" />,
+        h2: ({ node, ...props }: any) => <h2 {...props} className="text-2xl font-bold mb-3 mt-5" />,
+        h3: ({ node, ...props }: any) => <h3 {...props} className="text-xl font-bold mb-2 mt-4" />,
+        ul: ({ node, ...props }: any) => <ul {...props} className="list-disc list-inside mb-4 space-y-1" />,
+        ol: ({ node, ...props }: any) => <ol {...props} className="list-decimal list-inside mb-4 space-y-1" />,
+        li: ({ node, ...props }: any) => <li {...props} className="mb-1" />,
+        code: ({ node, inline, ...props }: any) =>
+          inline ? (
+            <code {...props} className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono" />
+          ) : (
+            <code {...props} className="block bg-gray-100 p-4 rounded mb-4 overflow-x-auto font-mono text-sm" />
+          ),
+        blockquote: ({ node, ...props }: any) => (
+          <blockquote {...props} className="border-l-4 border-gray-300 pl-4 italic my-4 text-gray-700" />
+        ),
+        a: ({ node, ...props }: any) => (
+          <a {...props} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" />
+        ),
+      }}
+    >
+      {processContent(content)}
+    </ReactMarkdown>
+  );
+}

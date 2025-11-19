@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { adminGetNewsItem, adminCreateNews, adminUpdateNews } from '@/lib/admin-api';
-import { News, NewsCreateRequest, NewsUpdateRequest } from '@/types/news';
+import { News, NewsCreateRequest, NewsUpdateRequest, NewsImage } from '@/types/news';
 import { useToast } from '@/components/admin/feedback/ToastProvider';
-import { getImageUrl } from '@/lib/image-utils';
+import MarkdownEditor from '@/components/admin/news/MarkdownEditor';
 
 export default function AdminNewsEditPage() {
   const params = useParams();
@@ -22,8 +22,8 @@ export default function AdminNewsEditPage() {
     publish_date: new Date().toISOString().split('T')[0],
     status: 'draft' as 'draft' | 'published',
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [images, setImages] = useState<NewsImage[]>([]);
+  const [pendingImageUploads, setPendingImageUploads] = useState<File[]>([]);
 
   useEffect(() => {
     if (!isNew) {
@@ -52,15 +52,26 @@ export default function AdminNewsEditPage() {
           publish_date: res.data.publish_date,
           status: res.data.status || 'draft',
         });
-        if (res.data.image_url) {
-          setCurrentImageUrl(res.data.image_url);
-        }
+        setImages(res.data.images || []);
       }
     } catch (e: any) {
       addToast({ type: 'error', message: e?.message || '載入失敗' });
     } finally {
       setLoading(false);
     }
+  };
+
+  // 處理圖片上傳（臨時上傳，實際保存時會一起提交）
+  const handleImageUpload = async (files: File[]): Promise<NewsImage[]> => {
+    // 這裡先返回臨時的圖片 URL，實際保存時會一起上傳
+    // 為了簡化，我們先將文件存儲在 pendingImageUploads 中
+    setPendingImageUploads((prev) => [...prev, ...files]);
+    
+    // 返回臨時的圖片對象（使用 blob URL）
+    return files.map((file) => ({
+      url: URL.createObjectURL(file),
+      alt: file.name,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,7 +84,8 @@ export default function AdminNewsEditPage() {
           content: formData.content,
           publish_date: formData.publish_date,
           status: formData.status,
-          image: imageFile || null,
+          images_upload: pendingImageUploads.length > 0 ? pendingImageUploads : undefined,
+          images: images.filter((img) => !img.url.startsWith('blob:')), // 過濾掉臨時的 blob URL
         };
         const res: any = await adminCreateNews(createData);
         if (res?.status === 'success') {
@@ -88,7 +100,8 @@ export default function AdminNewsEditPage() {
           content: formData.content,
           publish_date: formData.publish_date,
           status: formData.status,
-          image: imageFile || undefined,
+          images_upload: pendingImageUploads.length > 0 ? pendingImageUploads : undefined,
+          images: images.filter((img) => !img.url.startsWith('blob:')), // 過濾掉臨時的 blob URL
         };
         if (!id || id === 'new') {
           addToast({ type: 'error', message: '無效的消息 ID' });
@@ -122,7 +135,7 @@ export default function AdminNewsEditPage() {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">{isNew ? '新增最新消息' : '編輯最新消息'}</h1>
       
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
         <div className="bg-white p-6 rounded-lg shadow space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">標題 *</label>
@@ -137,40 +150,15 @@ export default function AdminNewsEditPage() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-2">內容 *</label>
-            <textarea
+            <label className="block text-sm font-medium mb-2">內容 * (支援 Markdown)</label>
+            <MarkdownEditor
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md"
-              rows={10}
-              required
-              maxLength={5000}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">圖片 (JPG/PNG/WEBP, ≤5MB)</label>
-            {currentImageUrl && !imageFile && (
-              <div className="mb-2">
-                <img src={getImageUrl(currentImageUrl) || ''} alt="Current Image" className="h-32 w-auto mb-2 rounded" />
-              </div>
-            )}
-            {imageFile && (
-              <div className="mb-2">
-                <img src={URL.createObjectURL(imageFile)} alt="Preview" className="h-32 w-auto mb-2 rounded" />
-              </div>
-            )}
-            <input
-              type="file"
-              accept=".jpg,.jpeg,.png,.webp"
-              onChange={(e) => {
-                const file = e.target.files?.[0] || null;
-                setImageFile(file);
-                if (file) {
-                  setCurrentImageUrl(URL.createObjectURL(file));
-                }
-              }}
-              className="w-full px-3 py-2 border rounded-md"
+              onChange={(value) => setFormData({ ...formData, content: value })}
+              images={images}
+              onImagesChange={setImages}
+              onImageUpload={handleImageUpload}
+              placeholder="輸入 Markdown 內容... 可以使用 # 標題、**粗體**、![圖片](url) 等語法"
+              rows={20}
             />
           </div>
           
@@ -218,4 +206,3 @@ export default function AdminNewsEditPage() {
     </div>
   );
 }
-

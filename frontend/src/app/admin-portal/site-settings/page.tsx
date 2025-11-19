@@ -15,7 +15,6 @@ export default function AdminSiteSettingsPage() {
     brand_name: '',
     brand_slogan: '',
     external_links: [],
-    show_price: true,
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [heroBannerFile, setHeroBannerFile] = useState<File | null>(null);
@@ -34,7 +33,6 @@ export default function AdminSiteSettingsPage() {
           brand_name: res.data.brand_name || '',
           brand_slogan: res.data.brand_slogan || '',
           external_links: res.data.external_links || [],
-          show_price: res.data.show_price ?? true,
         });
       }
     } catch (e: any) {
@@ -226,24 +224,6 @@ export default function AdminSiteSettingsPage() {
             >
               + 新增連結
             </button>
-          </div>
-        </div>
-
-        {/* 顯示設定 */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">顯示設定</h2>
-          
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="show_price"
-              checked={formData.show_price}
-              onChange={(e) => setFormData({ ...formData, show_price: e.target.checked })}
-              className="w-4 h-4"
-            />
-            <label htmlFor="show_price" className="text-sm font-medium">
-              顯示商品價格
-            </label>
           </div>
         </div>
 

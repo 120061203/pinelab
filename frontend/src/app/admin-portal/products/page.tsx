@@ -2,13 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { adminGetProducts, adminBatchUpdateProductSort, adminDeleteProduct, adminBatchUpdateProductStatus } from "@/lib/admin-api";
+import { adminGetProducts, adminBatchUpdateProductSort, adminDeleteProduct, adminBatchUpdateProductStatus, adminGetSiteSettings, adminUpdateSiteSettings } from "@/lib/admin-api";
 import { Table, Th, Td, Pagination } from "@/components/admin/table/Table";
 import FilterBar, { Filters } from "@/components/admin/filters/FilterBar";
 import { useUrlState } from "@/lib/url-state";
 import SortableTableBody from "@/components/admin/dnd/SortableTableBody";
 import { useToast } from "@/components/admin/feedback/ToastProvider";
 import ConfirmModal from "@/components/admin/modals/ConfirmModal";
+import { SiteSettings } from "@/types/site-settings";
 
 type ProductRow = {
   id: number;
@@ -45,6 +46,8 @@ export default function AdminProductsPage() {
   const [batchOperation, setBatchOperation] = useState<'enable' | 'disable' | 'delete'>('enable');
   const [pendingBatchUpdate, setPendingBatchUpdate] = useState<{operation: 'enable' | 'disable' | 'delete'} | null>(null);
   const [batchUpdating, setBatchUpdating] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [updatingPriceSetting, setUpdatingPriceSetting] = useState(false);
 
   const load = async (pageNum = 1, q = "", f: Filters = {}) => {
     setLoading(true);
@@ -68,7 +71,42 @@ export default function AdminProductsPage() {
     }
   };
 
-  useEffect(() => { load(page, search, filters); }, [page]);
+  useEffect(() => { 
+    load(page, search, filters);
+    loadSiteSettings();
+  }, [page]);
+
+  const loadSiteSettings = async () => {
+    try {
+      const res: any = await adminGetSiteSettings();
+      if (res?.status === 'success' && res.data) {
+        setSiteSettings(res.data);
+      }
+    } catch (e: any) {
+      console.error('Failed to load site settings:', e);
+    }
+  };
+
+  const handleToggleShowPrice = async (checked: boolean) => {
+    if (!siteSettings) return;
+    
+    setUpdatingPriceSetting(true);
+    try {
+      const res: any = await adminUpdateSiteSettings({
+        show_price: checked,
+      });
+      if (res?.status === 'success') {
+        setSiteSettings({ ...siteSettings, show_price: checked });
+        addToast({ type: 'success', message: '設定已更新' });
+      } else {
+        addToast({ type: 'error', message: res?.message || '更新失敗' });
+      }
+    } catch (e: any) {
+      addToast({ type: 'error', message: e?.message || '更新失敗' });
+    } finally {
+      setUpdatingPriceSetting(false);
+    }
+  };
 
   const onApplyFilters = (f: Filters) => {
     setFilters(f);
@@ -215,6 +253,28 @@ export default function AdminProductsPage() {
             {showBatchUpdate ? '取消批量修改' : '批量修改'}
           </button>
           <Link href="/admin-portal/products/new" className="px-3 py-2 bg-black text-white rounded text-sm">新增商品</Link>
+        </div>
+      </div>
+
+      {/* 顯示設定 */}
+      <div className="bg-white p-4 rounded-lg shadow">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="show_price"
+              checked={siteSettings?.show_price ?? true}
+              onChange={(e) => handleToggleShowPrice(e.target.checked)}
+              disabled={updatingPriceSetting || !siteSettings}
+              className="w-4 h-4"
+            />
+            <label htmlFor="show_price" className="text-sm font-medium">
+              顯示商品價格
+            </label>
+          </div>
+          {updatingPriceSetting && (
+            <span className="text-xs text-gray-500">更新中...</span>
+          )}
         </div>
       </div>
 

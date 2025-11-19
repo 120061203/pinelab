@@ -33,11 +33,11 @@ export default function NewsSection({ news, limit = 5 }: NewsSectionProps) {
               href={`/news/${item.id}`}
               className="bg-white rounded-lg border border-gray-100 overflow-hidden hover:border-gray-300 transition-all duration-300 hover:shadow-xl block cursor-pointer group"
             >
-              {item.image_url && (
+              {item.images && item.images.length > 0 && (
                 <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
                   <img
-                    src={getImageUrl(item.image_url) || ''}
-                    alt={item.title}
+                    src={getImageUrl(item.images[0].url) || ''}
+                    alt={item.images[0].alt || item.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                     onError={(e) => {

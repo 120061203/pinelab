@@ -609,8 +609,23 @@ export async function adminCreateNews(data: NewsCreateRequest) {
   formData.append('title', data.title);
   formData.append('content', data.content);
   formData.append('publish_date', data.publish_date);
-  formData.append('status', data.status || 'draft');
-  if (data.image) formData.append('image', data.image);
+  if (data.status) {
+    formData.append('status', data.status);
+  } else {
+    formData.append('status', 'draft');
+  }
+  
+  // 處理多張圖片上傳
+  if (data.images_upload && data.images_upload.length > 0) {
+    data.images_upload.forEach((file) => {
+      formData.append('images_upload', file);
+    });
+  }
+  
+  // 如果有現有的圖片列表（用於更新時保留現有圖片）
+  if (data.images && data.images.length > 0) {
+    formData.append('images', JSON.stringify(data.images));
+  }
   
   const token = getAccessToken();
   if (!token) {
@@ -640,7 +655,7 @@ export async function adminCreateNews(data: NewsCreateRequest) {
   
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData?.message || `API 請求失敗: ${response.status}`);
+    throw new Error(responseData?.message || responseData?.detail || `API 請求失敗: ${response.status}`);
   }
   
   return responseData;
@@ -653,7 +668,18 @@ export async function adminUpdateNews(id: number, data: NewsUpdateRequest) {
   if (data.content !== undefined) formData.append('content', data.content);
   if (data.publish_date !== undefined) formData.append('publish_date', data.publish_date);
   if (data.status !== undefined) formData.append('status', data.status);
-  if (data.image) formData.append('image', data.image);
+  
+  // 處理多張圖片上傳
+  if (data.images_upload && data.images_upload.length > 0) {
+    data.images_upload.forEach((file) => {
+      formData.append('images_upload', file);
+    });
+  }
+  
+  // 如果有現有的圖片列表（用於更新時保留現有圖片）
+  if (data.images && data.images.length > 0) {
+    formData.append('images', JSON.stringify(data.images));
+  }
   
   const token = getAccessToken();
   if (!token) {
@@ -683,7 +709,7 @@ export async function adminUpdateNews(id: number, data: NewsUpdateRequest) {
   
   const responseData = await response.json();
   if (!response.ok) {
-    throw new Error(responseData?.message || `API 請求失敗: ${response.status}`);
+    throw new Error(responseData?.message || responseData?.detail || `API 請求失敗: ${response.status}`);
   }
   
   return responseData;
