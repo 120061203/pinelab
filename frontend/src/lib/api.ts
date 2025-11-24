@@ -156,6 +156,32 @@ export async function getNews(limit?: number) {
 }
 
 /**
+ * 根據 slug 獲取單一最新消息
+ */
+export async function getNewsBySlug(year: string, month: string, day: string, slug: string) {
+  // 後端需要添加一個新的端點來支持這個查詢
+  // 暫時使用列表 API 然後過濾
+  const response = await getNews();
+  if (response.status === 'success' && response.data) {
+    const newsItem = response.data.find((item) => {
+      if (!item.slug) return false;
+      const publishDate = new Date(item.publish_date);
+      const itemYear = publishDate.getFullYear().toString();
+      const itemMonth = String(publishDate.getMonth() + 1).padStart(2, '0');
+      const itemDay = String(publishDate.getDate()).padStart(2, '0');
+      return itemYear === year && itemMonth === month && itemDay === day && item.slug === slug;
+    });
+    if (newsItem) {
+      return {
+        status: 'success' as const,
+        data: newsItem,
+      } as ApiResponse<News>;
+    }
+  }
+  throw new Error('找不到該消息');
+}
+
+/**
  * 服務項目相關 API 方法
  */
 export async function getServices() {

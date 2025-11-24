@@ -14,10 +14,11 @@ export default function AdminNewsEditPage() {
   const id = params?.id as string | undefined;
   const isNew = !id || id === 'new';
   
-  const [loading, setLoading] = useState(!isNew);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
+    slug: '',
     content: '',
     publish_date: new Date().toISOString().split('T')[0],
     status: 'draft' as 'draft' | 'published',
@@ -26,9 +27,16 @@ export default function AdminNewsEditPage() {
   const [pendingImageUploads, setPendingImageUploads] = useState<File[]>([]);
 
   useEffect(() => {
-    if (!isNew) {
-      load();
+    if (isNew) {
+      setLoading(false);
+      return;
     }
+    if (id && id !== 'new') {
+      load();
+    } else {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isNew]);
 
   const load = async () => {
@@ -45,17 +53,70 @@ export default function AdminNewsEditPage() {
     setLoading(true);
     try {
       const res: any = await adminGetNewsItem(newsId);
-      if (res?.status === 'success' && res.data) {
+      console.log('Load news response:', res); // 調試日誌
+      console.log('Load news response type:', typeof res);
+      console.log('Load news response.status:', res?.status);
+      console.log('Load news response.data:', res?.data);
+      
+      // 檢查響應格式 - 更嚴格的檢查
+      if (!res || typeof res !== 'object') {
+        console.error('Response is undefined or invalid:', res);
+        addToast({ type: 'error', message: '載入失敗：伺服器無回應' });
+        setLoading(false);
+        return;
+      }
+      
+      // 檢查是否有 status 欄位
+      if (!res.status) {
+        console.error('Response missing status field:', res);
+        addToast({ type: 'error', message: '載入失敗：響應格式錯誤（缺少 status）' });
+        setLoading(false);
+        return;
+      }
+      
+      // 檢查是否有 data 欄位
+      if (res.status === 'success') {
+        if (!res.data) {
+          console.error('Response missing data field:', res);
+          addToast({ type: 'error', message: '載入失敗：響應格式錯誤（缺少 data）' });
+          setLoading(false);
+          return;
+        }
+        
+        if (typeof res.data !== 'object') {
+          console.error('Response data is not an object:', res.data);
+          addToast({ type: 'error', message: '載入失敗：數據格式錯誤' });
+          setLoading(false);
+          return;
+        }
+        
+        // 安全地設置表單數據
         setFormData({
-          title: res.data.title,
-          content: res.data.content,
-          publish_date: res.data.publish_date,
+          title: res.data.title || '',
+          slug: res.data.slug || '',
+          content: res.data.content || '',
+          publish_date: res.data.publish_date || new Date().toISOString().split('T')[0],
           status: res.data.status || 'draft',
         });
-        setImages(res.data.images || []);
+        setImages(Array.isArray(res.data.images) ? res.data.images : []);
+      } else {
+        console.error('Invalid response status:', res);
+        addToast({ type: 'error', message: res?.message || res?.detail || '載入失敗：無法取得消息資料' });
       }
     } catch (e: any) {
-      addToast({ type: 'error', message: e?.message || '載入失敗' });
+      console.error('Load news error:', e);
+      // 安全地獲取錯誤訊息
+      let errorMessage = '載入失敗';
+      if (e?.message) {
+        errorMessage = e.message;
+      } else if (e?.response?.data?.message) {
+        errorMessage = e.response.data.message;
+      } else if (e?.response?.data?.detail) {
+        errorMessage = e.response.data.detail;
+      } else if (typeof e === 'string') {
+        errorMessage = e;
+      }
+      addToast({ type: 'error', message: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -81,6 +142,7 @@ export default function AdminNewsEditPage() {
       if (isNew) {
         const createData: NewsCreateRequest = {
           title: formData.title,
+          slug: formData.slug || undefined,
           content: formData.content,
           publish_date: formData.publish_date,
           status: formData.status,
@@ -88,15 +150,17 @@ export default function AdminNewsEditPage() {
           images: images.filter((img) => !img.url.startsWith('blob:')), // 過濾掉臨時的 blob URL
         };
         const res: any = await adminCreateNews(createData);
-        if (res?.status === 'success') {
+        console.log('Create news response:', res);
+        if (res && res.status === 'success') {
           addToast({ type: 'success', message: '已建立最新消息' });
           router.push('/admin-portal/news');
         } else {
-          addToast({ type: 'error', message: res?.message || '建立失敗' });
+          addToast({ type: 'error', message: (res && res.message) || '建立失敗' });
         }
       } else {
         const updateData: NewsUpdateRequest = {
           title: formData.title,
+          slug: formData.slug || undefined,
           content: formData.content,
           publish_date: formData.publish_date,
           status: formData.status,
@@ -113,11 +177,12 @@ export default function AdminNewsEditPage() {
           return;
         }
         const res: any = await adminUpdateNews(newsId, updateData);
-        if (res?.status === 'success') {
+        console.log('Update news response:', res);
+        if (res && res.status === 'success') {
           addToast({ type: 'success', message: '已更新最新消息' });
           router.push('/admin-portal/news');
         } else {
-          addToast({ type: 'error', message: res?.message || '更新失敗' });
+          addToast({ type: 'error', message: (res && res.message) || '更新失敗' });
         }
       }
     } catch (e: any) {
@@ -147,6 +212,25 @@ export default function AdminNewsEditPage() {
               required
               maxLength={200}
             />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">URL 路徑（自訂名稱）</label>
+            <input
+              type="text"
+              value={formData.slug}
+              onChange={(e) => {
+                // 只允許小寫字母、數字和連字號
+                const slug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                setFormData({ ...formData, slug });
+              }}
+              className="w-full px-3 py-2 border rounded-md"
+              placeholder="例如：market（將生成 /news/2024/11/19/market）"
+              maxLength={200}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              如果不填寫，將使用發布日期自動生成。URL 格式：/news/年/月/日/自訂名稱
+            </p>
           </div>
           
           <div>

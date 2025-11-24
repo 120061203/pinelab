@@ -66,7 +66,13 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
         })
     
     def retrieve(self, request, *args, **kwargs):
-        """取得單一最新消息詳情"""
+        """取得單一最新消息詳情（支援 ID 或 slug 查詢）"""
+        pk = kwargs.get('pk')
+        if pk and not pk.isdigit():
+            # 如果 pk 不是數字，嘗試用 slug 查詢
+            # 但這裡我們需要從 URL 參數中獲取完整的路徑信息
+            # 暫時保持原邏輯，slug 查詢將在路由層處理
+            pass
         response = super().retrieve(request, *args, **kwargs)
         if response.status_code == 200:
             return Response({

@@ -12,6 +12,7 @@ export interface NewsImage {
 export interface News {
   id: number;
   title: string;
+  slug: string | null;
   content: string;
   publish_date: string;
   images: NewsImage[];
@@ -22,6 +23,7 @@ export interface News {
 
 export interface NewsCreateRequest {
   title: string;
+  slug?: string;
   content: string;
   publish_date: string;
   images_upload?: File[];
@@ -31,6 +33,7 @@ export interface NewsCreateRequest {
 
 export interface NewsUpdateRequest {
   title?: string;
+  slug?: string;
   content?: string;
   publish_date?: string;
   images_upload?: File[];

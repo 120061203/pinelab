@@ -7,7 +7,6 @@ import { getImageUrl } from '@/lib/image-utils';
 
 // 動態導入 react-markdown（避免 SSR 問題）
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
-const remarkGfm = require('remark-gfm');
 
 interface MarkdownEditorProps {
   value: string;
@@ -30,6 +29,7 @@ export default function MarkdownEditor({
 }: MarkdownEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [uploading, setUploading] = useState(false);
 
   const handleImageUpload = async (files: FileList | null) => {
@@ -58,9 +58,28 @@ export default function MarkdownEditor({
   };
 
   const insertImageAtCursor = (image: NewsImage) => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      // 如果沒有 textarea，插入到末尾
+      const imageMarkdown = `![${image.alt || ''}](${image.url})`;
+      onChange(value + (value ? '\n\n' : '') + imageMarkdown);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
     const imageMarkdown = `![${image.alt || ''}](${image.url})`;
-    // 簡單插入到內容末尾
-    onChange(value + (value ? '\n\n' : '') + imageMarkdown);
+    
+    // 在游標位置插入圖片 Markdown
+    const newValue = value.substring(0, start) + imageMarkdown + (start !== end ? '' : '\n\n') + value.substring(end);
+    onChange(newValue);
+    
+    // 設置新的游標位置
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + imageMarkdown.length + (start !== end ? 0 : 2);
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
   };
 
   const removeImage = (index: number) => {
@@ -151,6 +170,7 @@ export default function MarkdownEditor({
           </div>
         ) : (
           <textarea
+            ref={textareaRef}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
@@ -166,51 +186,85 @@ export default function MarkdownEditor({
 
 // Markdown 預覽組件
 function MarkdownPreview({ content, images }: { content: string; images: NewsImage[] }) {
+  // 暫時移除 remark-gfm 以避免錯誤
+  // 如果未來需要 GFM 功能，可以重新添加
+  const [loading, setLoading] = useState(true);
+
+  // 模擬載入延遲（實際不需要，但保持一致性）
+  React.useEffect(() => {
+    setLoading(false);
+  }, []);
   
   // 處理圖片 URL（將相對路徑轉換為完整 URL）
   const processContent = (text: string) => {
+    if (!text) return '';
     let processed = text;
-    images.forEach((image) => {
-      const imageUrl = getImageUrl(image.url) || image.url;
-      processed = processed.replace(
-        new RegExp(`!\\[([^\\]]*)\\]\\(${image.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g'),
-        `![$1](${imageUrl})`
-      );
-    });
+    if (images && Array.isArray(images)) {
+      images.forEach((image) => {
+        if (image && image.url) {
+          const imageUrl = getImageUrl(image.url) || image.url;
+          processed = processed.replace(
+            new RegExp(`!\\[([^\\]]*)\\]\\(${image.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g'),
+            `![$1](${imageUrl})`
+          );
+        }
+      });
+    }
     return processed;
   };
 
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        img: ({ node, ...props }: any) => (
-          <img
-            {...props}
-            className="max-w-full h-auto rounded my-4"
-            alt={props.alt || ''}
-          />
-        ),
-        p: ({ node, ...props }: any) => <p {...props} className="mb-4" />,
-        h1: ({ node, ...props }: any) => <h1 {...props} className="text-3xl font-bold mb-4 mt-6" />,
-        h2: ({ node, ...props }: any) => <h2 {...props} className="text-2xl font-bold mb-3 mt-5" />,
-        h3: ({ node, ...props }: any) => <h3 {...props} className="text-xl font-bold mb-2 mt-4" />,
-        ul: ({ node, ...props }: any) => <ul {...props} className="list-disc list-inside mb-4" />,
-        ol: ({ node, ...props }: any) => <ol {...props} className="list-decimal list-inside mb-4" />,
-        li: ({ node, ...props }: any) => <li {...props} className="mb-1" />,
-        code: ({ node, inline, ...props }: any) =>
-          inline ? (
-            <code {...props} className="bg-gray-100 px-1 py-0.5 rounded text-sm" />
-          ) : (
-            <code {...props} className="block bg-gray-100 p-4 rounded mb-4 overflow-x-auto" />
+  if (loading) {
+    return <div className="p-4 text-gray-500">載入預覽中...</div>;
+  }
+
+  // 安全地渲染 ReactMarkdown（不使用 remark-gfm）
+  try {
+    const processedContent = processContent(content);
+    return (
+      <ReactMarkdown
+        components={{
+          img: ({ node, ...props }: any) => {
+            // 安全地訪問 props
+            const safeProps = props || {};
+            return (
+              <img
+                {...safeProps}
+                className="max-w-full h-auto rounded my-4"
+                alt={safeProps.alt || ''}
+              />
+            );
+          },
+          p: ({ node, ...props }: any) => <p {...(props || {})} className="mb-4" />,
+          h1: ({ node, ...props }: any) => <h1 {...(props || {})} className="text-3xl font-bold mb-4 mt-6" />,
+          h2: ({ node, ...props }: any) => <h2 {...(props || {})} className="text-2xl font-bold mb-3 mt-5" />,
+          h3: ({ node, ...props }: any) => <h3 {...(props || {})} className="text-xl font-bold mb-2 mt-4" />,
+          ul: ({ node, ...props }: any) => <ul {...(props || {})} className="list-disc list-inside mb-4" />,
+          ol: ({ node, ...props }: any) => <ol {...(props || {})} className="list-decimal list-inside mb-4" />,
+          li: ({ node, ...props }: any) => <li {...(props || {})} className="mb-1" />,
+          code: ({ node, inline, ...props }: any) => {
+            const safeProps = props || {};
+            return inline ? (
+              <code {...safeProps} className="bg-gray-100 px-1 py-0.5 rounded text-sm" />
+            ) : (
+              <code {...safeProps} className="block bg-gray-100 p-4 rounded mb-4 overflow-x-auto" />
+            );
+          },
+          blockquote: ({ node, ...props }: any) => (
+            <blockquote {...(props || {})} className="border-l-4 border-gray-300 pl-4 italic my-4" />
           ),
-        blockquote: ({ node, ...props }: any) => (
-          <blockquote {...props} className="border-l-4 border-gray-300 pl-4 italic my-4" />
-        ),
-      }}
-    >
-      {processContent(content)}
-    </ReactMarkdown>
-  );
+        }}
+      >
+        {processedContent}
+      </ReactMarkdown>
+    );
+  } catch (renderError: any) {
+    console.error('ReactMarkdown render error:', renderError);
+    return (
+      <div className="p-4 text-red-500">
+        預覽渲染錯誤: {renderError?.message || '未知錯誤'}
+        <div className="text-xs mt-2">請檢查 Markdown 內容格式</div>
+      </div>
+    );
+  }
 }
 

@@ -27,10 +27,21 @@ export default function NewsSection({ news, limit = 5 }: NewsSectionProps) {
           <div className="w-24 h-1 bg-gray-900 mx-auto"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayedNews.map((item) => (
+          {displayedNews.map((item) => {
+            // 生成 URL：如果有 slug，使用 /news/年/月/日/slug，否則使用 /news/id
+            let newsUrl = `/news/${item.id}`;
+            if (item.slug) {
+              const publishDate = new Date(item.publish_date);
+              const year = publishDate.getFullYear();
+              const month = String(publishDate.getMonth() + 1).padStart(2, '0');
+              const day = String(publishDate.getDate()).padStart(2, '0');
+              newsUrl = `/news/${year}/${month}/${day}/${item.slug}`;
+            }
+            
+            return (
             <Link
               key={item.id}
-              href={`/news/${item.id}`}
+              href={newsUrl}
               className="bg-white rounded-lg border border-gray-100 overflow-hidden hover:border-gray-300 transition-all duration-300 hover:shadow-xl block cursor-pointer group"
             >
               {item.images && item.images.length > 0 && (
@@ -68,7 +79,8 @@ export default function NewsSection({ news, limit = 5 }: NewsSectionProps) {
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -53,10 +53,15 @@ async function adminRequest<T>(
   const text = await response.text();
   let responseData: any;
   try {
-    responseData = JSON.parse(text);
+    responseData = text ? JSON.parse(text) : {};
   } catch (e) {
     // 如果解析失敗，可能是返回了 HTML 錯誤頁面
     throw new Error(`API 返回了非 JSON 響應 (${response.status}): ${text.substring(0, 200)}`);
+  }
+
+  // 確保 responseData 不是 undefined
+  if (!responseData) {
+    responseData = {};
   }
 
   if (!response.ok) {
@@ -123,7 +128,22 @@ async function adminRequest<T>(
     throw error;
   }
 
-  return responseData;
+  // 確保返回的數據格式正確
+  if (!responseData || typeof responseData !== 'object') {
+    console.error('Invalid response data format:', responseData);
+    throw new Error('API 返回了無效的數據格式');
+  }
+
+  // 確保返回的對象有 status 欄位（統一格式）
+  if (!responseData.status) {
+    // 如果沒有 status，假設是成功並包裝
+    return {
+      status: 'success',
+      data: responseData,
+    } as ApiResponse<T>;
+  }
+
+  return responseData as ApiResponse<T>;
 }
 
 /**
@@ -599,14 +619,46 @@ export async function adminGetNews(params?: { status?: 'draft' | 'published'; pa
   return adminRequest<News[]>(endpoint);
 }
 
-export async function adminGetNewsItem(id: number) {
-  return adminRequest<News>(`/admin/news/${id}/`);
+export async function adminGetNewsItem(id: number): Promise<ApiResponse<News>> {
+  try {
+    const result = await adminRequest<News>(`/admin/news/${id}/`);
+    console.log('adminGetNewsItem raw result:', result);
+    
+    // 確保返回的格式正確
+    if (!result || typeof result !== 'object') {
+      console.error('adminGetNewsItem: Invalid result format:', result);
+      throw new Error('API 返回了無效的數據格式');
+    }
+    
+    // 確保有 status 和 data 欄位
+    if (!result.status) {
+      console.warn('adminGetNewsItem: Missing status, wrapping result');
+      return {
+        status: 'success',
+        data: result as any,
+      };
+    }
+    
+    // 確保 data 欄位存在
+    if (!result.data) {
+      console.error('adminGetNewsItem: Missing data field:', result);
+      throw new Error('API 返回的數據缺少 data 欄位');
+    }
+    
+    return result;
+  } catch (error: any) {
+    console.error('adminGetNewsItem error:', error);
+    throw error;
+  }
 }
 
 export async function adminCreateNews(data: NewsCreateRequest) {
   const formData = new FormData();
   
   formData.append('title', data.title);
+  if (data.slug) {
+    formData.append('slug', data.slug);
+  }
   formData.append('content', data.content);
   formData.append('publish_date', data.publish_date);
   if (data.status) {
@@ -658,13 +710,28 @@ export async function adminCreateNews(data: NewsCreateRequest) {
     throw new Error(responseData?.message || responseData?.detail || `API 請求失敗: ${response.status}`);
   }
   
-  return responseData;
+  // 確保返回的格式統一
+  if (!responseData || typeof responseData !== 'object') {
+    console.error('adminCreateNews: Invalid response format:', responseData);
+    throw new Error('API 返回了無效的數據格式');
+  }
+  
+  // 如果沒有 status 欄位，包裝為統一格式
+  if (!responseData.status) {
+    return {
+      status: 'success',
+      data: responseData,
+    } as ApiResponse<News>;
+  }
+  
+  return responseData as ApiResponse<News>;
 }
 
 export async function adminUpdateNews(id: number, data: NewsUpdateRequest) {
   const formData = new FormData();
   
   if (data.title !== undefined) formData.append('title', data.title);
+  if (data.slug !== undefined) formData.append('slug', data.slug);
   if (data.content !== undefined) formData.append('content', data.content);
   if (data.publish_date !== undefined) formData.append('publish_date', data.publish_date);
   if (data.status !== undefined) formData.append('status', data.status);
@@ -712,7 +779,21 @@ export async function adminUpdateNews(id: number, data: NewsUpdateRequest) {
     throw new Error(responseData?.message || responseData?.detail || `API 請求失敗: ${response.status}`);
   }
   
-  return responseData;
+  // 確保返回的格式統一
+  if (!responseData || typeof responseData !== 'object') {
+    console.error('adminUpdateNews: Invalid response format:', responseData);
+    throw new Error('API 返回了無效的數據格式');
+  }
+  
+  // 如果沒有 status 欄位，包裝為統一格式
+  if (!responseData.status) {
+    return {
+      status: 'success',
+      data: responseData,
+    } as ApiResponse<News>;
+  }
+  
+  return responseData as ApiResponse<News>;
 }
 
 export async function adminDeleteNews(id: number) {

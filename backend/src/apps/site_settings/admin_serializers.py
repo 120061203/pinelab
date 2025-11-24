@@ -4,6 +4,7 @@
 import os
 import time
 import json
+import re
 from datetime import datetime
 from rest_framework import serializers
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
@@ -190,7 +191,7 @@ class NewsAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = [
-            'id', 'title', 'content', 'publish_date', 'images', 'status',
+            'id', 'title', 'slug', 'content', 'publish_date', 'images', 'status',
             'created_at', 'updated_at', 'images_upload'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -199,6 +200,16 @@ class NewsAdminSerializer(serializers.ModelSerializer):
         """驗證標題長度"""
         if len(value) > 200:
             raise ValidationError('標題長度不能超過 200 字元')
+        return value
+    
+    def validate_slug(self, value):
+        """驗證 slug 格式"""
+        if value:
+            # 只允許小寫字母、數字和連字號
+            if not re.match(r'^[a-z0-9-]+$', value):
+                raise ValidationError('URL 路徑只能包含小寫字母、數字和連字號')
+            if len(value) > 200:
+                raise ValidationError('URL 路徑長度不能超過 200 字元')
         return value
     
     def validate_content(self, value):

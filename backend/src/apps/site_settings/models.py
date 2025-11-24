@@ -131,6 +131,13 @@ class News(models.Model):
         max_length=200,
         verbose_name='標題'
     )
+    slug = models.SlugField(
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name='URL 路徑',
+        help_text='用於生成 URL，例如：market。如果不填寫，將使用標題自動生成'
+    )
     content = models.TextField(
         max_length=10000,
         verbose_name='內容'
@@ -166,6 +173,17 @@ class News(models.Model):
         ordering = ['-publish_date', '-created_at']
         # 索引已通過遷移創建，這裡不重複定義以避免衝突
         # 注意：數據庫中的實際索引名稱可能與遷移文件中的不同
+        unique_together = [['publish_date', 'slug']]
+    
+    def get_url_path(self):
+        """生成 URL 路徑：/news/年/月/日/slug"""
+        if not self.slug:
+            # 如果沒有 slug，使用 ID
+            return f'/news/{self.id}'
+        year = self.publish_date.year
+        month = str(self.publish_date.month).zfill(2)
+        day = str(self.publish_date.day).zfill(2)
+        return f'/news/{year}/{month}/{day}/{self.slug}'
     
     def __str__(self):
         return self.title

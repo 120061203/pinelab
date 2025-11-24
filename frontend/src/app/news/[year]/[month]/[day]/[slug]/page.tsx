@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { getNews } from '@/lib/api';
+import { getNewsBySlug } from '@/lib/api';
 import { News } from '@/types/news';
 import { ApiResponse } from '@/lib/api';
 import { getImageUrl } from '@/lib/image-utils';
@@ -11,18 +11,20 @@ import Link from 'next/link';
 
 // 動態導入 react-markdown（避免 SSR 問題）
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
-const remarkGfm = require('remark-gfm');
 
 export default function NewsDetailPage() {
   const params = useParams();
-  const id = params?.id as string;
+  const year = params?.year as string;
+  const month = params?.month as string;
+  const day = params?.day as string;
+  const slug = params?.slug as string;
   const [news, setNews] = useState<News | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) {
-      setError('無效的消息 ID');
+    if (!year || !month || !day || !slug) {
+      setError('無效的 URL 參數');
       setLoading(false);
       return;
     }
@@ -30,16 +32,11 @@ export default function NewsDetailPage() {
     const loadNews = async () => {
       try {
         setLoading(true);
-        const response = await getNews() as ApiResponse<News[]>;
+        const response = await getNewsBySlug(year, month, day, slug);
         if (response.status === 'success' && response.data) {
-          const newsItem = response.data.find((item) => item.id === parseInt(id));
-          if (newsItem) {
-            setNews(newsItem);
-          } else {
-            setError('找不到該消息');
-          }
+          setNews(response.data);
         } else {
-          setError('載入失敗');
+          setError('找不到該消息');
         }
       } catch (e: any) {
         setError(e?.message || '載入失敗');
@@ -49,7 +46,7 @@ export default function NewsDetailPage() {
     };
 
     loadNews();
-  }, [id]);
+  }, [year, month, day, slug]);
 
   if (loading) {
     return (
@@ -114,23 +111,66 @@ export default function NewsDetailPage() {
 
 // Markdown 內容渲染組件
 function MarkdownContent({ content, images }: { content: string; images: any[] }) {
+  const [remarkGfmPlugin, setRemarkGfmPlugin] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // 動態載入 remark-gfm
+  useEffect(() => {
+    let mounted = true;
+    import('remark-gfm')
+      .then((module) => {
+        if (mounted) {
+          // remark-gfm 導出為 default，是一個函數
+          const plugin = module.default;
+          if (plugin) {
+            setRemarkGfmPlugin(plugin);
+          }
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load remark-gfm:', err);
+        if (mounted) {
+          setLoading(false);
+        }
+      });
+    
+    return () => {
+      mounted = false;
+    };
+  }, []);
   
-  // 處理圖片 URL（將相對路徑轉換為完整 URL）
   const processContent = (text: string) => {
+    if (!text) return '';
     let processed = text;
     images.forEach((image) => {
-      const imageUrl = getImageUrl(image.url) || image.url;
-      processed = processed.replace(
-        new RegExp(`!\\[([^\\]]*)\\]\\(${image.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g'),
-        `![$1](${imageUrl})`
-      );
+      if (image && image.url) {
+        const imageUrl = getImageUrl(image.url) || image.url;
+        processed = processed.replace(
+          new RegExp(`!\\[([^\\]]*)\\]\\(${image.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g'),
+          `![$1](${imageUrl})`
+        );
+      }
     });
     return processed;
   };
 
+  if (loading) {
+    return <div className="p-4 text-gray-500">載入中...</div>;
+  }
+
+  // 使用 useMemo 來穩定插件引用
+  const plugins = useMemo(() => {
+    if (!remarkGfmPlugin) return [];
+    if (typeof remarkGfmPlugin === 'function') {
+      return [remarkGfmPlugin];
+    }
+    return [];
+  }, [remarkGfmPlugin]);
+
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
+      remarkPlugins={plugins}
       components={{
         img: ({ node, ...props }: any) => (
           <img
@@ -164,3 +204,4 @@ function MarkdownContent({ content, images }: { content: string; images: any[] }
     </ReactMarkdown>
   );
 }
+
