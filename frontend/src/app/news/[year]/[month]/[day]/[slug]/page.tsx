@@ -33,12 +33,14 @@ export default function NewsDetailPage() {
       try {
         setLoading(true);
         const response = await getNewsBySlug(year, month, day, slug);
+        console.log('Page loadNews response:', response);
         if (response.status === 'success' && response.data) {
           setNews(response.data);
         } else {
           setError('找不到該消息');
         }
       } catch (e: any) {
+        console.error('Page loadNews error:', e);
         setError(e?.message || '載入失敗');
       } finally {
         setLoading(false);
@@ -75,9 +77,9 @@ export default function NewsDetailPage() {
         <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
           ← 返回首頁
         </Link>
-        
+
         <article className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {news.images && news.images.length > 0 && (
+          {news && news.images && news.images.length > 0 && (
             <div className="w-full h-96 overflow-hidden">
               <img
                 src={getImageUrl(news.images[0].url) || ''}
@@ -87,10 +89,10 @@ export default function NewsDetailPage() {
               />
             </div>
           )}
-          
+
           <div className="p-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">{news.title}</h1>
-            
+
             <div className="text-sm text-gray-500 mb-6">
               {new Date(news.publish_date).toLocaleDateString('zh-TW', {
                 year: 'numeric',
@@ -98,7 +100,7 @@ export default function NewsDetailPage() {
                 day: 'numeric',
               })}
             </div>
-            
+
             <div className="prose max-w-none">
               <MarkdownContent content={news.content} images={news.images || []} />
             </div>
@@ -134,12 +136,12 @@ function MarkdownContent({ content, images }: { content: string; images: any[] }
           setLoading(false);
         }
       });
-    
+
     return () => {
       mounted = false;
     };
   }, []);
-  
+
   const processContent = (text: string) => {
     if (!text) return '';
     let processed = text;

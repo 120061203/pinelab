@@ -36,19 +36,24 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # 添加新的 images 欄位
-        migrations.AddField(
-            model_name='news',
-            name='images',
-            field=models.JSONField(blank=True, default=list, help_text='格式：[{"url": "/media/site/news/image.jpg", "alt": "圖片描述"}]', verbose_name='圖片列表'),
+        # 添加新的 images 欄位 (Use SeparateDatabaseAndState to avoid "column already exists")
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.AddField(
+                    model_name='news',
+                    name='images',
+                    field=models.JSONField(blank=True, default=list, help_text='格式：[{"url": "/media/site/news/image.jpg", "alt": "圖片描述"}]', verbose_name='圖片列表'),
+                ),
+            ],
+            database_operations=[],
         ),
         # 執行數據遷移
-        migrations.RunPython(migrate_image_url_to_images, reverse_migrate_images_to_image_url),
+        # migrations.RunPython(migrate_image_url_to_images, reverse_migrate_images_to_image_url),
         # 刪除舊的 image_url 欄位
-        migrations.RemoveField(
-            model_name='news',
-            name='image_url',
-        ),
+        # migrations.RemoveField(
+        #     model_name='news',
+        #     name='image_url',
+        # ),
         # 更新 content 欄位的 max_length
         migrations.AlterField(
             model_name='news',

@@ -13,7 +13,7 @@ export default function AdminNewsEditPage() {
   const { addToast } = useToast();
   const id = params?.id as string | undefined;
   const isNew = !id || id === 'new';
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -54,18 +54,15 @@ export default function AdminNewsEditPage() {
     try {
       const res: any = await adminGetNewsItem(newsId);
       console.log('Load news response:', res); // 調試日誌
-      console.log('Load news response type:', typeof res);
-      console.log('Load news response.status:', res?.status);
-      console.log('Load news response.data:', res?.data);
-      
+
       // 檢查響應格式 - 更嚴格的檢查
-      if (!res || typeof res !== 'object') {
-        console.error('Response is undefined or invalid:', res);
+      if (!res) {
+        console.error('Response is undefined');
         addToast({ type: 'error', message: '載入失敗：伺服器無回應' });
         setLoading(false);
         return;
       }
-      
+
       // 檢查是否有 status 欄位
       if (!res.status) {
         console.error('Response missing status field:', res);
@@ -73,7 +70,7 @@ export default function AdminNewsEditPage() {
         setLoading(false);
         return;
       }
-      
+
       // 檢查是否有 data 欄位
       if (res.status === 'success') {
         if (!res.data) {
@@ -82,14 +79,14 @@ export default function AdminNewsEditPage() {
           setLoading(false);
           return;
         }
-        
+
         if (typeof res.data !== 'object') {
           console.error('Response data is not an object:', res.data);
           addToast({ type: 'error', message: '載入失敗：數據格式錯誤' });
           setLoading(false);
           return;
         }
-        
+
         // 安全地設置表單數據
         setFormData({
           title: res.data.title || '',
@@ -127,7 +124,7 @@ export default function AdminNewsEditPage() {
     // 這裡先返回臨時的圖片 URL，實際保存時會一起上傳
     // 為了簡化，我們先將文件存儲在 pendingImageUploads 中
     setPendingImageUploads((prev) => [...prev, ...files]);
-    
+
     // 返回臨時的圖片對象（使用 blob URL）
     return files.map((file) => ({
       url: URL.createObjectURL(file),
@@ -199,7 +196,7 @@ export default function AdminNewsEditPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">{isNew ? '新增最新消息' : '編輯最新消息'}</h1>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
         <div className="bg-white p-6 rounded-lg shadow space-y-4">
           <div>
@@ -213,7 +210,7 @@ export default function AdminNewsEditPage() {
               maxLength={200}
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-2">URL 路徑（自訂名稱）</label>
             <input
@@ -232,7 +229,7 @@ export default function AdminNewsEditPage() {
               如果不填寫，將使用發布日期自動生成。URL 格式：/news/年/月/日/自訂名稱
             </p>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-2">內容 * (支援 Markdown)</label>
             <MarkdownEditor
@@ -245,7 +242,7 @@ export default function AdminNewsEditPage() {
               rows={20}
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-2">發布日期 *</label>
             <input
@@ -256,7 +253,7 @@ export default function AdminNewsEditPage() {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-2">狀態</label>
             <select

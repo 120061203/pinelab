@@ -32,10 +32,15 @@ class Migration(migrations.Migration):
 
     operations = [
         # 添加新的 images 欄位（如果不存在）
-        migrations.AddField(
-            model_name='news',
-            name='images',
-            field=models.JSONField(blank=True, default=list, help_text='格式：[{"url": "/media/site/news/image.jpg", "alt": "圖片描述"}]', verbose_name='圖片列表'),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.AddField(
+                    model_name='news',
+                    name='images',
+                    field=models.JSONField(blank=True, default=list, help_text='格式：[{"url": "/media/site/news/image.jpg", "alt": "圖片描述"}]', verbose_name='圖片列表'),
+                ),
+            ],
+            database_operations=[],
         ),
         # 執行數據遷移（已經手動執行過，這裡跳過）
         # migrations.RunPython(migrate_image_url_to_images, reverse_migrate_images_to_image_url),

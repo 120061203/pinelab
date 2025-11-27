@@ -27,7 +27,7 @@ export class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     try {
       const response = await fetch(url, {
         ...options,
@@ -40,7 +40,7 @@ export class ApiClient {
       // 處理非 JSON 回應
       let data: ApiResponse<T>;
       const contentType = response.headers.get('content-type');
-      
+
       if (contentType && contentType.includes('application/json')) {
         data = await response.json();
       } else {
@@ -97,7 +97,7 @@ export const apiClient = new ApiClient();
  */
 export async function getProducts(params?: Record<string, any>) {
   const searchParams = new URLSearchParams();
-  
+
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -109,7 +109,7 @@ export async function getProducts(params?: Record<string, any>) {
       }
     });
   }
-  
+
   const queryString = searchParams.toString();
   const endpoint = queryString ? `/products/?${queryString}` : '/products/';
   return apiClient.get(endpoint);
@@ -161,23 +161,43 @@ export async function getNews(limit?: number) {
 export async function getNewsBySlug(year: string, month: string, day: string, slug: string) {
   // 後端需要添加一個新的端點來支持這個查詢
   // 暫時使用列表 API 然後過濾
-  const response = await getNews();
-  if (response.status === 'success' && response.data) {
-    const newsItem = response.data.find((item) => {
-      if (!item.slug) return false;
-      const publishDate = new Date(item.publish_date);
-      const itemYear = publishDate.getFullYear().toString();
-      const itemMonth = String(publishDate.getMonth() + 1).padStart(2, '0');
-      const itemDay = String(publishDate.getDate()).padStart(2, '0');
-      return itemYear === year && itemMonth === month && itemDay === day && item.slug === slug;
-    });
-    if (newsItem) {
-      return {
-        status: 'success' as const,
-        data: newsItem,
-      } as ApiResponse<News>;
+  try {
+    const response = await getNews();
+    console.log('getNewsBySlug response:', response);
+
+    if (!response) {
+      throw new Error('API 回應為空');
     }
+
+    if (response.status === 'success' && Array.isArray(response.data)) {
+      const newsItem = response.data.find((item) => {
+        if (!item || !item.slug) return false;
+        try {
+          const publishDate = new Date(item.publish_date);
+          const itemYear = publishDate.getFullYear().toString();
+          const itemMonth = String(publishDate.getMonth() + 1).padStart(2, '0');
+          const itemDay = String(publishDate.getDate()).padStart(2, '0');
+          return itemYear === year && itemMonth === month && itemDay === day && item.slug === slug;
+        } catch (e) {
+          console.error('Error parsing date for news item:', item, e);
+          return false;
+        }
+      });
+
+      if (newsItem) {
+        return {
+          status: 'success' as const,
+          data: newsItem,
+        } as ApiResponse<News>;
+      }
+    } else {
+      console.warn('getNewsBySlug: Unexpected response format', response);
+    }
+  } catch (error) {
+    console.error('getNewsBySlug error:', error);
+    throw error;
   }
+
   throw new Error('找不到該消息');
 }
 
